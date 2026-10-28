@@ -37,7 +37,7 @@ import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.c
         </div>
         <div class="field">
           <span>¿Cuándo NO podéis jugar?</span>
-          <mp-unavailability-editor [days]="board().tournament.days" [(items)]="unav" />
+          <mp-unavailability-editor [days]="board().tournament.days" [duration]="duration()" [(items)]="unav" />
         </div>
         <label class="field"><span>Comentarios para el organizador</span><textarea name="notes" [(ngModel)]="notes" rows="2"></textarea></label>
         @if (board().tournament.entryFee) {
@@ -65,6 +65,11 @@ export class RegistrationFormComponent {
   unav = signal<Unavailability[]>([]);
   busy = signal(false);
   done = signal(false);
+
+  duration() {
+    const t = this.board().tournament;
+    return t.categories.find(c => c.id === this.categoryId)?.matchDurationMinutes ?? t.matchDurationMinutes;
+  }
 
   async send() {
     if (!this.categoryId) { this.toast.error('Elige una categoría'); return; }

@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Category, PairStatus, PairView, Player, Tournament, Unavailability } from '../../core/models';
 import { dayName, hhmm } from '../../core/format';
+import { findSimilar, normalizeName } from '../../core/names';
 import { ToastService } from '../../core/toast.service';
 import { UnavailabilityEditorComponent } from '../../shared/unavailability-editor.component';
 
@@ -89,6 +90,15 @@ interface Form {
                 <legend>Jugador {{ i + 1 }}</legend>
                 <label class="field"><span>Nombre y apellidos</span>
                   <input [name]="'n' + i" [(ngModel)]="p.fullName" list="mp-players" required autocomplete="off" (change)="fill(p)"></label>
+                @if (similar(p); as s) {
+                  <div class="notice warn small stack" style="gap:6px">
+                    <span>¿Es el mismo jugador que <b>{{ s.fullName }}</b>{{ s.phone ? ' (' + s.phone + ')' : '' }}, ya inscrito en el torneo?</span>
+                    <div class="row">
+                      <button type="button" class="btn sm" (click)="useExisting(p, s)">Sí, es él</button>
+                      <button type="button" class="btn ghost sm" (click)="dismiss(p, s)">No, es otro</button>
+                    </div>
+                  </div>
+                }
                 <label class="field"><span>Teléfono</span><input [name]="'t' + i" type="tel" [(ngModel)]="p.phone"></label>
                 <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email"></label>
               </fieldset>
@@ -96,7 +106,7 @@ interface Form {
           </div>
           <small class="muted">Si un jugador ya está en otra categoría del torneo, escribe el mismo nombre: así evitamos que le coincidan partidos.</small>
           <div class="field"><span>¿Cuándo NO pueden jugar?</span>
-            <mp-unavailability-editor [days]="t().days" [(items)]="unav" />
+            <mp-unavailability-editor [days]="t().days" [duration]="cat()?.matchDurationMinutes ?? t().matchDurationMinutes" [(items)]="unav" />
           </div>
           <div class="grid-3">
             <label class="field"><span>Cabeza de serie</span><input name="seed" type="number" min="1" [(ngModel)]="f.seed" placeholder="—"></label>
@@ -172,6 +182,22 @@ export class PairsTabComponent implements OnChanges {
     const found = this.players().find(x => x.fullName.toLowerCase() === p.fullName.trim().toLowerCase());
     if (found) { p.phone ||= found.phone; p.email ||= found.email; }
   }
+
+  /** Nombres que el organizador ya ha dicho que son otra persona ("nombre escrito|id del parecido"). */
+  private notSame = new Set<string>();
+
+  /** Jugador del torneo con un nombre parecido (pero no igual) al escrito. */
+  similar(p: Form['p1']) {
+    const s = findSimilar(p.fullName, this.players());
+    return s && !this.notSame.has(`${normalizeName(p.fullName)}|${s.id}`) ? s : undefined;
+  }
+
+  useExisting(p: Form['p1'], s: Player) {
+    p.fullName = s.fullName;
+    this.fill(p);
+  }
+
+  dismiss(p: Form['p1'], s: Player) { this.notSame.add(`${normalizeName(p.fullName)}|${s.id}`); }
 
   async save(f: Form) {
     if (!f.p1.fullName.trim() || !f.p2.fullName.trim()) { this.toast.error('Indica el nombre de los dos jugadores'); return; }
