@@ -31,6 +31,12 @@ import { ToastService } from '../../core/toast.service';
             }
           </div>
         }
+      } @else if (error()) {
+        <div class="panel empty">
+          <h3>No hemos podido cargar tu panel</h3>
+          <p>{{ error() }}</p>
+          <button class="btn" (click)="load()">Reintentar</button>
+        </div>
       } @else { <p class="muted">Cargando…</p> }
     </div>
   `,
@@ -52,6 +58,12 @@ export class DashboardPage implements OnInit {
   private api = inject(ApiService);
   private toast = inject(ToastService);
   me = signal<Profile | null>(null);
-  ngOnInit() { this.api.me().then(p => this.me.set(p)).catch(e => this.toast.error(e)); }
+  error = signal('');
+  ngOnInit() { this.load(); }
+
+  load() {
+    this.error.set('');
+    this.api.me().then(p => this.me.set(p)).catch(e => { this.error.set(e.message); this.toast.error(e); });
+  }
   first(n: string) { return n.split(' ')[0]; }
 }

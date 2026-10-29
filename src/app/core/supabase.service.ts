@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { createClient, Session, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, processLock, Session, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
 /** Login / registro / subida de imágenes con Supabase. */
@@ -16,6 +16,9 @@ export class SupabaseService {
     this.client = createClient(
       this.configured ? environment.supabaseUrl : 'http://localhost:54321',
       this.configured ? environment.supabaseAnonKey : 'sin-configurar',
+      // El bloqueo por defecto (navigator.locks) falla a veces con Angular: getSession() devuelve
+      // vacío y las peticiones salen sin token (401 en la API, "anon" en Storage).
+      { auth: { lock: processLock } },
     );
     this.client.auth.getSession().then(({ data }) => {
       this.session.set(data.session);
