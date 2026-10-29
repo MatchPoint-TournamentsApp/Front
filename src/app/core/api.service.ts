@@ -68,6 +68,8 @@ export class ApiService {
   // cuadros, horarios y resultados
   generate(tid: string, categoryIds?: string[]) { return this.post<M.DrawSummary>(`/tournaments/${tid}/draw`, { categoryIds }); }
   resetDraw(categoryId: string) { return this.del(`/categories/${categoryId}/draw`); }
+  /** Vuelve a generar todos los cuadros con los datos actuales (solo antes de que empiece el torneo). */
+  regenerate(tid: string) { return this.post<M.DrawSummary>(`/tournaments/${tid}/draw/regenerate`); }
   reschedule(tid: string) { return this.post<M.DrawSummary>(`/tournaments/${tid}/reschedule`); }
   saveResult(matchId: string, b: { sets?: number[][]; walkover: boolean; winnerPairId?: string }) {
     return this.put<M.CategoryBoard>(`/matches/${matchId}/result`, b);

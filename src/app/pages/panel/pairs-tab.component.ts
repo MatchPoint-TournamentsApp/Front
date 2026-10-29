@@ -31,12 +31,14 @@ interface Form {
           }
         </div>
         <div class="row">
-          @if (pendingCount() && !cat()?.drawGenerated) { <button class="btn ghost" (click)="confirmAll()">Confirmar {{ pendingCount() === 1 ? 'la inscripción pendiente' : pendingCount() + ' pendientes' }}</button> }
-          <button class="btn" (click)="edit()" [disabled]="cat()?.drawGenerated">Añadir pareja</button>
+          @if (pendingCount() && !t().started) { <button class="btn ghost" (click)="confirmAll()">Confirmar {{ pendingCount() === 1 ? 'la inscripción pendiente' : pendingCount() + ' pendientes' }}</button> }
+          <button class="btn" (click)="edit()" [disabled]="t().started">Añadir pareja</button>
         </div>
       </div>
-      @if (cat()?.drawGenerated) {
-        <div class="notice" style="margin-bottom:14px">El cuadro de esta categoría ya está generado. Para añadir o quitar parejas, reinícialo en "Cuadros y resultados".</div>
+      @if (t().started) {
+        <div class="notice" style="margin-bottom:14px">El torneo ya ha comenzado: no se pueden añadir, quitar ni retirar parejas. Sí puedes corregir sus datos.</div>
+      } @else if (cat()?.drawGenerated) {
+        <div class="notice" style="margin-bottom:14px">Esta categoría ya tiene cuadro. Si añades, quitas o cambias parejas, tendrás que volver a generar los cuadros (botón de arriba).</div>
       }
       @if (loading()) { <p class="muted">Cargando parejas…</p> }
       @else if (!pairs().length) {
@@ -68,9 +70,9 @@ interface Form {
                     @if (p.source === 'PUBLIC') { <div class="tiny muted">Por enlace</div> }
                   </td>
                   <td class="nowrap" style="text-align:right">
-                    @if (p.status === 'PENDING' && !cat()?.drawGenerated) { <button class="btn sm" (click)="setStatus(p, 'CONFIRMED')">Confirmar</button> }
+                    @if (p.status === 'PENDING' && !t().started) { <button class="btn sm" (click)="setStatus(p, 'CONFIRMED')">Confirmar</button> }
                     <button class="btn ghost sm" (click)="edit(p)">Editar</button>
-                    @if (!cat()?.drawGenerated) { <button class="btn danger sm" (click)="remove(p)">Eliminar</button> }
+                    @if (!t().started) { <button class="btn danger sm" (click)="remove(p)">Eliminar</button> }
                   </td>
                 </tr>
               }
@@ -118,13 +120,13 @@ interface Form {
           <div class="grid-3">
             <label class="field"><span>Cabeza de serie</span><input name="seed" type="number" min="1" [(ngModel)]="f.seed" placeholder="—"></label>
             <label class="field"><span>Estado</span>
-              <select name="st" [(ngModel)]="f.status" [disabled]="!!cat()?.drawGenerated">
+              <select name="st" [(ngModel)]="f.status" [disabled]="t().started">
                 <option value="CONFIRMED">Confirmada</option><option value="PENDING">Pendiente</option><option value="WITHDRAWN">Retirada</option>
               </select>
             </label>
           </div>
           <label class="field"><span>Notas</span><input name="notes" [(ngModel)]="f.notes"></label>
-          @if (cat()?.drawGenerated) { <div class="notice warn">El cuadro ya está generado: los cambios de horario se aplicarán al pulsar "Reprogramar horarios".</div> }
+          @if (cat()?.drawGenerated) { <div class="notice warn">{{ t().started ? 'El torneo ya ha comenzado: los cambios de disponibilidad se aplican al reprogramar los horarios.' : 'Esta categoría ya tiene cuadro: después de guardar, vuelve a generar los cuadros para aplicar los cambios.' }}</div> }
           <div class="modal-foot"><button type="button" class="btn ghost" (click)="form.set(null)">Cancelar</button><button class="btn" type="submit" [disabled]="busy()">Guardar pareja</button></div>
         </form>
       </div>

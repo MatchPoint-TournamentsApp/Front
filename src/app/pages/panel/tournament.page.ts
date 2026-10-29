@@ -11,6 +11,7 @@ import { DrawsTabComponent } from './draws-tab.component';
 import { PairsTabComponent } from './pairs-tab.component';
 import { SettingsTabComponent } from './settings-tab.component';
 import { SponsorsTabComponent } from './sponsors-tab.component';
+import { DrawStatusComponent } from './draw-status.component';
 
 type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsors';
 
@@ -18,7 +19,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
 @Component({
   selector: 'mp-tournament',
   imports: [RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
-    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent],
+    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent],
   template: `
     <div class="page">
       @if (t(); as tt) {
@@ -38,6 +39,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
           </div>
         </div>
 
+        <mp-draw-status [t]="tt" (changed)="reload()" (generated)="tab.set('draws')" />
         @if (next(); as n) { <div class="notice next">{{ n }}</div> }
 
         <div class="tabs" role="tablist">
@@ -101,7 +103,6 @@ export class TournamentPage implements OnInit {
     if (!t.categories.length) return 'Siguiente paso: crea las categorías del torneo (por ejemplo "Cuarta masculina" o "Primera mixta").';
     if (!this.totalPairs() && !this.pending()) return 'Siguiente paso: inscribe parejas o abre la inscripción pública en Ajustes y comparte el enlace.';
     if (this.pending()) return `Tienes ${this.pending()} inscripciones pendientes de confirmar en la pestaña Parejas.`;
-    if (t.categories.some(c => !c.drawGenerated && c.confirmedPairs >= 2)) return 'Cuando tengas todas las parejas, genera los cuadros en "Cuadros y resultados".';
     return '';
   });
 

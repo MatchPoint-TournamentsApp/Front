@@ -43,6 +43,10 @@ export interface Tournament {
   entryFee?: number; matchDurationMinutes: number; minRestMinutes: number; courtStaggerMinutes: number;
   splitThreshold: number; scoringFormat: string; primaryColor: string; publicVisible: boolean; courtIds: string[];
   days: Day[]; categories: Category[]; sponsors: Sponsor[];
+  /** Primer día y hora de juego (hora de España): desde entonces los cuadros quedan bloqueados. */
+  startsAt?: string | null; started: boolean;
+  /** Hay cambios desde la última generación de cuadros. */
+  drawsOutdated: boolean;
 }
 export interface TournamentRequest {
   name: string; description?: string; rules?: string; organizerNotes?: string; startDate: string; endDate: string;
