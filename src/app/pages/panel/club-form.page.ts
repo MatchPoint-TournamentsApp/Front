@@ -1,18 +1,22 @@
 import { Component, OnInit, inject, input, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { ClubRequest, Court } from '../../core/models';
 import { DAYS } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { normalizeUrl } from '../../core/validation';
+import { AddressFieldsComponent } from '../../shared/address-fields.component';
+import { FORM_KIT } from '../../shared/forms';
 import { ImageUploadComponent } from '../../shared/image-upload.component';
+import { PhoneInputComponent } from '../../shared/phone-input.component';
 
 interface DayHours { open: boolean; from: string; to: string; }
 
 /** Alta y edición del club: datos, logo, horario de apertura y pistas. */
 @Component({
   selector: 'mp-club-form',
-  imports: [FormsModule, RouterLink, ImageUploadComponent],
+  imports: [FormsModule, RouterLink, ImageUploadComponent, AddressFieldsComponent, PhoneInputComponent, FORM_KIT],
   template: `
     <div class="page narrow">
       <div class="page-head">
@@ -21,26 +25,23 @@ interface DayHours { open: boolean; from: string; to: string; }
         @if (id()) { <a class="btn ghost" [routerLink]="['/panel/club', id()]">Volver al club</a> }
       </div>
 
-      <form (ngSubmit)="save()">
+      <form #form="ngForm" mpForm (ngSubmit)="save(form)" novalidate>
+        <mp-form-errors [form]="form" />
         <section class="panel stack">
           <h3>Club</h3>
-          <label class="field"><span>Nombre del club *</span><input name="name" [(ngModel)]="f.name" required></label>
+          <label class="field"><span>Nombre del club</span><input name="name" [(ngModel)]="f.name" #nameRef="ngModel" required maxlength="120"><mp-error [control]="nameRef" /></label>
           <div class="field"><span>Logo</span><mp-image-upload [(url)]="logo" folder="clubs" /></div>
           <label class="field"><span>Descripción</span><textarea name="desc" [(ngModel)]="f.description" rows="3" placeholder="Instalaciones, servicios, cómo llegar…"></textarea></label>
         </section>
 
         <section class="panel stack">
           <h3>Dirección y contacto</h3>
-          <label class="field"><span>Dirección</span><input name="addr" [(ngModel)]="f.address" autocomplete="street-address"></label>
-          <div class="grid-3">
-            <label class="field"><span>Ciudad</span><input name="city" [(ngModel)]="f.city"></label>
-            <label class="field"><span>Provincia</span><input name="prov" [(ngModel)]="f.province"></label>
-            <label class="field"><span>Código postal</span><input name="cp" [(ngModel)]="f.postalCode"></label>
-          </div>
+          <label class="field"><span>Dirección</span><input name="addr" [(ngModel)]="f.address" autocomplete="street-address" placeholder="Calle, número"></label>
+          <mp-address-fields [(city)]="f.city" [(province)]="f.province" [(postalCode)]="f.postalCode" />
           <div class="grid-2">
-            <label class="field"><span>Teléfono</span><input name="tel" type="tel" [(ngModel)]="f.phone"></label>
-            <label class="field"><span>Email</span><input name="mail" type="email" [(ngModel)]="f.email"></label>
-            <label class="field"><span>Web</span><input name="web" [(ngModel)]="f.website" placeholder="https://"></label>
+            <div class="field"><span>Teléfono</span><mp-phone-input name="tel" [(ngModel)]="f.phone" #telRef="ngModel" label="Teléfono del club" /><mp-error [control]="telRef" /></div>
+            <label class="field"><span>Email</span><input name="mail" type="email" [(ngModel)]="f.email" #mailRef="ngModel" mpEmail autocomplete="email" placeholder="info@miclub.es"><mp-error [control]="mailRef" /></label>
+            <label class="field"><span>Web</span><input name="web" [(ngModel)]="f.website" #webRef="ngModel" mpUrl inputmode="url" placeholder="https://miclub.es"><mp-error [control]="webRef" /></label>
             <label class="field"><span>Instagram</span><input name="ig" [(ngModel)]="f.instagram" placeholder="@miclub"></label>
           </div>
         </section>
@@ -64,7 +65,7 @@ interface DayHours { open: boolean; from: string; to: string; }
         @if (!id()) {
           <section class="panel stack">
             <h3>Pistas</h3>
-            <label class="field" style="max-width:220px"><span>Número de pistas</span><input name="courts" type="number" min="1" max="40" [(ngModel)]="courtCount"></label>
+            <label class="field" style="max-width:220px"><span>Número de pistas</span><input name="courts" type="number" min="1" max="40" [(ngModel)]="courtCount" #courtsRef="ngModel" required><mp-error [control]="courtsRef" /></label>
             <small class="muted">Se crearán como "Pista 1", "Pista 2"… y después podrás ponerles el nombre que quieras.</small>
           </section>
         }
@@ -132,10 +133,11 @@ export class ClubFormPage implements OnInit {
     } catch (e) { this.toast.error(e); }
   }
 
-  async save() {
-    if (!this.f.name?.trim()) { this.toast.error('El club necesita un nombre'); return; }
+  async save(form: NgForm) {
+    if (form.invalid) return;
+    if (this.hours.some(h => h.open && h.to <= h.from)) { this.toast.error('En el horario, la hora de cierre debe ser posterior a la de apertura'); return; }
     const body: ClubRequest = {
-      ...this.f, logoUrl: this.logo() || undefined, courtCount: this.courtCount,
+      ...this.f, website: normalizeUrl(this.f.website) || undefined, logoUrl: this.logo() || undefined, courtCount: this.courtCount,
       openingHours: this.hours.map((h, i) => ({ dayOfWeek: i + 1, openTime: h.from, closeTime: h.to, open: h.open }))
         .filter(h => h.open).map(({ open: _o, ...h }) => h),
     };

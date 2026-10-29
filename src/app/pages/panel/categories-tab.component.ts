@@ -1,5 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
+import { FORM_KIT } from '../../shared/forms';
 import { ApiService } from '../../core/api.service';
 import { Category, CategoryFormat, Gender, Tournament } from '../../core/models';
 import { categoryColor, FORMAT_LABEL, GENDER_LABEL } from '../../core/format';
@@ -12,7 +13,7 @@ interface Form {
 
 @Component({
   selector: 'mp-categories-tab',
-  imports: [FormsModule],
+  imports: [FormsModule, FORM_KIT],
   template: `
     <div class="row between" style="margin-bottom:14px">
       <p class="muted" style="margin:0">Cada categoría tiene su propio cuadro o liguilla.</p>
@@ -44,9 +45,10 @@ interface Form {
 
     @if (form(); as f) {
       <div class="backdrop" (click)="form.set(null)">
-        <form class="modal stack" (click)="$event.stopPropagation()" (ngSubmit)="save(f)">
+        <form class="modal stack" (click)="$event.stopPropagation()" #cform="ngForm" mpForm (ngSubmit)="save(f, cform)" novalidate>
           <div class="modal-head"><h3>{{ f.id ? 'Editar categoría' : 'Nueva categoría' }}</h3><button type="button" class="icon-btn" (click)="form.set(null)" aria-label="Cerrar">✕</button></div>
-          <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" required placeholder="Cuarta masculina"></label>
+          <mp-form-errors [form]="cform" />
+          <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" #nRef="ngModel" required placeholder="Cuarta masculina"><mp-error [control]="nRef" /></label>
           <div class="grid-2">
             <label class="field"><span>Modalidad</span>
               <select name="g" [(ngModel)]="f.gender">@for (g of genders; track g) { <option [ngValue]="g">{{ gender(g) }}</option> }</select>
@@ -127,8 +129,8 @@ export class CategoriesTabComponent {
     } : { name: '', gender: 'MASCULINA', format: 'KNOCKOUT_CONSOLATION', groupCount: 1, split: 'auto', color: categoryColor({ position: this.t().categories.length + 1 }) });
   }
 
-  async save(f: Form) {
-    if (!f.name.trim()) { this.toast.error('Pon un nombre a la categoría'); return; }
+  async save(f: Form, cform: NgForm) {
+    if (cform.invalid) return;
     const body: Partial<Category> = {
       name: f.name, gender: f.gender, level: f.level, format: f.format, groupCount: f.groupCount,
       splitDraws: f.split === 'auto' ? null : f.split === 'two', maxPairs: f.maxPairs || null,

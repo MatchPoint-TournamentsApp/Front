@@ -1,30 +1,33 @@
 import { Component, inject, input, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
+import { FORM_KIT } from '../shared/forms';
 
 @Component({
   selector: 'mp-auth',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FORM_KIT],
   template: `
     <div class="wrap">
-      <form class="panel" (ngSubmit)="submit()">
+      <form class="panel" #form="ngForm" mpForm (ngSubmit)="submit(form)" novalidate>
         <img class="mark" src="brand/icon-512.png" alt="">
         @if (mode() === 'register') {
           <h2>Crea tu cuenta</h2>
           <p class="muted small">Con tu cuenta podrás dar de alta tu club y organizar torneos.</p>
-          <label class="field"><span>Nombre y apellidos</span><input name="name" [(ngModel)]="name" required autocomplete="name"></label>
+          <label class="field"><span>Nombre y apellidos</span><input name="name" [(ngModel)]="name" #nameRef="ngModel" required autocomplete="name"><mp-error [control]="nameRef" /></label>
         } @else if (mode() === 'reset') {
           <h2>Recuperar contraseña</h2>
           <p class="muted small">Te enviaremos un enlace para crear una contraseña nueva.</p>
         } @else {
           <h2>Inicia sesión</h2>
         }
-        <label class="field"><span>Email</span><input name="email" type="email" [(ngModel)]="email" required autocomplete="email"></label>
+        <label class="field"><span>Email</span><input name="email" type="email" [(ngModel)]="email" #emailRef="ngModel" required mpEmail autocomplete="email"><mp-error [control]="emailRef" /></label>
         @if (mode() !== 'reset') {
-          <label class="field"><span>Contraseña</span><input name="password" type="password" [(ngModel)]="password" required minlength="6"
-            [autocomplete]="mode() === 'register' ? 'new-password' : 'current-password'"></label>
+          <label class="field"><span>Contraseña</span><input name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6"
+            [autocomplete]="mode() === 'register' ? 'new-password' : 'current-password'">
+            @if (mode() === 'register') { <small>Mínimo 6 caracteres.</small> }
+            <mp-error [control]="passRef" /></label>
         }
         @if (info()) { <div class="notice">{{ info() }}</div> }
         <button class="btn lg ball" type="submit" [disabled]="busy()">
@@ -73,7 +76,8 @@ export class AuthPage {
   busy = signal(false);
   info = signal('');
 
-  async submit() {
+  async submit(form: NgForm) {
+    if (form.invalid) return;
     this.busy.set(true);
     this.info.set('');
     try {

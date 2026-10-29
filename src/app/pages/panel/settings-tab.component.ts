@@ -1,5 +1,6 @@
 import { Component, OnChanges, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { FORM_KIT } from '../../shared/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { Club, Day, Tournament, TournamentRequest } from '../../core/models';
@@ -9,7 +10,7 @@ import { ToastService } from '../../core/toast.service';
 /** Ajustes del torneo: datos, días y franjas, pistas, inscripción y normas. */
 @Component({
   selector: 'mp-settings-tab',
-  imports: [FormsModule],
+  imports: [FormsModule, FORM_KIT],
   template: `
     <div class="grid-2 top">
       <section class="panel stack">
@@ -53,22 +54,23 @@ import { ToastService } from '../../core/toast.service';
       <div class="row" style="margin-top:12px"><button class="btn ghost sm" (click)="saveDays()">Guardar horario</button></div>
     </section>
 
-    <form class="panel stack" (ngSubmit)="saveGeneral(true)">
+    <form class="panel stack" #gform="ngForm" mpForm (ngSubmit)="gform.valid && saveGeneral(true)" novalidate>
+      <mp-form-errors [form]="gform" />
       <h3>Datos del torneo</h3>
-      <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" required></label>
+      <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" #nRef="ngModel" required><mp-error [control]="nRef" /></label>
       <div class="grid-3">
-        <label class="field"><span>Empieza</span><input name="s" type="date" [(ngModel)]="f.startDate"></label>
-        <label class="field"><span>Termina</span><input name="e" type="date" [(ngModel)]="f.endDate"></label>
+        <label class="field"><span>Empieza</span><input name="s" type="date" [(ngModel)]="f.startDate" #sRef="ngModel" required><mp-error [control]="sRef" /></label>
+        <label class="field"><span>Termina</span><input name="e" type="date" [(ngModel)]="f.endDate" #eRef="ngModel" required [mpNotBefore]="f.startDate"><mp-error [control]="eRef" /></label>
         <label class="field"><span>Color</span><input name="c" type="color" [(ngModel)]="f.primaryColor"></label>
       </div>
       <label class="field"><span>Descripción pública</span><textarea name="d" [(ngModel)]="f.description" rows="3"></textarea></label>
       <div class="grid-3">
-        <label class="field"><span>Duración del partido (min)</span><input name="du" type="number" min="30" max="240" step="5" [(ngModel)]="f.matchDurationMinutes"></label>
-        <label class="field"><span>Descanso mínimo (min)</span><input name="re" type="number" min="0" max="600" step="5" [(ngModel)]="f.minRestMinutes"></label>
-        <label class="field"><span>Inscripción (€)</span><input name="fe" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee"></label>
-        <label class="field"><span>Escalonar pistas (min)</span><input name="st" type="number" min="0" max="120" step="5" [(ngModel)]="f.courtStaggerMinutes">
+        <label class="field"><span>Duración del partido (min)</span><input name="du" type="number" min="30" max="240" step="5" [(ngModel)]="f.matchDurationMinutes" #duRef="ngModel" required><mp-error [control]="duRef" /></label>
+        <label class="field"><span>Descanso mínimo (min)</span><input name="re" type="number" min="0" max="600" step="5" [(ngModel)]="f.minRestMinutes" #reRef="ngModel" required><mp-error [control]="reRef" /></label>
+        <label class="field"><span>Inscripción (€)</span><input name="fe" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" #feRef="ngModel"><mp-error [control]="feRef" /></label>
+        <label class="field"><span>Escalonar pistas (min)</span><input name="st" type="number" min="0" max="120" step="5" [(ngModel)]="f.courtStaggerMinutes" #stRef="ngModel"><mp-error [control]="stRef" />
           <small>Las pistas pares empiezan este tiempo más tarde para alternar horas.</small></label>
-        <label class="field"><span>Dividir en cuadro A y B desde</span><input name="sp" type="number" min="8" [(ngModel)]="f.splitThreshold">
+        <label class="field"><span>Dividir en cuadro A y B desde</span><input name="sp" type="number" min="8" [(ngModel)]="f.splitThreshold" #spRef="ngModel"><mp-error [control]="spRef" />
           <small>parejas (cuando el cuadro no cabe en una hoja)</small></label>
       </div>
       <label class="field"><span>Formato de juego</span><input name="sf" [(ngModel)]="f.scoringFormat"></label>

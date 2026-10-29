@@ -190,6 +190,22 @@ input[type=checkbox], input[type=radio] { width: 18px; height: 18px; min-height:
 input[type=color] { padding: 3px; width: 56px; }
 .check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
 
+/* Obligatorios y errores: el asterisco sale solo en los campos con "required" */
+.field:has(:required) > span::after, .field.req > span::after { content: ' *'; color: var(--gold-ink); }
+input.ng-invalid.ng-touched, select.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched,
+.ng-invalid.ng-touched > .control input, .ng-invalid.ng-touched > .control select {
+  border-color: var(--danger); background: #fffafa;
+}
+input.ng-invalid.ng-touched:focus, select.ng-invalid.ng-touched:focus, textarea.ng-invalid.ng-touched:focus { box-shadow: 0 0 0 3px rgba(180, 65, 47, .18); }
+.field-error { display: flex; align-items: center; gap: 6px; color: var(--danger); font-size: .8rem; font-weight: 500; }
+.field-error::before { content: '!'; width: 15px; height: 15px; border-radius: 50%; background: var(--danger); color: #fff; font-size: .68rem; font-weight: 700; display: grid; place-items: center; flex: none; }
+.form-errors {
+  display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline;
+  background: var(--danger-bg); color: var(--danger); border: 1px solid #f1cdc5; border-left: 3px solid var(--danger);
+  border-radius: var(--r-md); padding: 12px 14px; font-size: .92rem; margin-bottom: 16px;
+}
+.form-errors span { color: #8a3a2c; }
+
 .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
 .switch input { appearance: none; width: 42px; height: 24px; border-radius: 99px; background: var(--rule); position: relative; border: 0; min-height: 0; padding: 0; transition: background .2s; cursor: pointer; }
 .switch input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s var(--ease); box-shadow: 0 1px 2px rgba(0,0,0,.2); }

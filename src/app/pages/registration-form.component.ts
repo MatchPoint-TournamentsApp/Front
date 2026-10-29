@@ -1,14 +1,16 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../core/api.service';
 import { Board, Unavailability } from '../core/models';
 import { ToastService } from '../core/toast.service';
+import { FORM_KIT } from '../shared/forms';
+import { PhoneInputComponent } from '../shared/phone-input.component';
 import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.component';
 
 /** Inscripción pública de una pareja con sus restricciones horarias. */
 @Component({
   selector: 'mp-registration-form',
-  imports: [FormsModule, UnavailabilityEditorComponent],
+  imports: [FormsModule, UnavailabilityEditorComponent, PhoneInputComponent, FORM_KIT],
   template: `
     @if (done()) {
       <div class="panel empty">
@@ -17,21 +19,23 @@ import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.c
         <button class="btn ghost" (click)="reset()">Inscribir otra pareja</button>
       </div>
     } @else {
-      <form class="panel stack" (ngSubmit)="send()">
+      <form class="panel stack" #form="ngForm" mpForm (ngSubmit)="send(form)" novalidate>
         <h3>Inscribir pareja</h3>
+        <mp-form-errors [form]="form" />
         <label class="field"><span>Categoría</span>
-          <select name="cat" [(ngModel)]="categoryId" required>
+          <select name="cat" [(ngModel)]="categoryId" #catRef="ngModel" required>
             <option [ngValue]="null" disabled>Elige categoría</option>
             @for (c of open(); track c.id) { <option [ngValue]="c.id">{{ c.name }}</option> }
           </select>
+          <mp-error [control]="catRef" />
         </label>
         <div class="grid-2">
           @for (p of [p1, p2]; track $index; let i = $index) {
             <fieldset class="stack">
               <legend>Jugador {{ i + 1 }}</legend>
-              <label class="field"><span>Nombre y apellidos</span><input [name]="'n' + i" [(ngModel)]="p.fullName" required autocomplete="off"></label>
-              <label class="field"><span>Teléfono</span><input [name]="'t' + i" type="tel" [(ngModel)]="p.phone" [required]="i === 0"></label>
-              <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email"></label>
+              <label class="field"><span>Nombre y apellidos</span><input [name]="'n' + i" [(ngModel)]="p.fullName" #nRef="ngModel" required autocomplete="off"><mp-error [control]="nRef" /></label>
+              <div class="field" [class.req]="i === 0"><span>Teléfono</span><mp-phone-input [name]="'t' + i" [(ngModel)]="p.phone" #tRef="ngModel" [required]="i === 0" [label]="'Teléfono del jugador ' + (i + 1)" /><mp-error [control]="tRef" /></div>
+              <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email" #eRef="ngModel" mpEmail autocomplete="email"><mp-error [control]="eRef" /></label>
             </fieldset>
           }
         </div>
@@ -71,13 +75,12 @@ export class RegistrationFormComponent {
     return t.categories.find(c => c.id === this.categoryId)?.matchDurationMinutes ?? t.matchDurationMinutes;
   }
 
-  async send() {
-    if (!this.categoryId) { this.toast.error('Elige una categoría'); return; }
-    if (!this.p1.fullName.trim() || !this.p2.fullName.trim()) { this.toast.error('Indica el nombre de los dos jugadores'); return; }
+  async send(form: NgForm) {
+    if (form.invalid) return;
     this.busy.set(true);
     try {
       await this.api.register(this.board().tournament.slug, {
-        categoryId: this.categoryId, player1: this.p1, player2: this.p2, notes: this.notes, unavailabilities: this.unav(),
+        categoryId: this.categoryId!, player1: this.p1, player2: this.p2, notes: this.notes, unavailabilities: this.unav(),
       });
       this.done.set(true);
     } catch (e) { this.toast.error(e); }

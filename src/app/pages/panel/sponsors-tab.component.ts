@@ -1,15 +1,17 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Sponsor, SponsorTier, Tournament } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { normalizeUrl } from '../../core/validation';
+import { FORM_KIT } from '../../shared/forms';
 import { ImageUploadComponent } from '../../shared/image-upload.component';
 
 interface Form { id?: string; name: string; website?: string; tier: SponsorTier; }
 
 @Component({
   selector: 'mp-sponsors-tab',
-  imports: [FormsModule, ImageUploadComponent],
+  imports: [FormsModule, ImageUploadComponent, FORM_KIT],
   template: `
     <div class="row between" style="margin-bottom:14px">
       <p class="muted" style="margin:0">Aparecen en la página pública y al pie de los carteles PDF. Los principales se muestran más grandes.</p>
@@ -32,11 +34,12 @@ interface Form { id?: string; name: string; website?: string; tier: SponsorTier;
     }
     @if (form(); as f) {
       <div class="backdrop" (click)="form.set(null)">
-        <form class="modal stack" (click)="$event.stopPropagation()" (ngSubmit)="save(f)">
+        <form class="modal stack" (click)="$event.stopPropagation()" #sform="ngForm" mpForm (ngSubmit)="save(f, sform)" novalidate>
           <div class="modal-head"><h3>{{ f.id ? 'Editar patrocinador' : 'Nuevo patrocinador' }}</h3><button type="button" class="icon-btn" (click)="form.set(null)" aria-label="Cerrar">✕</button></div>
-          <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" required></label>
+          <mp-form-errors [form]="sform" />
+          <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" #nRef="ngModel" required><mp-error [control]="nRef" /></label>
           <div class="field"><span>Logo</span><mp-image-upload [(url)]="logo" folder="sponsors" /></div>
-          <label class="field"><span>Web</span><input name="w" [(ngModel)]="f.website" placeholder="https://"></label>
+          <label class="field"><span>Web</span><input name="w" [(ngModel)]="f.website" #wRef="ngModel" mpUrl inputmode="url" placeholder="https://patrocinador.es"><mp-error [control]="wRef" /></label>
           <div class="field"><span>Tipo</span>
             <div class="seg">
               <button type="button" [class.on]="f.tier === 'PRINCIPAL'" (click)="f.tier = 'PRINCIPAL'">Principal</button>
@@ -68,9 +71,9 @@ export class SponsorsTabComponent {
     this.form.set(s ? { id: s.id, name: s.name, website: s.website, tier: s.tier } : { name: '', tier: 'COLABORADOR' });
   }
 
-  async save(f: Form) {
-    if (!f.name.trim()) { this.toast.error('Indica el nombre'); return; }
-    const body = { name: f.name, website: f.website, tier: f.tier, logoUrl: this.logo() || undefined };
+  async save(f: Form, sform: NgForm) {
+    if (sform.invalid) return;
+    const body = { name: f.name, website: normalizeUrl(f.website) || undefined, tier: f.tier, logoUrl: this.logo() || undefined };
     try {
       if (f.id) await this.api.updateSponsor(f.id, body); else await this.api.addSponsor(this.t().id, body);
       this.form.set(null);

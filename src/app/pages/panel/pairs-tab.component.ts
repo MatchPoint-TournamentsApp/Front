@@ -1,10 +1,12 @@
 import { Component, OnChanges, computed, inject, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Category, PairStatus, PairView, Player, Tournament, Unavailability } from '../../core/models';
 import { dayName, hhmm } from '../../core/format';
 import { findSimilar, normalizeName } from '../../core/names';
 import { ToastService } from '../../core/toast.service';
+import { FORM_KIT } from '../../shared/forms';
+import { PhoneInputComponent } from '../../shared/phone-input.component';
 import { UnavailabilityEditorComponent } from '../../shared/unavailability-editor.component';
 
 interface Form {
@@ -17,7 +19,7 @@ interface Form {
 /** Parejas por categoría con sus restricciones horarias. */
 @Component({
   selector: 'mp-pairs-tab',
-  imports: [FormsModule, UnavailabilityEditorComponent],
+  imports: [FormsModule, UnavailabilityEditorComponent, PhoneInputComponent, FORM_KIT],
   template: `
     @if (!t().categories.length) {
       <div class="panel empty"><h3>Primero crea una categoría</h3></div>
@@ -80,16 +82,18 @@ interface Form {
 
     @if (form(); as f) {
       <div class="backdrop" (click)="form.set(null)">
-        <form class="modal stack" style="width:min(720px,100%)" (click)="$event.stopPropagation()" (ngSubmit)="save(f)">
+        <form class="modal stack" style="width:min(720px,100%)" (click)="$event.stopPropagation()" #pform="ngForm" mpForm (ngSubmit)="save(f, pform)" novalidate>
           <div class="modal-head"><h3>{{ f.id ? 'Editar pareja' : 'Nueva pareja' }} <span class="muted small">{{ cat()?.name }}</span></h3>
             <button type="button" class="icon-btn" (click)="form.set(null)" aria-label="Cerrar">✕</button></div>
+          <mp-form-errors [form]="pform" />
           <datalist id="mp-players">@for (pl of players(); track pl.id) { <option [value]="pl.fullName"></option> }</datalist>
           <div class="grid-2">
             @for (p of [f.p1, f.p2]; track $index; let i = $index) {
               <fieldset class="stack">
                 <legend>Jugador {{ i + 1 }}</legend>
                 <label class="field"><span>Nombre y apellidos</span>
-                  <input [name]="'n' + i" [(ngModel)]="p.fullName" list="mp-players" required autocomplete="off" (change)="fill(p)"></label>
+                  <input [name]="'n' + i" [(ngModel)]="p.fullName" #nRef="ngModel" list="mp-players" required autocomplete="off" (change)="fill(p)">
+                  <mp-error [control]="nRef" /></label>
                 @if (similar(p); as s) {
                   <div class="notice warn small stack" style="gap:6px">
                     <span>¿Es el mismo jugador que <b>{{ s.fullName }}</b>{{ s.phone ? ' (' + s.phone + ')' : '' }}, ya inscrito en el torneo?</span>
@@ -99,8 +103,8 @@ interface Form {
                     </div>
                   </div>
                 }
-                <label class="field"><span>Teléfono</span><input [name]="'t' + i" type="tel" [(ngModel)]="p.phone"></label>
-                <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email"></label>
+                <div class="field"><span>Teléfono</span><mp-phone-input [name]="'t' + i" [(ngModel)]="p.phone" #tRef="ngModel" [label]="'Teléfono del jugador ' + (i + 1)" /><mp-error [control]="tRef" /></div>
+                <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email" #eRef="ngModel" mpEmail><mp-error [control]="eRef" /></label>
               </fieldset>
             }
           </div>
@@ -199,8 +203,8 @@ export class PairsTabComponent implements OnChanges {
 
   dismiss(p: Form['p1'], s: Player) { this.notSame.add(`${normalizeName(p.fullName)}|${s.id}`); }
 
-  async save(f: Form) {
-    if (!f.p1.fullName.trim() || !f.p2.fullName.trim()) { this.toast.error('Indica el nombre de los dos jugadores'); return; }
+  async save(f: Form, form: NgForm) {
+    if (form.invalid) return;
     const body = { player1: f.p1, player2: f.p2, seed: f.seed || null, notes: f.notes, unavailabilities: this.unav(), status: f.status };
     this.busy.set(true);
     try {

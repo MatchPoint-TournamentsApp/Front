@@ -1,25 +1,27 @@
 import { Component, inject, input, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { TournamentRequest } from '../../core/models';
 import { isoDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { FORM_KIT } from '../../shared/forms';
 
 @Component({
   selector: 'mp-tournament-new',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FORM_KIT],
   template: `
     <div class="page narrow">
       <div class="page-head">
         <div><h1>Nuevo torneo</h1><p class="muted">Después añadirás categorías, parejas y patrocinadores.</p></div>
         <a class="btn ghost" [routerLink]="['/panel/club', clubId()]">Cancelar</a>
       </div>
-      <form class="panel stack" (ngSubmit)="save()">
-        <label class="field"><span>Nombre del torneo *</span><input name="name" [(ngModel)]="f.name" required placeholder="Torneo de Otoño 2026"></label>
+      <form class="panel stack" #form="ngForm" mpForm (ngSubmit)="save(form)" novalidate>
+        <mp-form-errors [form]="form" />
+        <label class="field"><span>Nombre del torneo</span><input name="name" [(ngModel)]="f.name" #nameRef="ngModel" required maxlength="120" placeholder="Torneo de Otoño 2026"><mp-error [control]="nameRef" /></label>
         <div class="grid-2">
-          <label class="field"><span>Empieza *</span><input name="s" type="date" [(ngModel)]="f.startDate" required></label>
-          <label class="field"><span>Termina *</span><input name="e" type="date" [(ngModel)]="f.endDate" required></label>
+          <label class="field"><span>Empieza</span><input name="s" type="date" [(ngModel)]="f.startDate" #sRef="ngModel" required><mp-error [control]="sRef" /></label>
+          <label class="field"><span>Termina</span><input name="e" type="date" [(ngModel)]="f.endDate" #eRef="ngModel" required [mpNotBefore]="f.startDate"><mp-error [control]="eRef" /></label>
         </div>
         <label class="field"><span>Descripción</span><textarea name="d" [(ngModel)]="f.description" rows="3" placeholder="Premios, regalos de bienvenida, cena de clausura…"></textarea></label>
         <div class="grid-3">
@@ -33,7 +35,7 @@ import { ToastService } from '../../core/toast.service';
               @for (m of [0, 15, 30, 45, 60, 90, 120]; track m) { <option [ngValue]="m">{{ m }} min</option> }
             </select>
           </label>
-          <label class="field"><span>Inscripción (€ por pareja)</span><input name="fee" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee"></label>
+          <label class="field"><span>Inscripción (€ por pareja)</span><input name="fee" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" #feeRef="ngModel"><mp-error [control]="feeRef" /></label>
         </div>
         <label class="field" style="max-width:200px"><span>Color del torneo</span><input name="color" type="color" [(ngModel)]="f.primaryColor"></label>
         <div class="row end"><button class="btn lg" type="submit" [disabled]="busy()">Crear torneo</button></div>
@@ -53,9 +55,8 @@ export class TournamentNewPage {
     return { name: '', startDate: isoDate(d), endDate: isoDate(end), matchDurationMinutes: 90, minRestMinutes: 30, primaryColor: '#c9a46a', entryFee: null };
   })();
 
-  async save() {
-    if (!this.f.name.trim()) { this.toast.error('Pon un nombre al torneo'); return; }
-    if (this.f.endDate < this.f.startDate) { this.toast.error('La fecha de fin es anterior a la de inicio'); return; }
+  async save(form: NgForm) {
+    if (form.invalid) return;
     this.busy.set(true);
     try {
       const t = await this.api.createTournament(this.clubId(), this.f);
