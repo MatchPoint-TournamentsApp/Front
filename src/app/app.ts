@@ -10,7 +10,7 @@ import { LogoComponent } from './shared/logo.component';
   template: `
     <header class="top on-dark">
       <div class="bar">
-        <a routerLink="/" class="brand" aria-label="MatchPoint, inicio"><mp-logo [size]="34" [inverse]="true" /></a>
+        <a routerLink="/" class="brand" aria-label="MatchZone, inicio"><mp-logo [size]="34" [inverse]="true" /></a>
         <button class="burger" type="button" (click)="menu.set(!menu())" [attr.aria-expanded]="menu()" aria-controls="mp-nav" aria-label="Menú">
           <span></span><span></span>
         </button>
@@ -38,7 +38,7 @@ import { LogoComponent } from './shared/logo.component';
           <a routerLink="/torneos">Torneos</a>
           <a [routerLink]="supa.loggedIn() ? '/panel' : '/registro'">Organizar un torneo</a>
         </nav>
-        <span class="copy">© {{ year }} MatchPoint</span>
+        <span class="copy">© {{ year }} MatchZone</span>
       </div>
     </footer>
     <div class="toasts" aria-live="polite">

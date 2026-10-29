@@ -10,7 +10,7 @@ import { SupabaseService } from '../core/supabase.service';
     <section class="hero on-dark">
       <div class="inner">
         <img class="mark" src="brand/mark-800.png" alt="">
-        <h1>Matchpoint</h1>
+        <h1>Matchzone</h1>
         <hr>
         <p class="tag">Torneos de pádel</p>
         <p class="lead">Cuadros, horarios y resultados en un solo lugar.</p>

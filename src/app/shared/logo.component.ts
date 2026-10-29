@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 /**
- * Logo MatchPoint: monograma dorado (public/brand/icon-512.png) y el nombre
+ * Logo MatchZone: monograma dorado (public/brand/icon-512.png) y el nombre
  * en fino y espaciado. `inverse` = sobre fondo noche (texto crema).
  */
 @Component({
@@ -10,7 +10,7 @@ import { Component, input } from '@angular/core';
     <img class="mark" src="brand/icon-512.png" alt="" [style.width.px]="size()" [style.height.px]="size()" [class.framed]="!inverse()">
     @if (wordmark()) {
       <span class="word" [class.inv]="inverse()" [style.font-size.px]="size() * .5">
-        Matchpoint
+        Matchzone
         @if (tagline()) { <small>Torneos de pádel</small> }
       </span>
     }

@@ -4,7 +4,7 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import * as M from './models';
 
-/** Cliente de la API de MatchPoint. Todas las llamadas devuelven promesas con errores en español. */
+/** Cliente de la API de MatchZone. Todas las llamadas devuelven promesas con errores en español. */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
@@ -13,7 +13,7 @@ export class ApiService {
   private run<T>(o: Observable<T>): Promise<T> {
     return firstValueFrom(o).catch((e: HttpErrorResponse) => {
       const msg = e.error?.message
-        ?? (e.status === 0 ? 'No se puede conectar con el servidor de MatchPoint' : `Error ${e.status}`);
+        ?? (e.status === 0 ? 'No se puede conectar con el servidor de MatchZone' : `Error ${e.status}`);
       throw new Error(msg);
     });
   }

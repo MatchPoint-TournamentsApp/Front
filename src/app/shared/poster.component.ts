@@ -95,7 +95,7 @@ export class PosterComponent {
       const name = `${this.board().tournament.slug}-${this.category().category.name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       await exportToPdf(el, `${name}.pdf`, this.size());
     } catch (e) {
-      this.toast.error('No se pudo generar el PDF. Si usas logos externos, súbelos de nuevo desde MatchPoint.');
+      this.toast.error('No se pudo generar el PDF. Si usas logos externos, súbelos de nuevo desde MatchZone.');
       console.error(e);
     } finally { this.busy.set(false); }
   }
