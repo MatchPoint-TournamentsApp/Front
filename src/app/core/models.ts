@@ -22,6 +22,8 @@ export interface ClubRequest {
   name: string; address?: string; city?: string; province?: string; postalCode?: string; phone?: string;
   email?: string; website?: string; instagram?: string; logoUrl?: string; description?: string;
   courtCount?: number; openingHours?: OpeningHour[];
+  /** Solo en el alta: acepta condiciones y encargo de tratamiento de datos (RGPD). */
+  termsAccepted?: boolean;
 }
 export interface TournamentSummary {
   id: string; name: string; slug: string; startDate: string; endDate: string; status: TournamentStatus;

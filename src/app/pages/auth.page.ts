@@ -29,6 +29,14 @@ import { FORM_KIT } from '../shared/forms';
             @if (mode() === 'register') { <small>Mínimo 6 caracteres.</small> }
             <mp-error [control]="passRef" /></label>
         }
+        @if (mode() === 'register') {
+          <label class="check accept">
+            <input type="checkbox" name="accept" [(ngModel)]="accept" #acceptRef="ngModel" required>
+            <span>Soy mayor de edad y acepto las <a routerLink="/condiciones" target="_blank">condiciones de uso</a> y la
+              <a routerLink="/privacidad" target="_blank">política de privacidad</a>.</span>
+          </label>
+          <mp-error [control]="acceptRef" requiredText="Para crear la cuenta tienes que aceptar las condiciones y la política de privacidad" />
+        }
         @if (info()) { <div class="notice">{{ info() }}</div> }
         <button class="btn lg ball" type="submit" [disabled]="busy()">
           {{ mode() === 'register' ? 'Crear cuenta' : mode() === 'reset' ? 'Enviar enlace' : 'Entrar' }}
@@ -61,6 +69,8 @@ import { FORM_KIT } from '../shared/forms';
     .btn.lg { margin-top: 4px; }
     .alt { display: flex; flex-direction: column; gap: 6px; align-items: center; }
     .link { background: none; border: 0; color: var(--court-2); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .accept { align-items: flex-start; font-weight: 400; font-size: .88rem; color: var(--ink-2); }
+    .accept input { margin-top: 2px; flex: none; }
     .guest { border-top: 1px solid var(--rule-2); padding-top: 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px; text-align: center; }
   `],
 })
@@ -73,6 +83,7 @@ export class AuthPage {
   mode = signal<'login' | 'register' | 'reset'>(this.route.snapshot.data['mode'] ?? 'login');
   next = input<string>();
   name = ''; email = ''; password = '';
+  accept = false;
   busy = signal(false);
   info = signal('');
 

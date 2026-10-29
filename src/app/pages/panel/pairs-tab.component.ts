@@ -11,8 +11,8 @@ import { UnavailabilityEditorComponent } from '../../shared/unavailability-edito
 
 interface Form {
   id?: string;
-  p1: { fullName: string; phone?: string; email?: string };
-  p2: { fullName: string; phone?: string; email?: string };
+  p1: { id?: string; fullName: string; phone?: string; email?: string };
+  p2: { id?: string; fullName: string; phone?: string; email?: string };
   seed?: number | null; notes?: string; status: PairStatus;
 }
 
@@ -105,6 +105,9 @@ interface Form {
                 }
                 <div class="field"><span>Teléfono</span><mp-phone-input [name]="'t' + i" [(ngModel)]="p.phone" #tRef="ngModel" [label]="'Teléfono del jugador ' + (i + 1)" /><mp-error [control]="tRef" /></div>
                 <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email" #eRef="ngModel" mpEmail><mp-error [control]="eRef" /></label>
+                @if (f.id && p.id) {
+                  <button type="button" class="link-danger" (click)="erase(p)">Borrar datos personales del jugador</button>
+                }
               </fieldset>
             }
           </div>
@@ -130,6 +133,7 @@ interface Form {
   styles: [`
     fieldset { border: 1px solid var(--rule); border-radius: 12px; padding: 14px; margin: 0; }
     legend { font-weight: 700; padding: 0 6px; color: var(--court); }
+    .link-danger { align-self: flex-start; background: none; border: 0; padding: 0; color: var(--danger); font: inherit; font-size: .8rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
     tr.pending td { background: #fffbef; }
     tr.withdrawn td { opacity: .5; }
     .chip { margin: 4px 4px 0 0; }
@@ -229,6 +233,22 @@ export class PairsTabComponent implements OnChanges {
     } catch (e) { this.toast.error(e); }
     await this.load();
     this.changed.emit();
+  }
+
+  /** Derecho de supresión (RGPD): sin teléfono ni email y con el nombre "Jugador eliminado"; el cuadro se mantiene. */
+  async erase(p: Form['p1']) {
+    if (!p.id || !confirm(`¿Borrar los datos personales de ${p.fullName}?
+
+Su nombre pasará a ser "Jugador eliminado" y se borrarán su teléfono y su email en todo el torneo. El cuadro y los resultados se mantienen. No se puede deshacer.`)) return;
+    try {
+      const pl = await this.api.erasePlayer(p.id);
+      p.fullName = pl.fullName; p.phone = undefined; p.email = undefined;
+      this.toast.ok('Datos personales borrados');
+      this.form.set(null);
+      await this.load();
+      this.changed.emit();
+      this.api.players(this.t().id).then(l => this.players.set(l)).catch(() => {});
+    } catch (e) { this.toast.error(e); }
   }
 
   async remove(p: PairView) {

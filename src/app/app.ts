@@ -40,6 +40,11 @@ import { LogoComponent } from './shared/logo.component';
         </nav>
         <span class="copy">© {{ year }} MatchZone</span>
       </div>
+      <div class="legal">
+        <a routerLink="/aviso-legal">Aviso legal</a>
+        <a routerLink="/privacidad">Privacidad</a>
+        <a routerLink="/condiciones">Condiciones de uso</a>
+      </div>
     </footer>
     <div class="toasts" aria-live="polite">
       @for (t of toast.toasts(); track t.id) { <div class="toast" [class.error]="t.kind === 'error'" [class.ok]="t.kind === 'ok'">{{ t.text }}</div> }
@@ -74,6 +79,9 @@ import { LogoComponent } from './shared/logo.component';
     .foot .inner { max-width: 1200px; margin: 0 auto; padding: 36px 20px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
     .foot nav { gap: 22px; flex: 1; justify-content: center; }
     .copy { font-size: .8rem; letter-spacing: .08em; }
+    .legal { max-width: 1200px; margin: 0 auto; padding: 14px 20px 22px; border-top: 1px solid var(--night-3); display: flex; flex-wrap: wrap; gap: 6px 22px; }
+    .legal a { color: var(--cream-2); font-size: .78rem; letter-spacing: .04em; text-decoration: none; opacity: .8; }
+    .legal a:hover { color: var(--cream); opacity: 1; }
     @media (max-width: 680px) {
       .foot .inner { flex-direction: column; align-items: flex-start; }
       .foot nav { display: flex; flex-direction: row; width: auto; padding: 0; justify-content: flex-start; }

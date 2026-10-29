@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ApiService } from '../core/api.service';
 import { Board, Unavailability } from '../core/models';
 import { ToastService } from '../core/toast.service';
@@ -10,7 +11,7 @@ import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.c
 /** Inscripción pública de una pareja con sus restricciones horarias. */
 @Component({
   selector: 'mp-registration-form',
-  imports: [FormsModule, UnavailabilityEditorComponent, PhoneInputComponent, FORM_KIT],
+  imports: [FormsModule, RouterLink, UnavailabilityEditorComponent, PhoneInputComponent, FORM_KIT],
   template: `
     @if (done()) {
       <div class="panel empty">
@@ -47,6 +48,21 @@ import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.c
         @if (board().tournament.entryFee) {
           <p class="small muted">Inscripción: {{ board().tournament.entryFee }} € por pareja. Se abona en el club.</p>
         }
+        <!-- Campo trampa: invisible para personas; si llega relleno, la inscripción es de un bot -->
+        <div class="hp" aria-hidden="true"><label>Web <input name="website" [(ngModel)]="website" tabindex="-1" autocomplete="off"></label></div>
+
+        <div class="privacy">
+          <p class="small muted">
+            <b>Protección de datos.</b> Responsable: {{ board().club.name }}, organizador del torneo. Finalidad: gestionar vuestra inscripción
+            y el torneo. Vuestros nombres aparecerán en los cuadros y horarios públicos; el teléfono y el email solo los ve el club.
+            Podéis ejercer vuestros derechos ante el club. Más información en la <a routerLink="/privacidad" target="_blank">política de privacidad</a>.
+          </p>
+          <label class="check">
+            <input type="checkbox" name="privacy" [(ngModel)]="privacy" #privRef="ngModel" required>
+            <span>He leído la política de privacidad y acepto que el club trate estos datos para gestionar el torneo. Si alguno de los jugadores es menor de 14 años, soy su padre, madre o tutor, o tengo su autorización.</span>
+          </label>
+          <mp-error [control]="privRef" requiredText="Para inscribiros tenéis que aceptar la política de privacidad" />
+        </div>
         <div class="row end"><button class="btn lg" type="submit" [disabled]="busy()">Enviar inscripción</button></div>
       </form>
     }
@@ -54,6 +70,11 @@ import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.c
   styles: [`
     fieldset { border: 1px solid var(--rule); border-radius: 12px; padding: 14px; margin: 0; }
     legend { font-weight: 700; padding: 0 6px; color: var(--court); }
+    .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+    .privacy { display: grid; gap: 10px; border-top: 1px solid var(--rule-2); padding-top: 14px; }
+    .privacy p { margin: 0; max-width: none; }
+    .privacy .check { align-items: flex-start; font-weight: 400; font-size: .92rem; }
+    .privacy .check input { margin-top: 3px; flex: none; }
   `],
 })
 export class RegistrationFormComponent {
@@ -66,6 +87,10 @@ export class RegistrationFormComponent {
   p1 = { fullName: '', phone: '', email: '' };
   p2 = { fullName: '', phone: '', email: '' };
   notes = '';
+  privacy = false;
+  website = '';
+  /** Momento en que se abrió el formulario: un envío instantáneo es de un bot. */
+  private openedAt = Date.now();
   unav = signal<Unavailability[]>([]);
   busy = signal(false);
   done = signal(false);
@@ -81,6 +106,7 @@ export class RegistrationFormComponent {
     try {
       await this.api.register(this.board().tournament.slug, {
         categoryId: this.categoryId!, player1: this.p1, player2: this.p2, notes: this.notes, unavailabilities: this.unav(),
+        privacyAccepted: this.privacy, website: this.website, elapsedMs: Date.now() - this.openedAt,
       });
       this.done.set(true);
     } catch (e) { this.toast.error(e); }
@@ -91,6 +117,9 @@ export class RegistrationFormComponent {
     this.p1 = { fullName: '', phone: '', email: '' };
     this.p2 = { fullName: '', phone: '', email: '' };
     this.notes = '';
+    this.privacy = false;
+    this.website = '';
+    this.openedAt = Date.now();
     this.unav.set([]);
     this.done.set(false);
   }

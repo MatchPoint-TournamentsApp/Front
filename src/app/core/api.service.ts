@@ -62,6 +62,8 @@ export class ApiService {
   updatePair(id: string, b: M.PairRequest) { return this.put<M.PairView>(`/pairs/${id}`, b); }
   setPairStatus(id: string, status: M.PairStatus) { return this.patch<M.PairView>(`/pairs/${id}/status`, { status }); }
   deletePair(id: string) { return this.del(`/pairs/${id}`); }
+  /** Derecho de supresión (RGPD): borra nombre, teléfono y email del jugador sin romper el cuadro. */
+  erasePlayer(id: string) { return this.post<M.Player>(`/players/${id}/erase`); }
 
   // cuadros, horarios y resultados
   generate(tid: string, categoryIds?: string[]) { return this.post<M.DrawSummary>(`/tournaments/${tid}/draw`, { categoryIds }); }
@@ -78,7 +80,8 @@ export class ApiService {
   // público (invitados)
   publicTournaments() { return this.get<M.TournamentSummary[]>('/public/tournaments'); }
   publicBoard(slug: string) { return this.get<M.Board>(`/public/tournaments/${slug}`); }
-  register(slug: string, b: { categoryId: string; player1: M.PlayerInput; player2: M.PlayerInput; notes?: string; unavailabilities: M.Unavailability[] }) {
+  register(slug: string, b: { categoryId: string; player1: M.PlayerInput; player2: M.PlayerInput; notes?: string; unavailabilities: M.Unavailability[];
+    privacyAccepted: boolean; website?: string; elapsedMs?: number }) {
     return this.post<{ message: string }>(`/public/tournaments/${slug}/registrations`, b);
   }
 }

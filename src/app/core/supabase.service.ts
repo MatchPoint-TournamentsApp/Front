@@ -43,7 +43,9 @@ export class SupabaseService {
 
   async signUp(email: string, password: string, fullName: string): Promise<boolean> {
     const { data, error } = await this.client.auth.signUp({
-      email, password, options: { data: { full_name: fullName }, emailRedirectTo: location.origin + '/panel' },
+      email, password,
+      // Se guarda cuándo aceptó las condiciones y la política de privacidad (prueba del consentimiento)
+      options: { data: { full_name: fullName, terms_accepted_at: new Date().toISOString() }, emailRedirectTo: location.origin + '/panel' },
     });
     if (error) throw new Error(translate(error.message));
     return !!data.session; // false = falta confirmar el email

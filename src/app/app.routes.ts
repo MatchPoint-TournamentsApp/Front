@@ -17,5 +17,8 @@ export const routes: Routes = [
       { path: 'torneo/:id', loadComponent: () => import('./pages/panel/tournament.page').then(m => m.TournamentPage) },
     ],
   },
+  { path: 'aviso-legal', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'legal' } },
+  { path: 'privacidad', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'privacy' } },
+  { path: 'condiciones', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'terms' } },
   { path: '**', redirectTo: '' },
 ];

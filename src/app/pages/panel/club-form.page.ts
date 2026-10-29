@@ -70,6 +70,17 @@ interface DayHours { open: boolean; from: string; to: string; }
           </section>
         }
 
+        @if (!id()) {
+          <section class="panel stack">
+            <label class="check terms">
+              <input type="checkbox" name="terms" [(ngModel)]="terms" #termsRef="ngModel" required>
+              <span>Acepto las <a routerLink="/condiciones" target="_blank">condiciones de uso</a>, incluido el encargo de tratamiento de datos.
+                Como organizador, informaré a los jugadores que inscriba yo mismo y contaré con su autorización para tratar sus datos.</span>
+            </label>
+            <mp-error [control]="termsRef" requiredText="Para dar de alta el club tienes que aceptar las condiciones de uso" />
+          </section>
+        }
+
         <div class="row end" style="margin-top:16px">
           <button class="btn lg" type="submit" [disabled]="busy()">{{ id() ? 'Guardar cambios' : 'Dar de alta el club' }}</button>
         </div>
@@ -103,6 +114,8 @@ interface DayHours { open: boolean; from: string; to: string; }
     .hrow { display: grid; grid-template-columns: 170px 130px 130px; gap: 10px; align-items: center; min-height: 40px; }
     @media (max-width: 520px) { .hrow { grid-template-columns: 1fr 1fr; } }
     .table input:not([type=checkbox]) { min-height: 34px; padding: 6px 8px; }
+    .terms { align-items: flex-start; font-weight: 400; }
+    .terms input { margin-top: 3px; flex: none; }
   `],
 })
 export class ClubFormPage implements OnInit {
@@ -116,6 +129,7 @@ export class ClubFormPage implements OnInit {
   logo = signal('');
   hours: DayHours[] = DAYS.map((_, i) => ({ open: true, from: i < 5 ? '09:00' : '09:00', to: i < 5 ? '23:00' : '22:00' }));
   courtCount = 4;
+  terms = false;
   courts = signal<Court[]>([]);
   busy = signal(false);
 
@@ -137,7 +151,7 @@ export class ClubFormPage implements OnInit {
     if (form.invalid) return;
     if (this.hours.some(h => h.open && h.to <= h.from)) { this.toast.error('En el horario, la hora de cierre debe ser posterior a la de apertura'); return; }
     const body: ClubRequest = {
-      ...this.f, website: normalizeUrl(this.f.website) || undefined, logoUrl: this.logo() || undefined, courtCount: this.courtCount,
+      ...this.f, termsAccepted: this.id() ? undefined : this.terms, website: normalizeUrl(this.f.website) || undefined, logoUrl: this.logo() || undefined, courtCount: this.courtCount,
       openingHours: this.hours.map((h, i) => ({ dayOfWeek: i + 1, openTime: h.from, closeTime: h.to, open: h.open }))
         .filter(h => h.open).map(({ open: _o, ...h }) => h),
     };

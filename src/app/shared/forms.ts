@@ -98,6 +98,8 @@ function formTick(sources: () => AbstractControl[]) {
 })
 export class FieldErrorComponent {
   control = input.required<NgModel>();
+  /** Texto propio para "obligatorio" (p. ej. en casillas de aceptación). */
+  requiredText = input<string>();
   private form = inject(NgForm, { optional: true });
   private tick = formTick(() => [this.control().control, ...(this.form ? [this.form.form] : [])]);
   visible = computed(() => {
@@ -105,7 +107,11 @@ export class FieldErrorComponent {
     const c = this.control();
     return !!c.invalid && (!!c.touched || !!this.form?.submitted);
   });
-  message = computed(() => { this.tick(); return errorMessage(this.control().errors); });
+  message = computed(() => {
+    this.tick();
+    const e = this.control().errors;
+    return e?.['required'] && this.requiredText() ? this.requiredText()! : errorMessage(e);
+  });
 }
 
 /** Aviso al principio del formulario cuando se intenta guardar con errores. */
