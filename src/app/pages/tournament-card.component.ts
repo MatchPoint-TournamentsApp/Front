@@ -8,27 +8,39 @@ import { range, STATUS_LABEL } from '../core/format';
   imports: [RouterLink],
   template: `
     <a class="tc" [routerLink]="link()" [style.--c]="t().primaryColor">
-      <div class="logo">@if (t().clubLogoUrl) { <img [src]="t().clubLogoUrl" alt=""> } @else { <span>{{ t().clubName.charAt(0) }}</span> }</div>
-      <div class="body">
-        <h3>{{ t().name }}</h3>
-        <div class="small muted">{{ t().clubName }}@if (t().city) {, {{ t().city }}}</div>
-        <div class="small">{{ dates() }}</div>
-        <div class="row" style="gap:6px;margin-top:8px">
-          <span class="chip" [class.ok]="t().status === 'IN_PROGRESS'" [class.grey]="t().status === 'FINISHED'">{{ status() }}</span>
-          @if (t().registrationOpen) { <span class="chip ball">Inscripción abierta</span> }
-          <span class="chip grey">{{ t().categories }} categorías</span>
-          <span class="chip grey">{{ t().pairs }} parejas</span>
+      <div class="head">
+        <div class="logo">@if (t().clubLogoUrl) { <img [src]="t().clubLogoUrl" alt=""> } @else { <span>{{ t().clubName.charAt(0) }}</span> }</div>
+        <div class="who">
+          <h3>{{ t().name }}</h3>
+          <div class="small muted">{{ t().clubName }}@if (t().city) { · {{ t().city }}}</div>
         </div>
+      </div>
+      <div class="date">{{ dates() }}</div>
+      <div class="row tags">
+        <span class="chip" [class.ok]="t().status === 'IN_PROGRESS'">{{ status() }}</span>
+        @if (t().registrationOpen) { <span class="chip ball">Inscripción abierta</span> }
+        <span class="count">{{ t().categories }} cat. · {{ t().pairs }} parejas</span>
       </div>
     </a>
   `,
   styles: [`
-    .tc { display: flex; gap: 14px; background: #fff; border: 1px solid var(--rule); border-left: 5px solid var(--c); border-radius: 14px; padding: 16px; color: inherit; text-decoration: none; height: 100%; }
-    .tc:hover { border-color: var(--court-2); border-left-color: var(--c); }
-    .logo { width: 56px; height: 56px; border-radius: 10px; background: var(--glass); display: grid; place-items: center; overflow: hidden; flex: none; }
+    .tc {
+      position: relative; display: flex; flex-direction: column; gap: 14px; height: 100%;
+      background: #fff; border: 1px solid var(--rule); border-radius: var(--r-lg); padding: 20px;
+      color: inherit; text-decoration: none;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), transform .2s var(--ease);
+    }
+    .tc::before { content: ''; position: absolute; top: -1px; left: 20px; width: 32px; height: 2px; border-radius: 2px; background: var(--c, var(--gold)); }
+    .tc:hover { border-color: rgba(201, 164, 106, .7); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .head { display: flex; gap: 14px; align-items: center; }
+    .logo { width: 52px; height: 52px; border-radius: 12px; background: var(--glass); display: grid; place-items: center; overflow: hidden; flex: none; }
     .logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .logo span { font: 800 26px var(--display); color: var(--court); }
-    h3 { margin: 0 0 2px; font-size: 1.3rem; }
+    .logo span { font: 300 26px var(--body); color: var(--gold-ink); text-transform: uppercase; }
+    .who { min-width: 0; }
+    h3 { margin: 0 0 2px; font-size: 1.15rem; font-weight: 500; }
+    .date { font-family: var(--display); font-weight: 500; font-size: 1.05rem; letter-spacing: .02em; color: var(--ink); }
+    .tags { gap: 6px; margin-top: auto; }
+    .count { font-size: .8rem; color: var(--ink-3); margin-left: auto; }
   `],
 })
 export class TournamentCardComponent {

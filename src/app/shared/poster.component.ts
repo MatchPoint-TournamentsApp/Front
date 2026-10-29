@@ -47,7 +47,7 @@ import { exportToPdf } from './pdf';
                   }
                 </div>
               }
-              <div class="brand"><mp-logo [size]="18" /></div>
+              <div class="brand"><mp-logo [size]="26" /></div>
             </footer>
           </div>
         </div>
@@ -58,20 +58,21 @@ import { exportToPdf } from './pdf';
     .preview { overflow: auto; background: var(--glass); border-radius: 12px; padding: 16px; max-height: 72vh; }
     .poster { background: #fff; padding: 36px 40px 28px; width: max-content; min-width: 1050px; margin: 0 auto; }
     header { display: flex; gap: 26px; align-items: center; margin-bottom: 28px; }
-    .club { width: 110px; height: 110px; border: 2px solid var(--ink); border-radius: 14px; display: grid; place-items: center; padding: 8px; flex: none; }
+    .club { width: 110px; height: 110px; border: 1px solid var(--rule); border-radius: 20px; display: grid; place-items: center; padding: 10px; flex: none; }
     .club img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .title h1 { font: 800 76px/0.9 var(--display); color: var(--accent); text-transform: uppercase; margin: 0; letter-spacing: .01em; }
-    .sub { font: 600 20px var(--display); color: var(--ink-2); margin-top: 8px; text-transform: uppercase; display: flex; gap: 18px; }
+    .title h1 { font: 300 68px/0.95 var(--body); color: var(--ink); text-transform: uppercase; margin: 0; letter-spacing: .08em; }
+    .title h1::after { content: ''; display: block; width: 120px; height: 3px; margin-top: 14px; background: var(--accent); border-radius: 2px; }
+    .sub { font: 500 17px var(--body); color: var(--ink-2); margin-top: 14px; text-transform: uppercase; letter-spacing: .18em; display: flex; gap: 22px; }
     .sub span { color: var(--ink-3); }
     main { margin-bottom: 24px; }
-    footer { display: flex; align-items: center; gap: 28px; border-top: 3px solid var(--accent); padding-top: 18px; }
-    .rules { font: 500 19px/1.25 var(--body); max-width: 520px; }
+    footer { display: flex; align-items: center; gap: 28px; border-top: 1px solid var(--gold); padding-top: 18px; }
+    .rules { font: 400 18px/1.3 var(--body); max-width: 520px; color: var(--ink-2); }
     .sponsors { display: flex; gap: 26px; align-items: center; flex: 1; justify-content: flex-end; flex-wrap: wrap; }
     .sponsors img { height: 48px; max-width: 170px; object-fit: contain; }
     .sponsors img.main { height: 66px; max-width: 230px; }
-    .sname { font: 700 20px var(--display); text-transform: uppercase; color: var(--ink-2); }
-    .sname.main { font-size: 26px; color: var(--ink); }
-    .brand { opacity: .75; }
+    .sname { font: 400 18px var(--body); text-transform: uppercase; letter-spacing: .14em; color: var(--ink-2); }
+    .sname.main { font-size: 24px; color: var(--ink); }
+    .brand { opacity: .85; }
   `],
 })
 export class PosterComponent {

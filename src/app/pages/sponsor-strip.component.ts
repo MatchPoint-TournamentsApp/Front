@@ -6,7 +6,7 @@ import { Sponsor } from '../core/models';
   template: `
     @if (sponsors().length) {
       <section class="strip">
-        <h4>Patrocinadores</h4>
+        <span class="eyebrow">Con el apoyo de</span>
         <div class="logos">
           @for (s of sponsors(); track s.id) {
             <a [href]="s.website || null" target="_blank" rel="noopener" [class.main]="s.tier === 'PRINCIPAL'" [title]="s.name">
@@ -18,11 +18,12 @@ import { Sponsor } from '../core/models';
     }
   `,
   styles: [`
-    .strip { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--rule); }
-    h4 { color: var(--ink-2); font-size: 1rem; }
-    .logos { display: flex; flex-wrap: wrap; gap: 28px; align-items: center; }
-    a { display: inline-flex; color: var(--ink-2); text-decoration: none; font: 700 1.2rem var(--display); text-transform: uppercase; }
-    img { height: 46px; max-width: 160px; object-fit: contain; }
+    .strip { margin-top: 48px; padding-top: 26px; border-top: 1px solid var(--rule); }
+    .logos { display: flex; flex-wrap: wrap; gap: 32px; align-items: center; margin-top: 18px; }
+    a { display: inline-flex; color: var(--ink-2); text-decoration: none; font: 400 1.05rem var(--body); letter-spacing: .14em; text-transform: uppercase; transition: opacity .2s, filter .2s; }
+    a:hover { opacity: 1; filter: none; }
+    img { height: 46px; max-width: 160px; object-fit: contain; filter: grayscale(.25); opacity: .9; }
+    a:hover img { filter: none; opacity: 1; }
     a.main img { height: 64px; max-width: 220px; }
     a.main span { font-size: 1.5rem; color: var(--ink); }
   `],

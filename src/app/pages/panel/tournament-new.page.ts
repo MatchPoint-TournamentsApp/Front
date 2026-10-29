@@ -50,7 +50,7 @@ export class TournamentNewPage {
   f: TournamentRequest = (() => {
     const d = new Date(); d.setDate(d.getDate() + ((5 - d.getDay() + 7) % 7 || 7));
     const end = new Date(d); end.setDate(d.getDate() + 2);
-    return { name: '', startDate: isoDate(d), endDate: isoDate(end), matchDurationMinutes: 90, minRestMinutes: 30, primaryColor: '#12355b', entryFee: null };
+    return { name: '', startDate: isoDate(d), endDate: isoDate(end), matchDurationMinutes: 90, minRestMinutes: 30, primaryColor: '#c9a46a', entryFee: null };
   })();
 
   async save() {

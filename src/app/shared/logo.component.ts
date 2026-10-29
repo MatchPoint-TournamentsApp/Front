@@ -1,32 +1,38 @@
 import { Component, input } from '@angular/core';
 
-/** Logo MatchPoint: un cruce del cuadro que termina en la pelota del punto de partido. */
+/**
+ * Logo MatchPoint: monograma dorado (public/brand/icon-512.png) y el nombre
+ * en fino y espaciado. `inverse` = sobre fondo noche (texto crema).
+ */
 @Component({
   selector: 'mp-logo',
   template: `
-    <svg [attr.width]="size()" [attr.height]="size()" viewBox="0 0 40 40" aria-hidden="true">
-      <rect width="40" height="40" rx="10" [attr.fill]="inverse() ? '#fff' : '#12355B'" />
-      <g fill="none" [attr.stroke]="inverse() ? '#12355B' : '#fff'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8.5 10.5h8v19h-8" />
-        <path d="M16.5 20h5" />
-      </g>
-      <circle cx="28" cy="20" r="6.2" fill="#D9F24A" [attr.stroke]="inverse() ? '#12355B' : '#0b2440'" stroke-width="1.2" />
-      <path d="M23.4 16.6c3 .4 5.6 3 6 7.4" fill="none" stroke="#12355B" stroke-width="1.2" stroke-linecap="round" />
-    </svg>
+    <img class="mark" src="brand/icon-512.png" alt="" [style.width.px]="size()" [style.height.px]="size()" [class.framed]="!inverse()">
     @if (wordmark()) {
-      <span class="word" [class.inv]="inverse()">Match<b>Point</b></span>
+      <span class="word" [class.inv]="inverse()" [style.font-size.px]="size() * .5">
+        Matchpoint
+        @if (tagline()) { <small>Torneos de pádel</small> }
+      </span>
     }
   `,
   styles: [`
-    :host { display: inline-flex; align-items: center; gap: 10px; }
-    svg { flex: none; display: block; }
-    .word { font: italic 800 1.55rem/1 var(--display); color: var(--court); letter-spacing: -.01em; }
-    .word b { font-weight: 800; color: var(--court-2); }
-    .word.inv, .word.inv b { color: #fff; }
+    :host { display: inline-flex; align-items: center; gap: 12px; }
+    .mark { flex: none; display: block; border-radius: 22%; object-fit: cover; }
+    .mark.framed { box-shadow: 0 0 0 1px rgba(201, 164, 106, .35), 0 2px 6px rgba(10, 17, 26, .18); }
+    .word {
+      display: flex; flex-direction: column; gap: .45em;
+      font-family: var(--body); font-weight: 400; line-height: 1;
+      text-transform: uppercase; letter-spacing: .3em; color: var(--ink);
+      min-width: 12px;
+    }
+    .word.inv { color: var(--cream); font-weight: 300; }
+    small { font-size: .42em; font-weight: 500; letter-spacing: .34em; color: var(--gold-ink); }
+    .word.inv small { color: var(--gold); }
   `],
 })
 export class LogoComponent {
   size = input(34);
   wordmark = input(true);
   inverse = input(false);
+  tagline = input(false);
 }

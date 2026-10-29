@@ -3,15 +3,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
-import { LogoComponent } from '../shared/logo.component';
 
 @Component({
   selector: 'mp-auth',
-  imports: [FormsModule, RouterLink, LogoComponent],
+  imports: [FormsModule, RouterLink],
   template: `
     <div class="wrap">
       <form class="panel" (ngSubmit)="submit()">
-        <mp-logo [size]="40" />
+        <img class="mark" src="brand/icon-512.png" alt="">
         @if (mode() === 'register') {
           <h2>Crea tu cuenta</h2>
           <p class="muted small">Con tu cuenta podrás dar de alta tu club y organizar torneos.</p>
@@ -28,7 +27,7 @@ import { LogoComponent } from '../shared/logo.component';
             [autocomplete]="mode() === 'register' ? 'new-password' : 'current-password'"></label>
         }
         @if (info()) { <div class="notice">{{ info() }}</div> }
-        <button class="btn lg" type="submit" [disabled]="busy()">
+        <button class="btn lg ball" type="submit" [disabled]="busy()">
           {{ mode() === 'register' ? 'Crear cuenta' : mode() === 'reset' ? 'Enviar enlace' : 'Entrar' }}
         </button>
         <div class="alt small">
@@ -47,13 +46,19 @@ import { LogoComponent } from '../shared/logo.component';
     </div>
   `,
   styles: [`
-    .wrap { min-height: calc(100vh - 60px); display: grid; place-items: center; padding: 32px 16px; }
-    form { width: min(420px, 100%); display: flex; flex-direction: column; gap: 14px; }
-    h2 { margin: 8px 0 0; }
-    p { margin: 0; }
+    :host { display: block; margin-bottom: -40px; }
+    .wrap {
+      min-height: calc(100vh - 62px); display: grid; place-items: center; padding: 48px 16px 64px;
+      background: radial-gradient(90% 70% at 50% 0%, #142033 0%, var(--night) 65%);
+    }
+    form { width: min(420px, 100%); display: flex; flex-direction: column; gap: 14px; padding: 34px 30px 28px; border: 0; box-shadow: var(--shadow-lg); }
+    .mark { width: 56px; height: 56px; border-radius: 14px; align-self: center; margin-bottom: 4px; box-shadow: 0 0 0 1px rgba(201, 164, 106, .35); }
+    h2 { margin: 0; text-align: center; font-weight: 300; font-size: 1.75rem; }
+    form > p { margin: 0; text-align: center; }
+    .btn.lg { margin-top: 4px; }
     .alt { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-    .link { background: none; border: 0; color: var(--court-2); cursor: pointer; font: inherit; text-decoration: underline; }
-    .guest { border-top: 1px solid var(--rule); padding-top: 14px; display: flex; flex-direction: column; gap: 6px; text-align: center; }
+    .link { background: none; border: 0; color: var(--court-2); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+    .guest { border-top: 1px solid var(--rule-2); padding-top: 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px; text-align: center; }
   `],
 })
 export class AuthPage {

@@ -57,20 +57,20 @@ interface DrawLayout {
   `,
   styles: [`
     :host { display: block; }
-    .draw + .draw { margin-top: 36px; padding-top: 28px; border-top: 1px dashed var(--rule); }
-    .draw-title { font-size: 1.5rem; color: var(--court); margin-bottom: 8px; }
+    .draw + .draw { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--rule); }
+    .draw-title { font-size: 1.3rem; font-weight: 400; color: var(--ink); margin-bottom: 8px; }
     .canvas { position: relative; margin: 0 auto; }
-    .col-title { position: absolute; top: 0; width: ${W}px; text-align: center; font: 700 13px var(--display); letter-spacing: .04em; color: var(--court); text-transform: uppercase; }
-    .col-title.cons { color: #7a5a1f; }
+    .col-title { position: absolute; top: 0; width: ${W}px; text-align: center; font: 500 11px var(--body); letter-spacing: .2em; color: var(--ink-2); text-transform: uppercase; }
+    .col-title.cons { color: var(--gold-ink); }
     .col-title.start { color: var(--ink); }
     .lines { position: absolute; left: 0; pointer-events: none; overflow: visible; }
-    .lines path { fill: none; stroke: var(--court); stroke-width: 1.5; opacity: .55; }
-    .finals { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-top: 36px; padding-top: 24px; border-top: 2px solid var(--court); }
-    .final { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .final h4 { margin: 0; color: var(--court); font-size: 1.3rem; text-transform: uppercase; letter-spacing: .03em; }
+    .lines path { fill: none; stroke: #b9b0a0; stroke-width: 1.25; }
+    .finals { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--gold); }
+    .final { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .final h4 { margin: 0; color: var(--gold-ink); font: 500 .8rem var(--body); text-transform: uppercase; letter-spacing: .3em; }
     .final .slot { position: relative; width: ${W}px; height: ${H}px; }
-    .champ { font-size: .9rem; }
-    .champ b { background: var(--ball); padding: 1px 6px; border-radius: 4px; }
+    .champ { font-size: .9rem; color: var(--ink-2); }
+    .champ b { background: var(--gold-grad); color: var(--night); padding: 2px 8px; border-radius: 999px; font-weight: 600; }
   `],
 })
 export class BracketComponent {

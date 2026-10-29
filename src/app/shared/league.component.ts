@@ -81,30 +81,30 @@ interface Group { label: string; pairs: BoardPair[]; cells: Map<string, MatchVie
     :host { display: block; }
     .groups { display: grid; gap: 28px; }
     .group { position: relative; }
-    .glabel { position: absolute; left: -6px; top: -14px; width: 44px; height: 44px; border-radius: 10px; background: var(--court); color: #fff; display: grid; place-items: center; font: 800 26px var(--display); z-index: 1; }
+    .glabel { position: absolute; left: -6px; top: -14px; width: 40px; height: 40px; border-radius: 50%; background: var(--night); color: var(--gold); display: grid; place-items: center; font: 300 22px var(--body); z-index: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(201, 164, 106, .6); }
     .cross { border-collapse: collapse; width: 100%; min-width: 560px; table-layout: fixed; }
-    .cross th, .cross td { border: 1.5px solid var(--court); padding: 8px 6px; text-align: center; height: 62px; }
-    .cross thead th, .cross tbody th { background: #7f97d9; background: var(--court-2); color: #fff; font: 600 13px/1.25 var(--display); text-transform: uppercase; letter-spacing: .02em; }
-    .cross th.corner { background: var(--court); font-size: 18px; }
-    .cross td { background: #fff; font: 600 14px var(--display); text-transform: uppercase; }
-    .cross td.off { background: #c9d2dc; }
-    .cross td.click { cursor: pointer; }
+    .cross th, .cross td { border: 1px solid #d6cebf; padding: 8px 6px; text-align: center; height: 62px; }
+    .cross thead th, .cross tbody th { background: var(--night); color: var(--cream); font: 500 12.5px/1.25 var(--body); text-transform: uppercase; letter-spacing: .06em; border-color: var(--night-3); }
+    .cross th.corner { background: var(--night); color: var(--gold); font-size: 16px; }
+    .cross td { background: #fff; font: 500 14px var(--display); text-transform: uppercase; }
+    .cross td.off { background: repeating-linear-gradient(135deg, var(--rule-2) 0 6px, #f6f2ea 6px 12px); }
+    .cross td.click { cursor: pointer; transition: background .15s; }
     .cross td.click:hover { background: var(--court-3); }
-    .cross td.played { background: #f3f8ec; }
+    .cross td.played { background: #fbf8f2; }
     .cross td.warn { box-shadow: inset 0 0 0 2px var(--warn); }
     .when { display: block; }
     .court { display: inline-block; margin-top: 2px; font-size: 11px; color: var(--ink-2); }
-    .court.center { background: var(--ball); color: var(--ink); padding: 0 5px; border-radius: 3px; font-weight: 700; }
-    .score { font-size: 16px; color: var(--court); letter-spacing: .04em; }
+    .court.center { background: var(--gold-grad); color: var(--night); padding: 0 5px; border-radius: 3px; font-weight: 600; }
+    .score { font-size: 16px; color: var(--ink); letter-spacing: .06em; font-weight: 600; }
     .standings { border-collapse: collapse; width: 100%; margin-top: 14px; font-size: 14px; background: #fff; border-radius: 10px; overflow: hidden; }
-    .standings th { text-align: left; font-size: 12px; color: var(--ink-2); padding: 7px 8px; border-bottom: 1px solid var(--rule); }
-    .standings td { padding: 7px 8px; border-bottom: 1px solid var(--rule-2); }
+    .standings th { text-align: left; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); padding: 8px; border-bottom: 1px solid var(--rule); }
+    .standings td { padding: 8px; border-bottom: 1px solid var(--rule-2); }
     .standings .num { font-family: var(--display); font-size: 15px; }
-    .standings .b { font-weight: 700; color: var(--court); }
-    .standings tr.lead td { background: #f6fbdc; }
-    .finals { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-top: 28px; padding-top: 20px; border-top: 2px solid var(--court); }
-    .final { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .final h4 { margin: 0; color: var(--court); font-size: 1.25rem; text-transform: uppercase; }
+    .standings .b { font-weight: 700; color: var(--ink); }
+    .standings tr.lead td { background: var(--court-3); }
+    .finals { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--gold); }
+    .final { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .final h4 { margin: 0; color: var(--gold-ink); font: 500 .8rem var(--body); text-transform: uppercase; letter-spacing: .3em; }
     .final .slot { position: relative; width: 214px; height: 68px; }
     .rule { margin-top: 16px; }
   `],

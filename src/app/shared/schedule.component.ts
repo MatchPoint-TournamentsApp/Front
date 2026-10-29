@@ -50,19 +50,20 @@ interface Item { m: MatchView; cat: string; color: string; p1: string; p2: strin
   `,
   styles: [`
     :host { display: block; }
-    .grid { margin-top: 14px; background: #fff; border: 1px solid var(--rule); border-radius: 12px; }
+    .grid { margin-top: 14px; background: #fff; border: 1px solid var(--rule); border-radius: var(--r-lg); }
     table { border-collapse: collapse; width: 100%; min-width: 640px; }
     th, td { border-bottom: 1px solid var(--rule-2); padding: 6px; vertical-align: top; }
     td + td, th + th { border-left: 1px solid var(--rule-2); }
-    thead th { font: 700 15px var(--display); color: var(--court); text-transform: uppercase; padding: 10px 6px; text-align: left; }
-    thead th.center::after { content: 'Central'; margin-left: 6px; font-size: 10px; background: var(--ball); color: var(--ink); padding: 1px 5px; border-radius: 3px; vertical-align: middle; }
-    th.time { width: 64px; font-size: 16px; color: var(--ink-2); text-align: right; padding-right: 10px; }
-    .item { display: flex; flex-direction: column; gap: 1px; width: 100%; text-align: left; background: var(--glass); border: 0; border-left: 4px solid; border-radius: 6px; padding: 6px 8px; font: inherit; cursor: pointer; color: var(--ink); }
+    thead th { font: 500 11.5px var(--body); color: var(--ink-2); text-transform: uppercase; letter-spacing: .16em; padding: 12px 8px; text-align: left; }
+    thead th.center::after { content: 'Central'; margin-left: 6px; font-size: 9.5px; letter-spacing: .08em; background: var(--gold-grad); color: var(--night); padding: 2px 6px; border-radius: 999px; vertical-align: middle; }
+    th.time { width: 64px; font: 500 15px var(--display); color: var(--ink-2); text-align: right; padding-right: 10px; letter-spacing: .02em; }
+    .item { display: flex; flex-direction: column; gap: 1px; width: 100%; text-align: left; background: var(--glass); border: 0; border-left: 3px solid; border-radius: 6px; padding: 6px 8px; font: inherit; cursor: pointer; color: var(--ink); transition: background .15s; }
+    .item:not(:disabled):hover { background: var(--court-3); }
     .item + .item { margin-top: 6px; }
     .item:disabled { cursor: default; opacity: 1; }
     .item.done { opacity: .6; }
     .item.warn { box-shadow: inset 0 0 0 1.5px var(--warn); }
-    .cat { font: 700 12px var(--display); text-transform: uppercase; letter-spacing: .03em; }
+    .cat { font: 600 12px var(--display); text-transform: uppercase; letter-spacing: .05em; }
     .vs { font-size: 12.5px; font-weight: 600; line-height: 1.25; }
     .round { font-size: 11px; color: var(--ink-3); }
   `],

@@ -24,7 +24,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
       @if (t(); as tt) {
         <div class="page-head">
           <div>
-            <a class="small" [routerLink]="['/panel/club', tt.clubId]">← {{ club()?.name ?? 'Club' }}</a>
+            <a class="back" [routerLink]="['/panel/club', tt.clubId]">← {{ club()?.name ?? 'Club' }}</a>
             <h1>{{ tt.name }}</h1>
             <div class="row">
               <span class="chip">{{ status() }}</span>
@@ -69,7 +69,9 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
     </div>
   `,
   styles: [`
-    .page-head h1 { margin: 6px 0 8px; }
+    .back { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; text-decoration: none; color: var(--gold-ink); }
+    .back:hover { color: var(--ink); }
+    .page-head h1 { margin: 10px 0 10px; }
     .count { font-size: .78rem; color: var(--ink-3); margin-left: 4px; }
     .tabs .chip { margin-left: 6px; }
     .next { margin-bottom: 18px; }

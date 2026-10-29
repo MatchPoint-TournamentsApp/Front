@@ -35,34 +35,36 @@ import { hhmm, dayName } from '../core/format';
   styles: [`
     :host { display: block; position: absolute; width: var(--card-w, 214px); }
     .card {
-      background: #fff; border: 1.5px solid var(--court); border-radius: 8px; overflow: hidden;
-      font-size: 12.5px; line-height: 1.2; box-shadow: 0 1px 0 rgba(18,53,91,.06);
+      background: #fff; border: 1px solid #cfc7b7; border-radius: 8px; overflow: hidden;
+      font-size: 12.5px; line-height: 1.2; box-shadow: 0 1px 2px rgba(15, 26, 42, .06);
+      transition: border-color .15s, box-shadow .15s;
     }
     .card.clickable { cursor: pointer; }
-    .card.clickable:hover { border-color: var(--court-2); box-shadow: 0 0 0 3px rgba(31,95,168,.15); }
-    .card.done { border-color: #9fb3c8; }
+    .card.clickable:hover { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 164, 106, .25); }
+    .card.done { border-color: var(--rule); }
     .card.warn { border-color: var(--warn); }
     .meta {
       display: flex; gap: 6px; align-items: center; padding: 3px 7px; height: 20px;
-      background: var(--court); color: #fff; font-size: 11px; white-space: nowrap; overflow: hidden;
+      background: var(--night); color: var(--cream); font-size: 11px; white-space: nowrap; overflow: hidden;
     }
-    .card.done .meta { background: #5c7591; }
-    .meta .num { font: 700 12px var(--display); letter-spacing: .02em; }
-    .meta .none { opacity: .7; }
+    .card.done .meta { background: #4b5566; }
+    .meta .num { font: 600 12px var(--display); letter-spacing: .04em; color: var(--gold); }
+    .card.done .meta .num { color: var(--cream); }
+    .meta .none { opacity: .65; }
     .court { margin-left: auto; opacity: .9; overflow: hidden; text-overflow: ellipsis; }
-    .court.center { background: var(--ball); color: var(--ink); opacity: 1; padding: 0 5px; border-radius: 3px; font-weight: 700; }
-    .lock { color: var(--ball); font-size: 9px; }
-    .alert { background: var(--ball); color: var(--ink); width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; flex: none; }
+    .court.center { background: var(--gold-grad); color: var(--night); opacity: 1; padding: 0 5px; border-radius: 3px; font-weight: 600; }
+    .lock { color: var(--gold); font-size: 9px; }
+    .alert { background: var(--gold-hi); color: var(--night); width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex: none; }
     .line { display: flex; align-items: stretch; height: 22px; border-top: 1px solid var(--rule-2); }
-    .line .name { flex: 1; padding: 0 7px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; color: var(--ink); text-transform: uppercase; font-size: 11.5px; letter-spacing: .01em; }
-    .line .name.ph { color: var(--ink-3); font-weight: 500; text-transform: none; font-style: italic; }
-    .line.win .name { color: var(--court); font-weight: 800; }
-    .line.win .name::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--ball); border: 1px solid var(--court); margin-left: 6px; flex: none; }
+    .line .name { flex: 1; padding: 0 7px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 500; color: var(--ink); text-transform: uppercase; font-size: 11.5px; letter-spacing: .02em; }
+    .line .name.ph { color: var(--ink-3); font-weight: 400; text-transform: none; font-style: italic; letter-spacing: 0; }
+    .line.win .name { color: var(--ink); font-weight: 700; }
+    .line.win .name::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); margin-left: 6px; flex: none; }
     .sets { display: flex; }
-    .sets i { width: 20px; display: grid; place-items: center; font: normal 600 13px var(--display); border-left: 1px solid var(--rule-2); color: var(--ink-2); font-style: normal; }
-    .sets i.w { color: var(--court); font-weight: 800; background: var(--court-3); }
-    .sets i.wo { width: 40px; font-size: 11px; color: var(--court); }
-    .bye { height: 30px; margin-top: 18px; border: 1.5px dashed var(--rule); border-radius: 8px; display: grid; place-items: center; color: var(--ink-3); font-size: 12px; }
+    .sets i { width: 20px; display: grid; place-items: center; font: normal 500 13px var(--display); border-left: 1px solid var(--rule-2); color: var(--ink-3); font-style: normal; }
+    .sets i.w { color: var(--ink); font-weight: 700; background: var(--court-3); }
+    .sets i.wo { width: 40px; font-size: 11px; color: var(--ink); }
+    .bye { height: 30px; margin-top: 18px; border: 1px dashed #d6cebf; border-radius: 8px; display: grid; place-items: center; color: var(--ink-3); font-size: 12px; letter-spacing: .06em; }
   `],
 })
 export class MatchCardComponent {

@@ -33,7 +33,7 @@ export const GENDER_LABEL: Record<Gender, string> = { MASCULINA: 'Masculina', FE
 export const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 /** Colores por categoría (si el organizador no elige uno). */
-export const CATEGORY_COLORS = ['#1f5fa8', '#2f7d5b', '#8a5a3c', '#7a3e9d', '#c2412d', '#0f7c8c', '#b7791f', '#3c4f76'];
+export const CATEGORY_COLORS = ['#2c4a72', '#a07a3f', '#3c6e5a', '#7a4660', '#9a5236', '#3a6875', '#6b6a3a', '#4f4874'];
 export function categoryColor(c: { color?: string; position: number }) {
   return c.color || CATEGORY_COLORS[Math.abs(c.position - 1) % CATEGORY_COLORS.length];
 }

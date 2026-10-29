@@ -17,14 +17,19 @@ import { MyMatchesComponent } from './my-matches.component';
     @if (error()) {
       <div class="page"><div class="panel empty"><h3>Torneo no disponible</h3><p>{{ error() }}</p></div></div>
     } @else if (board(); as b) {
-      <header class="band" [style.--c]="b.tournament.primaryColor">
+      <header class="band on-dark">
         <div class="inner">
           <div class="logo">@if (b.club.logoUrl) { <img [src]="b.club.logoUrl" alt=""> } @else { <span>{{ b.club.name.charAt(0) }}</span> }</div>
-          <div>
+          <div class="title">
+            <span class="eyebrow">{{ b.club.name }}</span>
             <h1>{{ b.tournament.name }}</h1>
-            <div class="meta">{{ dates() }} <span>{{ b.club.name }}</span>@if (b.club.address) {<span>{{ b.club.address }}@if (b.club.city) {, {{ b.club.city }}}</span>}</div>
+            <div class="meta">
+              <span>{{ dates() }}</span>
+              @if (b.club.address) { <span>{{ b.club.address }}@if (b.club.city) {, {{ b.club.city }}}</span> }
+            </div>
           </div>
         </div>
+        <hr class="gold-rule">
       </header>
       <div class="page">
         @if (b.tournament.description) { <p class="desc">{{ b.tournament.description }}</p> }
@@ -71,13 +76,19 @@ import { MyMatchesComponent } from './my-matches.component';
     }
   `,
   styles: [`
-    .band { background: var(--c); color: #fff; }
-    .band .inner { max-width: 1240px; margin: 0 auto; padding: 32px 20px; display: flex; gap: 20px; align-items: center; }
-    .band h1 { margin: 0; color: #fff; text-transform: uppercase; }
-    .meta { display: flex; gap: 16px; flex-wrap: wrap; opacity: .9; font-weight: 500; }
-    .logo { width: 84px; height: 84px; border-radius: 14px; background: #fff; display: grid; place-items: center; padding: 8px; flex: none; }
+    .band { background: radial-gradient(100% 120% at 85% 0%, #142033 0%, var(--night) 60%); color: var(--cream); }
+    .band .inner { max-width: 1200px; margin: 0 auto; padding: 40px 20px 36px; display: flex; gap: 24px; align-items: center; }
+    .band h1 { margin: 12px 0 10px; color: var(--cream); font-weight: 300; font-size: clamp(1.9rem, 4vw, 2.8rem); }
+    .meta { display: flex; gap: 8px 22px; flex-wrap: wrap; color: var(--cream-2); font-size: .95rem; }
+    .meta span + span::before { content: '·'; margin-right: 22px; color: var(--gold); }
+    .logo { width: 88px; height: 88px; border-radius: 18px; background: #fff; display: grid; place-items: center; padding: 10px; flex: none; box-shadow: 0 0 0 1px rgba(201, 164, 106, .4); }
     .logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-    .logo span { font: 800 40px var(--display); color: var(--court); }
+    .logo span { font: 300 40px var(--body); color: var(--gold-ink); text-transform: uppercase; }
+    .title { min-width: 0; }
+    @media (max-width: 560px) {
+      .band .inner { flex-direction: column; align-items: flex-start; gap: 16px; padding-top: 28px; }
+      .logo { width: 64px; height: 64px; border-radius: 14px; }
+    }
     .desc { font-size: 1.05rem; color: var(--ink-2); }
     .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
     .pre { white-space: pre-line; color: var(--ink-2); }
