@@ -46,3 +46,4 @@ Thumbs.db
 # Variables de entorno (nunca se versionan)
 .env*
 !.env.example
+/src/environments/environment.production.ts
