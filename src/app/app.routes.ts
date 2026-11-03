@@ -5,6 +5,8 @@ export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/home.page').then(m => m.HomePage) },
   { path: 'entrar', loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage), data: { mode: 'login' } },
   { path: 'registro', loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage), data: { mode: 'register' } },
+  { path: 'recuperar', loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage), data: { mode: 'reset' } },
+  { path: 'nueva-contrasena', loadComponent: () => import('./pages/reset-password.page').then(m => m.ResetPasswordPage) },
   { path: 'torneos', loadComponent: () => import('./pages/explore.page').then(m => m.ExplorePage) },
   { path: 't/:slug', loadComponent: () => import('./pages/public-tournament.page').then(m => m.PublicTournamentPage) },
   {

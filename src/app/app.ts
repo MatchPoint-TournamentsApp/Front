@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SupabaseService } from './core/supabase.service';
 import { ToastService } from './core/toast.service';
@@ -98,6 +98,10 @@ export class App {
 
   constructor() {
     this.router.events.subscribe(e => { if (e instanceof NavigationEnd) this.menu.set(false); });
+    // Enlace de "recuperar contraseña": si Supabase devuelve a otra página (p. ej. la portada), llevar a la de la contraseña nueva
+    effect(() => {
+      if (this.supa.recovery() && !location.pathname.startsWith('/nueva-contrasena')) this.router.navigateByUrl('/nueva-contrasena');
+    });
   }
 
   async logout() {

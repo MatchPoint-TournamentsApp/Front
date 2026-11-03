@@ -11,8 +11,13 @@ export class SupabaseService {
   readonly ready = signal(false);
   readonly loggedIn = computed(() => !!this.session());
   readonly email = computed(() => this.session()?.user.email ?? '');
+  /** Se ha entrado con el enlace de "recuperar contraseña": hay que pedir la nueva. */
+  readonly recovery = signal(false);
+  /** Error que Supabase devuelve en la URL cuando el enlace del email no vale (caducado, ya usado…). */
+  readonly linkError = signal(readLinkError());
 
   constructor() {
+    if (location.hash.includes('type=recovery')) this.recovery.set(true);
     this.client = createClient(
       this.configured ? environment.supabaseUrl : 'http://localhost:54321',
       this.configured ? environment.supabaseAnonKey : 'sin-configurar',
@@ -24,7 +29,10 @@ export class SupabaseService {
       this.session.set(data.session);
       this.ready.set(true);
     }).catch(() => this.ready.set(true));
-    this.client.auth.onAuthStateChange((_event, s) => this.session.set(s));
+    this.client.auth.onAuthStateChange((event, s) => {
+      this.session.set(s);
+      if (event === 'PASSWORD_RECOVERY') this.recovery.set(true);
+    });
   }
 
   async whenReady(): Promise<void> {
@@ -52,8 +60,15 @@ export class SupabaseService {
   }
 
   async resetPassword(email: string) {
-    const { error } = await this.client.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/entrar' });
+    const { error } = await this.client.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/nueva-contrasena' });
     if (error) throw new Error(translate(error.message));
+  }
+
+  /** Guarda la contraseña nueva del usuario que ha entrado con el enlace de recuperación. */
+  async updatePassword(password: string) {
+    const { error } = await this.client.auth.updateUser({ password });
+    if (error) throw new Error(translate(error.message));
+    this.recovery.set(false);
   }
 
   signOut() { return this.client.auth.signOut(); }
@@ -79,5 +94,16 @@ function translate(msg: string): string {
   if (m.includes('email not confirmed')) return 'Confirma tu email antes de entrar (revisa tu bandeja de entrada)';
   if (m.includes('password should be')) return 'La contraseña debe tener al menos 6 caracteres';
   if (m.includes('fetch')) return 'No se puede conectar con el servidor de acceso';
+  if (m.includes('should be different')) return 'La contraseña nueva tiene que ser distinta de la anterior';
+  if (m.includes('session missing') || m.includes('not authenticated')) return 'El enlace ha caducado. Pide uno nuevo para cambiar la contraseña';
   return msg;
+}
+
+/** "#error=access_denied&error_code=otp_expired&error_description=..." en la URL de vuelta del email. */
+function readLinkError(): string {
+  const p = new URLSearchParams(location.hash.slice(1) || location.search.slice(1));
+  const code = p.get('error_code') ?? '';
+  if (!p.get('error') && !code) return '';
+  if (code === 'otp_expired') return 'El enlace ha caducado o ya se ha usado.';
+  return p.get('error_description') || 'El enlace no es válido.';
 }

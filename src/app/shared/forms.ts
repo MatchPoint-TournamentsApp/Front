@@ -60,6 +60,22 @@ export class NotBeforeValidatorDirective implements Validator, OnChanges {
   }
 }
 
+/** Tiene que coincidir con otro valor (p. ej. repetir la contraseña): [mpSameAs]="password". */
+@Directive({
+  selector: '[mpSameAs][ngModel]',
+  providers: [{ provide: NG_VALIDATORS, useExisting: forwardRef(() => SameAsValidatorDirective), multi: true }],
+})
+export class SameAsValidatorDirective implements Validator, OnChanges {
+  other = input<string | null | undefined>(undefined, { alias: 'mpSameAs' });
+  message = input('No coincide', { alias: 'mpSameAsMessage' });
+  private changed?: () => void;
+  ngOnChanges() { this.changed?.(); }
+  registerOnValidatorChange(fn: () => void) { this.changed = fn; }
+  validate(c: AbstractControl): ValidationErrors | null {
+    return c.value && c.value !== this.other() ? { custom: this.message() } : null;
+  }
+}
+
 const MESSAGES: Record<string, (e: unknown) => string> = {
   required: () => 'Este campo es obligatorio',
   email: () => 'Escribe un email válido, por ejemplo nombre@correo.com',
@@ -164,6 +180,6 @@ export function focusFirstInvalid(root: HTMLElement) {
 
 /** Todo lo necesario para validar un formulario, para importarlo de una vez. */
 export const FORM_KIT = [
-  EmailValidatorDirective, UrlValidatorDirective, PostalCodeValidatorDirective, NotBeforeValidatorDirective,
+  EmailValidatorDirective, UrlValidatorDirective, PostalCodeValidatorDirective, NotBeforeValidatorDirective, SameAsValidatorDirective,
   FieldErrorComponent, FormErrorsComponent, FormFocusDirective,
 ] as const;
