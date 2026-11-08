@@ -10,7 +10,11 @@ export type Stage = 'MAIN' | 'CONSOLATION' | 'GROUP' | 'FINAL' | 'CONSOLATION_FI
 export type MatchStatus = 'PENDING' | 'PLAYED' | 'WALKOVER' | 'BYE';
 
 export interface ClubSummary { id: string; name: string; slug: string; city?: string; logoUrl?: string; }
-export interface Profile { id: string; fullName?: string; phone?: string; email?: string; role: Role; clubs: ClubSummary[]; }
+export interface Profile {
+  id: string; fullName?: string; phone?: string; email?: string; role: Role; clubs: ClubSummary[];
+  /** Cuenta bloqueada por el administrador de MatchZone. */
+  blockedAt?: string | null; blockedReason?: string | null;
+}
 export interface OpeningHour { dayOfWeek: number; openTime: string; closeTime: string; }
 export interface Court { id: string; name: string; position: number; indoor: boolean; featured: boolean; active: boolean; }
 export interface Club {
@@ -47,6 +51,8 @@ export interface Tournament {
   startsAt?: string | null; started: boolean;
   /** Hay cambios desde la última generación de cuadros. */
   drawsOutdated: boolean;
+  /** MatchZone ha activado el torneo (tras el pago). canGenerate también es true para el superadministrador. */
+  generationApproved: boolean; generationRequestedAt?: string | null; canGenerate: boolean;
 }
 export interface TournamentRequest {
   name: string; description?: string; rules?: string; organizerNotes?: string; startDate: string; endDate: string;
@@ -79,3 +85,26 @@ export interface CategoryBoard { category: Category; pairs: BoardPair[]; matches
 export interface ClubPublic { id: string; name: string; address?: string; city?: string; logoUrl?: string; website?: string; instagram?: string; phone?: string; }
 export interface Board { tournament: Tournament; club: ClubPublic; courts: Court[]; categories: CategoryBoard[]; }
 export interface DrawSummary { categories: number; matches: number; scheduled: number; unscheduled: number; warnings: number; messages: string[]; }
+
+// ------------------------------------------------------------ administración (solo SUPERADMIN)
+export type PaymentMethod = 'BIZUM' | 'EFECTIVO' | 'TRANSFERENCIA' | 'OTRO';
+export interface PaymentRequest { amount: number; method: PaymentMethod; paidOn: string; note?: string; }
+export interface AdminOverview { users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; }
+export interface AdminTournament {
+  id: string; name: string; slug: string; startDate: string; endDate: string; status: TournamentStatus; publicVisible: boolean;
+  generationRequestedAt?: string | null; generationApprovedAt?: string | null;
+  clubId: string; clubName: string; city?: string; clubPhone?: string; clubEmail?: string;
+  ownerName?: string; ownerEmail?: string; ownerPhone?: string;
+  confirmedPairs: number; generatedCategories: number; paid: number;
+}
+export interface AdminUser {
+  id: string; fullName?: string; email?: string; phone?: string; role: Role; createdAt?: string;
+  blockedAt?: string | null; blockedReason?: string | null; clubs: number; tournaments: number;
+}
+export interface AdminPayment {
+  id: string; tournamentId?: string | null; tournamentName: string; clubName: string; amount: number;
+  method: PaymentMethod; paidOn: string; note?: string | null; createdAt?: string;
+}
+export interface AdminAction {
+  id: string; adminEmail?: string; action: string; targetType?: string; targetId?: string; detail?: string; createdAt: string;
+}

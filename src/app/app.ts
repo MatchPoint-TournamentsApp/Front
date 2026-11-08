@@ -1,5 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AccountService } from './core/account.service';
 import { SupabaseService } from './core/supabase.service';
 import { ToastService } from './core/toast.service';
 import { LogoComponent } from './shared/logo.component';
@@ -18,6 +19,7 @@ import { LogoComponent } from './shared/logo.component';
           <a routerLink="/torneos" routerLinkActive="on">Torneos</a>
           @if (supa.loggedIn()) {
             <a routerLink="/panel" routerLinkActive="on">Mi club</a>
+            @if (account.isAdmin()) { <a routerLink="/admin" routerLinkActive="on">Administración</a> }
             <button class="btn ghost sm" (click)="logout()">Salir</button>
           } @else {
             <a routerLink="/entrar" routerLinkActive="on">Entrar</a>
@@ -29,6 +31,13 @@ import { LogoComponent } from './shared/logo.component';
     </header>
     @if (!supa.configured) {
       <div class="config">Configura la URL y la clave de Supabase en <code>src/environments/environment.ts</code> para activar el registro y el inicio de sesión.</div>
+    }
+    @if (account.blocked()) {
+      <div class="blocked" role="alert">
+        <b>Tu cuenta está bloqueada.</b>
+        @if (account.profile()?.blockedReason; as r) { <span>Motivo: {{ r }}.</span> }
+        <span>Puedes seguir viendo los torneos públicos. Si crees que es un error, contacta con MatchZone.</span>
+      </div>
     }
     <main><router-outlet /></main>
     <footer class="foot on-dark">
@@ -74,6 +83,7 @@ import { LogoComponent } from './shared/logo.component';
       nav a:not(.btn)::after { display: none; }
       nav .btn { margin-top: 10px; height: 44px; }
     }
+    .blocked { background: var(--danger-bg); color: var(--danger); border-bottom: 1px solid #f1cdc5; padding: 10px 20px; font-size: .9rem; display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: center; text-align: center; }
     .config { background: var(--warn-bg); color: #6e4a12; text-align: center; padding: 8px 16px; font-size: .88rem; }
     .foot { background: var(--night); color: var(--cream-2); margin-top: 40px; border-top: 1px solid var(--night-3); }
     .foot .inner { max-width: 1200px; margin: 0 auto; padding: 36px 20px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
@@ -91,6 +101,7 @@ import { LogoComponent } from './shared/logo.component';
 })
 export class App {
   supa = inject(SupabaseService);
+  account = inject(AccountService);
   toast = inject(ToastService);
   private router = inject(Router);
   menu = signal(false);

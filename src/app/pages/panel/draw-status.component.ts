@@ -5,11 +5,15 @@ import { dayName, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
 import { LoadingOverlayComponent } from '../../shared/loading-overlay.component';
 
-type State = 'empty' | 'pending' | 'outdated' | 'ready' | 'locked';
+/** Texto provisional: más adelante incluirá las instrucciones del pago. */
+const REQUESTED = 'Se ha enviado la solicitud a nuestro equipo para la aceptación del torneo.';
+
+type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready' | 'locked';
 
 /**
  * Estado de los cuadros y acción principal del torneo, siempre visible en la cabecera.
  * Hasta que empieza el torneo se pueden volver a generar tantas veces como haga falta.
+ * Generar requiere que MatchZone haya activado el torneo: si no, "Generar" envía la solicitud.
  */
 @Component({
   selector: 'mp-draw-status',
@@ -23,6 +27,7 @@ type State = 'empty' | 'pending' | 'outdated' | 'ready' | 'locked';
       </div>
       <div class="actions">
         @switch (state()) {
+          @case ('request') { <button class="btn ball" (click)="requestGeneration()">Generar cuadros</button> }
           @case ('pending') { <button class="btn ball" (click)="regenerate()">Generar cuadros</button> }
           @case ('outdated') {
             @if (onlyTiming()) { <button class="btn ghost" (click)="reschedule()">Solo reprogramar horarios</button> }
@@ -47,12 +52,12 @@ type State = 'empty' | 'pending' | 'outdated' | 'ready' | 'locked';
   styles: [`
     .status { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 18px;
       border-radius: var(--r-lg); border: 1px solid var(--rule); background: #fff; border-left: 3px solid var(--rule); }
-    .status.s-pending, .status.s-outdated { border-left-color: var(--gold); background: linear-gradient(90deg, var(--court-3), #fff 60%); }
+    .status.s-pending, .status.s-outdated, .status.s-request, .status.s-requested { border-left-color: var(--gold); background: linear-gradient(90deg, var(--court-3), #fff 60%); }
     .status.s-ready { border-left-color: var(--ok); }
     .status.s-locked { border-left-color: var(--night); background: #fbfaf7; }
     .icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; font-size: .95rem;
       background: var(--rule-2); color: var(--ink-2); }
-    .s-pending .icon, .s-outdated .icon { background: var(--gold-grad); color: var(--night); }
+    .s-pending .icon, .s-outdated .icon, .s-request .icon, .s-requested .icon { background: var(--gold-grad); color: var(--night); }
     .s-ready .icon { background: var(--ok-bg); color: var(--ok); }
     .s-locked .icon { background: var(--night); color: var(--gold); }
     .text { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 2px; }
@@ -84,6 +89,7 @@ export class DrawStatusComponent {
     const t = this.t();
     if (t.started) return 'locked';
     if (!this.playable().length) return 'empty';
+    if (!t.canGenerate) return t.generationRequestedAt ? 'requested' : 'request';
     if (!this.generatedCats().length) return 'pending';
     if (this.pendingCats().length || t.drawsOutdated) return 'outdated';
     return 'ready';
@@ -92,10 +98,12 @@ export class DrawStatusComponent {
   /** Solo han cambiado horarios (días, pistas, restricciones): basta con reprogramar sin volver a sortear. */
   onlyTiming = computed(() => this.t().drawsOutdated && !this.pendingCats().length);
 
-  icon = computed(() => ({ empty: '·', pending: '▶', outdated: '↻', ready: '✓', locked: '●' })[this.state()]);
+  icon = computed(() => ({ empty: '·', request: '▶', requested: '✉', pending: '▶', outdated: '↻', ready: '✓', locked: '●' })[this.state()]);
 
   title = computed(() => ({
     empty: 'Todavía no se pueden generar los cuadros',
+    request: 'Cuadros sin generar',
+    requested: 'Solicitud enviada',
     pending: 'Cuadros sin generar',
     outdated: 'Has hecho cambios desde la última generación',
     ready: 'Cuadros generados y al día',
@@ -106,6 +114,8 @@ export class DrawStatusComponent {
     const starts = this.startsText();
     switch (this.state()) {
       case 'empty': return 'Crea las categorías y añade al menos 2 parejas confirmadas en alguna.';
+      case 'requested': return REQUESTED;
+      case 'request':
       case 'pending': {
         const n = this.playable().reduce((a, c) => a + c.confirmedPairs, 0);
         return `${n} parejas en ${this.playable().length} categorías. Se colocan según su disponibilidad.`;
@@ -136,6 +146,15 @@ export class DrawStatusComponent {
     if (pendingInscriptions.length && !confirm(`Hay inscripciones sin confirmar en ${pendingInscriptions.join(', ')}: no entrarán en los cuadros. ¿Generar igualmente?`)) return;
     await this.run(this.generatedCats().length ? 'Regenerando cuadros y horarios…' : 'Generando cuadros y horarios…',
       () => this.api.regenerate(t.id), 'Cuadros generados', true);
+  }
+
+  /** El torneo aún no está activado: generar envía la solicitud a MatchZone. */
+  async requestGeneration() {
+    try {
+      await this.api.requestGeneration(this.t().id);
+      this.toast.ok(REQUESTED);
+      this.changed.emit();
+    } catch (e) { this.toast.error(e); }
   }
 
   async reschedule() {

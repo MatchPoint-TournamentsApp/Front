@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { from, switchMap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { AccountService } from './account.service';
 import { SupabaseService } from './supabase.service';
 
 /** Añade el token de Supabase a las llamadas privadas de la API. */
@@ -20,4 +21,12 @@ export const authGuard: CanActivateFn = async (_route, state) => {
   const router = inject(Router);
   await supa.whenReady();
   return supa.loggedIn() ? true : router.createUrlTree(['/entrar'], { queryParams: { next: state.url } });
+};
+
+/** Panel de administración: solo superadministradores. */
+export const adminGuard: CanActivateFn = async () => {
+  const account = inject(AccountService);
+  const router = inject(Router);
+  const me = await account.load();
+  return me?.role === 'SUPERADMIN' ? true : router.createUrlTree(['/panel']);
 };

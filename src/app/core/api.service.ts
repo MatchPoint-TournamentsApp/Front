@@ -70,6 +70,8 @@ export class ApiService {
   resetDraw(categoryId: string) { return this.del(`/categories/${categoryId}/draw`); }
   /** Vuelve a generar todos los cuadros con los datos actuales (solo antes de que empiece el torneo). */
   regenerate(tid: string) { return this.post<M.DrawSummary>(`/tournaments/${tid}/draw/regenerate`); }
+  /** El torneo aún no está activado: pedir a MatchZone que lo active para poder generar. */
+  requestGeneration(tid: string) { return this.post<M.Tournament>(`/tournaments/${tid}/generation-request`); }
   reschedule(tid: string) { return this.post<M.DrawSummary>(`/tournaments/${tid}/reschedule`); }
   saveResult(matchId: string, b: { sets?: number[][]; walkover: boolean; winnerPairId?: string }) {
     return this.put<M.CategoryBoard>(`/matches/${matchId}/result`, b);
@@ -86,4 +88,19 @@ export class ApiService {
     privacyAccepted: boolean; website?: string; elapsedMs?: number }) {
     return this.post<{ message: string }>(`/public/tournaments/${slug}/registrations`, b);
   }
+
+  // administración (solo SUPERADMIN)
+  adminOverview() { return this.get<M.AdminOverview>('/admin/overview'); }
+  adminTournaments() { return this.get<M.AdminTournament[]>('/admin/tournaments'); }
+  adminApprove(id: string, payment: M.PaymentRequest | null) { return this.post<void>(`/admin/tournaments/${id}/approve`, { payment }); }
+  adminRevoke(id: string) { return this.post<void>(`/admin/tournaments/${id}/revoke`); }
+  adminAddPayment(id: string, b: M.PaymentRequest) { return this.post<M.AdminPayment>(`/admin/tournaments/${id}/payments`, b); }
+  adminResetDraws(id: string) { return this.post<void>(`/admin/tournaments/${id}/reset-draws`); }
+  adminVisibility(id: string, publicVisible: boolean) { return this.put<void>(`/admin/tournaments/${id}/visibility`, { publicVisible }); }
+  adminUsers(q = '') { return this.get<M.AdminUser[]>('/admin/users' + (q ? '?q=' + encodeURIComponent(q) : '')); }
+  adminBlock(id: string, reason: string) { return this.post<void>(`/admin/users/${id}/block`, { reason }); }
+  adminUnblock(id: string) { return this.post<void>(`/admin/users/${id}/unblock`); }
+  adminPayments() { return this.get<M.AdminPayment[]>('/admin/payments'); }
+  adminDeletePayment(id: string) { return this.del(`/admin/payments/${id}`); }
+  adminActions() { return this.get<M.AdminAction[]>('/admin/actions'); }
 }

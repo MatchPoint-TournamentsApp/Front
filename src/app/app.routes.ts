@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/auth';
+import { adminGuard, authGuard } from './core/auth';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/home.page').then(m => m.HomePage) },
@@ -19,6 +19,7 @@ export const routes: Routes = [
       { path: 'torneo/:id', loadComponent: () => import('./pages/panel/tournament.page').then(m => m.TournamentPage) },
     ],
   },
+  { path: 'admin', canActivate: [authGuard, adminGuard], loadComponent: () => import('./pages/admin/admin.page').then(m => m.AdminPage) },
   { path: 'aviso-legal', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'legal' } },
   { path: 'privacidad', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'privacy' } },
   { path: 'condiciones', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'terms' } },
