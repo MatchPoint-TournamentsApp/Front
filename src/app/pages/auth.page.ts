@@ -4,10 +4,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
 import { FORM_KIT } from '../shared/forms';
+import { RevealPasswordComponent } from '../shared/reveal-password.component';
 
 @Component({
   selector: 'mp-auth',
-  imports: [FormsModule, RouterLink, FORM_KIT],
+  imports: [FormsModule, RouterLink, FORM_KIT, RevealPasswordComponent],
   template: `
     <div class="wrap">
       <form class="panel" #form="ngForm" mpForm (ngSubmit)="submit(form)" novalidate>
@@ -24,8 +25,9 @@ import { FORM_KIT } from '../shared/forms';
         }
         <label class="field"><span>Email</span><input name="email" type="email" [(ngModel)]="email" #emailRef="ngModel" required mpEmail autocomplete="email"><mp-error [control]="emailRef" /></label>
         @if (mode() !== 'reset') {
-          <label class="field"><span>Contraseña</span><input name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6"
-            [autocomplete]="mode() === 'register' ? 'new-password' : 'current-password'">
+          <label class="field"><span>Contraseña</span>
+            <span class="pw"><input #pw name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6"
+              [autocomplete]="mode() === 'register' ? 'new-password' : 'current-password'"><mp-reveal [for]="pw" /></span>
             @if (mode() === 'register') { <small>Mínimo 6 caracteres.</small> }
             <mp-error [control]="passRef" /></label>
         }

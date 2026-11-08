@@ -4,11 +4,12 @@ import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
 import { FORM_KIT } from '../shared/forms';
+import { RevealPasswordComponent } from '../shared/reveal-password.component';
 
 /** Destino del enlace "recuperar contraseña" del email: pide la contraseña nueva. */
 @Component({
   selector: 'mp-reset-password',
-  imports: [FormsModule, RouterLink, FORM_KIT],
+  imports: [FormsModule, RouterLink, FORM_KIT, RevealPasswordComponent],
   template: `
     <div class="wrap">
       <div class="panel card">
@@ -20,12 +21,12 @@ import { FORM_KIT } from '../shared/forms';
           <p class="muted small center">Para la cuenta {{ supa.email() }}</p>
           <form #form="ngForm" mpForm (ngSubmit)="save(form)" novalidate class="stack">
             <label class="field"><span>Contraseña nueva</span>
-              <input name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6" autocomplete="new-password">
+              <span class="pw"><input #pw1 name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6" autocomplete="new-password"><mp-reveal [for]="pw1" /></span>
               <small>Mínimo 6 caracteres.</small>
               <mp-error [control]="passRef" /></label>
             <label class="field"><span>Repite la contraseña</span>
-              <input name="repeat" type="password" [(ngModel)]="repeat" #repRef="ngModel" required [mpSameAs]="password"
-                mpSameAsMessage="Las contraseñas no coinciden" autocomplete="new-password">
+              <span class="pw"><input #pw2 name="repeat" type="password" [(ngModel)]="repeat" #repRef="ngModel" required [mpSameAs]="password"
+                mpSameAsMessage="Las contraseñas no coinciden" autocomplete="new-password"><mp-reveal [for]="pw2" /></span>
               <mp-error [control]="repRef" /></label>
             <button class="btn lg ball" type="submit" [disabled]="busy()">Guardar contraseña</button>
           </form>
