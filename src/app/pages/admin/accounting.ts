@@ -1,6 +1,7 @@
 // Cálculos de la contabilidad del panel de administración (cobros por activar torneos).
 import { AdminPayment, PaymentMethod } from '../../core/models';
 import { isoDate, parseDate } from '../../core/format';
+import { csvText, excelNumber } from '../../shared/files';
 
 export const METHOD_LABEL: Record<PaymentMethod, string> = {
   BIZUM: 'Bizum', EFECTIVO: 'Efectivo', TRANSFERENCIA: 'Transferencia', OTRO: 'Otro',
@@ -66,9 +67,6 @@ export function years(payments: AdminPayment[], today: Date): number[] {
 
 /** CSV para Excel en español: separador ";", coma decimal y BOM para que respete las tildes. */
 export function toCsv(payments: AdminPayment[]): string {
-  const esc = (v: string) => /[";\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
-  const rows = payments.map(p => [
-    p.paidOn, p.clubName, p.tournamentName, Number(p.amount).toFixed(2).replace('.', ','), METHOD_LABEL[p.method], p.note ?? '',
-  ].map(v => esc(String(v))).join(';'));
-  return '﻿' + ['Fecha;Club;Torneo;Importe (€);Forma de pago;Nota', ...rows].join('\r\n');
+  return csvText(['Fecha', 'Club', 'Torneo', 'Importe (€)', 'Forma de pago', 'Nota'],
+    payments.map(p => [p.paidOn, p.clubName, p.tournamentName, excelNumber(Number(p.amount)), METHOD_LABEL[p.method], p.note]));
 }

@@ -145,8 +145,12 @@ export class SettingsTabComponent implements OnChanges {
   }
 
   async remove() {
-    if (!confirm(`¿Eliminar "${this.t().name}" con todas sus categorías, parejas y resultados? No se puede deshacer.`)) return;
-    try { await this.api.deleteTournament(this.t().id); this.router.navigate(['/panel/club', this.t().clubId]); }
+    if (!confirm(`¿Eliminar "${this.t().name}"? Irá a la papelera del club: podrás recuperarlo durante 30 días; después se borrará del todo con sus categorías, parejas y resultados.`)) return;
+    try {
+      await this.api.deleteTournament(this.t().id);
+      this.toast.ok('Torneo enviado a la papelera');
+      this.router.navigate(['/panel/club', this.t().clubId]);
+    }
     catch (e) { this.toast.error(e); }
   }
 }

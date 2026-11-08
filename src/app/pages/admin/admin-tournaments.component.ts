@@ -8,7 +8,7 @@ import { euros } from './accounting';
 import { dateTime } from './admin-format';
 import { PaymentDialogComponent } from './payment-dialog.component';
 
-type Filter = 'pending' | 'inactive' | 'active' | 'all';
+type Filter = 'pending' | 'inactive' | 'active' | 'all' | 'trash';
 
 /** Solicitudes de activación y todos los torneos, con los arreglos del administrador. */
 @Component({
@@ -21,6 +21,7 @@ type Filter = 'pending' | 'inactive' | 'active' | 'all';
         <button [class.on]="filter() === 'inactive'" (click)="filter.set('inactive')">Sin activar <span class="count">{{ count('inactive') }}</span></button>
         <button [class.on]="filter() === 'active'" (click)="filter.set('active')">Activados <span class="count">{{ count('active') }}</span></button>
         <button [class.on]="filter() === 'all'" (click)="filter.set('all')">Todos <span class="count">{{ count('all') }}</span></button>
+        @if (count('trash')) { <button [class.on]="filter() === 'trash'" (click)="filter.set('trash')">Papelera <span class="count">{{ count('trash') }}</span></button> }
       </div>
       <input class="search" type="search" placeholder="Buscar torneo, club o email" [value]="q()" (input)="q.set($any($event.target).value)" aria-label="Buscar torneo">
     </div>
@@ -30,7 +31,8 @@ type Filter = 'pending' | 'inactive' | 'active' | 'all';
         <div class="main">
           <div class="title">
             <h3>{{ t.name }}</h3>
-            @if (isPending(t)) { <span class="chip warn">Solicitud enviada · {{ when(t.generationRequestedAt) }}</span> }
+            @if (t.deletedAt) { <span class="chip danger">En la papelera · {{ when(t.deletedAt) }}</span> }
+            @else if (isPending(t)) { <span class="chip warn">Solicitud enviada · {{ when(t.generationRequestedAt) }}</span> }
             @else if (t.generationApprovedAt) { <span class="chip ok">Activado · {{ when(t.generationApprovedAt) }}</span> }
             @else { <span class="chip grey">Sin solicitar</span> }
             @if (!t.publicVisible) { <span class="chip grey">Oculto</span> }
@@ -49,6 +51,9 @@ type Filter = 'pending' | 'inactive' | 'active' | 'all';
           </div>
         </div>
         <div class="actions">
+          @if (t.deletedAt) {
+            <button class="btn ghost sm" (click)="restore(t)">Recuperar</button>
+          } @else {
           @if (!t.generationApprovedAt) {
             <button class="btn ball sm" (click)="dialog.set({ t, mode: 'approve' })">Activar</button>
           } @else {
@@ -64,6 +69,7 @@ type Filter = 'pending' | 'inactive' | 'active' | 'all';
               @if (t.generationApprovedAt) { <button class="danger" (click)="revoke(t)">Quitar la activación</button> }
             </div>
           </details>
+          }
         </div>
       </article>
     } @empty {
@@ -115,6 +121,8 @@ export class AdminTournamentsComponent {
   isPending(t: AdminTournament) { return !!t.generationRequestedAt && !t.generationApprovedAt; }
 
   private matches(t: AdminTournament, f: Filter) {
+    if (f === 'trash') return !!t.deletedAt;
+    if (t.deletedAt) return false;
     switch (f) {
       case 'pending': return this.isPending(t);
       case 'inactive': return !t.generationApprovedAt;
@@ -148,6 +156,10 @@ export class AdminTournamentsComponent {
       this.changed.emit();
     } catch (e) { this.toast.error(e); }
     finally { this.busy.set(false); }
+  }
+
+  restore(t: AdminTournament) {
+    this.run(() => this.api.restoreTournament(t.id), `"${t.name}" recuperado de la papelera`);
   }
 
   revoke(t: AdminTournament) {

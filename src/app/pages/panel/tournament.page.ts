@@ -12,6 +12,7 @@ import { PairsTabComponent } from './pairs-tab.component';
 import { SettingsTabComponent } from './settings-tab.component';
 import { SponsorsTabComponent } from './sponsors-tab.component';
 import { DrawStatusComponent } from './draw-status.component';
+import { ExportMenuComponent } from './export-menu.component';
 
 type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsors';
 
@@ -19,7 +20,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
 @Component({
   selector: 'mp-tournament',
   imports: [RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
-    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent],
+    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent],
   template: `
     <div class="page">
       @if (t(); as tt) {
@@ -36,6 +37,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
           <div class="row">
             <button class="btn ghost" (click)="copyLink()">Copiar enlace público</button>
             <a class="btn ghost" [href]="'/t/' + tt.slug" target="_blank" rel="noopener">Ver página pública</a>
+            <mp-export-menu [t]="tt" [board]="board()" />
           </div>
         </div>
 

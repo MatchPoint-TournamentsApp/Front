@@ -3,6 +3,7 @@ import { ApiService } from '../../core/api.service';
 import { AdminPayment } from '../../core/models';
 import { parseDate, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { saveFile } from '../../shared/files';
 import { byMethod, byMonth, euros, inPeriod, METHOD_LABEL, MONTHS, Period, sum, toCsv, years } from './accounting';
 
 /** Contabilidad: lo cobrado por activar torneos, por semana, mes y año. */
@@ -149,12 +150,7 @@ export class AdminAccountingComponent {
 
   download() {
     const names: Record<Period, string> = { week: 'semana', month: 'mes', year: String(this.year()), all: 'todo' };
-    const blob = new Blob([toCsv(this.list())], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `matchzone-cobros-${names[this.period()]}.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    saveFile(`matchzone-cobros-${names[this.period()]}.csv`, toCsv(this.list()), 'text/csv;charset=utf-8');
   }
 
   async remove(p: AdminPayment) {

@@ -60,6 +60,7 @@ export interface TournamentRequest {
   entryFee?: number | null; scoringFormat?: string; primaryColor?: string; registrationOpen?: boolean;
   onlinePaymentEnabled?: boolean; publicVisible?: boolean; courtIds?: string[];
 }
+export interface TrashedTournament { id: string; name: string; startDate: string; endDate: string; deletedAt: string; purgeAt: string; }
 export interface Player { id: string; fullName: string; phone?: string; email?: string; }
 export interface PlayerInput { fullName: string; phone?: string; email?: string; }
 export interface Unavailability { playDate: string; fromTime?: string | null; toTime?: string | null; note?: string; }
@@ -96,6 +97,8 @@ export interface AdminTournament {
   clubId: string; clubName: string; city?: string; clubPhone?: string; clubEmail?: string;
   ownerName?: string; ownerEmail?: string; ownerPhone?: string;
   confirmedPairs: number; generatedCategories: number; paid: number;
+  /** En la papelera desde esta fecha. */
+  deletedAt?: string | null;
 }
 export interface AdminUser {
   id: string; fullName?: string; email?: string; phone?: string; role: Role; createdAt?: string;
