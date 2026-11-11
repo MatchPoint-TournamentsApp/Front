@@ -34,6 +34,8 @@ interface Group { label: string; pairs: BoardPair[]; cells: Map<string, MatchVie
                           @if (m) {
                             @if (isPlayed(m)) {
                               <span class="score">{{ scoreFor(m, row.id) }}</span>
+                            } @else if (m.live) {
+                              <span class="live">En juego</span> <span class="court">{{ m.courtName }}</span>
                             } @else if (m.playDate) {
                               <span class="when">{{ day(m) }} {{ time(m) }}</span>
                               @if (m.courtName) { <span class="court" [class.center]="m.courtFeatured">{{ m.courtName }}</span> }

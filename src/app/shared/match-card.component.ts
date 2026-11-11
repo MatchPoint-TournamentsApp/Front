@@ -10,10 +10,11 @@ import { hhmm, dayName } from '../core/format';
     @if (mm.status === 'BYE' && mm.round === 1 && (mm.stage === 'MAIN' || mm.stage === 'CONSOLATION')) {
       <div class="bye">Exento</div>
     } @else {
-      <div class="card" [class.done]="decided()" [class.warn]="!!mm.warning && admin()" [class.clickable]="admin()">
+      <div class="card" [class.done]="decided()" [class.warn]="!!mm.warning && admin()" [class.clickable]="admin()" [class.is-live]="mm.live">
         <div class="meta">
           <b class="num">P{{ mm.number }}</b>
           @if (mm.status === 'BYE') { <span>Pasa directo</span> }
+          @else if (mm.live) { <span class="live">En juego · {{ mm.courtName }}</span> }
           @else if (mm.playDate) {
             <span>{{ day() }} {{ time() }}</span>
             @if (mm.courtName) { <span class="court" [class.center]="mm.courtFeatured">{{ mm.courtName }}</span> }
@@ -43,6 +44,9 @@ import { hhmm, dayName } from '../core/format';
     .card.clickable:hover { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 164, 106, .25); }
     .card.done { border-color: var(--rule); }
     .card.warn { border-color: var(--warn); }
+    .card.is-live { border-color: var(--live); box-shadow: 0 0 0 2px rgba(225, 45, 45, .18); }
+    .meta .live { font-size: 10.5px; color: #ff6b6b; }
+    .meta .live::before { background: #ff4d4d; }
     .meta {
       display: flex; gap: 6px; align-items: center; padding: 3px 7px; height: 20px;
       background: var(--night); color: var(--cream); font-size: 11px; white-space: nowrap; overflow: hidden;

@@ -48,6 +48,7 @@
   --warn: #9a6a1c;
   --warn-bg: #fbf2df;
   --danger: #b4412f;
+  --live: #e12d2d;
   --danger-bg: #fbeae6;
 
   --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -295,3 +296,14 @@ input.ng-invalid.ng-touched:focus, select.ng-invalid.ng-touched:focus, textarea.
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Partido en juego: punto rojo parpadeante + "En juego · Pista X" */
+.live { display: inline-flex; align-items: center; gap: 5px; color: var(--live); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; white-space: nowrap; }
+.live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--live); flex: none;
+  box-shadow: 0 0 0 0 rgba(225, 45, 45, .6); animation: live-pulse 1.2s ease-in-out infinite; }
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(225, 45, 45, .55); }
+  50% { opacity: .35; box-shadow: 0 0 0 5px rgba(225, 45, 45, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .live::before { animation: none; } }

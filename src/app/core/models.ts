@@ -79,6 +79,8 @@ export interface MatchView {
   roundName?: string; slot1: SlotView; slot2: SlotView; courtId?: string; courtName?: string; courtFeatured: boolean;
   playDate?: string; startTime?: string; locked: boolean; status: MatchStatus; score?: number[][];
   winnerPairId?: string; warning?: string;
+  /** En pista ahora mismo (el club lo empezó y aún no tiene resultado). */
+  live: boolean; startedAt?: string;
 }
 export interface BoardPair { id: string; player1: string; player2: string; seed?: number; groupLabel?: string; }
 export interface Standing { pairId: string; played: number; won: number; lost: number; setsFor: number; setsAgainst: number; gamesFor: number; gamesAgainst: number; }

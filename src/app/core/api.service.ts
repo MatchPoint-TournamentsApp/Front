@@ -80,8 +80,17 @@ export class ApiService {
     return this.put<M.CategoryBoard>(`/matches/${matchId}/result`, b);
   }
   clearResult(matchId: string) { return this.del<M.CategoryBoard>(`/matches/${matchId}/result`); }
-  scheduleMatch(matchId: string, b: { courtId?: string | null; playDate?: string | null; startTime?: string | null; locked?: boolean }) {
+  scheduleMatch(matchId: string, b: { playDate?: string | null; startTime?: string | null; locked?: boolean }) {
     return this.put<M.MatchView>(`/matches/${matchId}/schedule`, b);
+  }
+  /** Avisos que tendría ese horario, sin guardarlo. */
+  previewSchedule(matchId: string, b: { playDate: string; startTime: string }) {
+    return this.post<string[]>(`/matches/${matchId}/schedule/preview`, b);
+  }
+  /** Empieza el partido en una pista ("en juego"). */
+  startMatch(matchId: string, courtId: string) { return this.put<M.MatchView>(`/matches/${matchId}/court`, { courtId }); }
+  /** Quita el partido de la pista. */
+  stopMatch(matchId: string) { return this.del(`/matches/${matchId}/court`);
   }
 
   // público (invitados)
