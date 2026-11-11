@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { Board, Club, MatchView, Tournament } from '../../core/models';
@@ -13,14 +13,18 @@ import { SettingsTabComponent } from './settings-tab.component';
 import { SponsorsTabComponent } from './sponsors-tab.component';
 import { DrawStatusComponent } from './draw-status.component';
 import { ExportMenuComponent } from './export-menu.component';
+import { CourtsTabComponent } from './courts-tab.component';
 
-type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsors';
+type Tab = 'courts' | 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsors';
+
+/** Cada cuánto se refresca el panel de pistas (varias personas pueden llevar el torneo a la vez). */
+const REFRESH_MS = 30_000;
 
 /** Gestión completa de un torneo por el organizador. */
 @Component({
   selector: 'mp-tournament',
   imports: [RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
-    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent],
+    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent, CourtsTabComponent],
   template: `
     <div class="page">
       @if (t(); as tt) {
@@ -45,6 +49,9 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
         @if (next(); as n) { <div class="notice next">{{ n }}</div> }
 
         <div class="tabs" role="tablist">
+          @if (hasMatches()) {
+            <button [class.on]="tab() === 'courts'" (click)="tab.set('courts')">Pistas@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
+          }
           <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
           <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
           <button [class.on]="tab() === 'pairs'" (click)="tab.set('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
@@ -54,6 +61,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
         </div>
 
         @switch (tab()) {
+          @case ('courts') { @if (board(); as b) { <mp-courts-tab [board]="b" (changed)="reload()" (matchClick)="selected.set($event)" /> } }
           @case ('settings') { <mp-settings-tab [t]="tt" [club]="club()" (changed)="reload()" /> }
           @case ('categories') { <mp-categories-tab [t]="tt" (changed)="reload()" /> }
           @case ('pairs') { <mp-pairs-tab [t]="tt" (changed)="reload()" /> }
@@ -82,7 +90,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
     .next { margin-bottom: 18px; }
   `],
 })
-export class TournamentPage implements OnInit {
+export class TournamentPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private toast = inject(ToastService);
   id = input.required<string>();
@@ -97,6 +105,9 @@ export class TournamentPage implements OnInit {
   status = computed(() => this.t() ? STATUS_LABEL[this.t()!.status] : '');
   dates = computed(() => this.t() ? range(this.t()!.startDate, this.t()!.endDate) : '');
   totalPairs = computed(() => this.t()?.categories.reduce((a, c) => a + c.confirmedPairs, 0) ?? 0);
+  /** Hay cuadros generados con partidos (se muestra la pestaña Pistas). */
+  hasMatches = computed(() => this.board()?.categories.some(c => c.matches.length) ?? false);
+  private timer?: ReturnType<typeof setInterval>;
   /** Partidos en juego ahora mismo (punto rojo en la pestaña de cuadros). */
   liveCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.live).length, 0) ?? 0);
   pending = computed(() => this.t()?.categories.reduce((a, c) => a + c.pendingPairs, 0) ?? 0);
@@ -113,17 +124,25 @@ export class TournamentPage implements OnInit {
 
   async ngOnInit() {
     const p = this.tabParam() as Tab;
-    if (['settings', 'categories', 'pairs', 'draws', 'schedule', 'sponsors'].includes(p)) this.tab.set(p);
     await this.reload();
+    if (['courts', 'settings', 'categories', 'pairs', 'draws', 'schedule', 'sponsors'].includes(p)) this.tab.set(p);
+    else if (this.t()?.status === 'IN_PROGRESS' && this.hasMatches()) this.tab.set('courts');
+    // Panel de pistas: refresco periódico mientras está a la vista y sin ventana abierta
+    this.timer = setInterval(() => {
+      if (this.tab() === 'courts' && !this.selected() && document.visibilityState === 'visible') this.reload(true);
+    }, REFRESH_MS);
     if (this.t()) this.api.club(this.t()!.clubId).then(c => this.club.set(c)).catch(() => {});
   }
 
-  async reload() {
+  ngOnDestroy() { clearInterval(this.timer); }
+
+  /** @param silent refresco automático: sin avisos de error */
+  async reload(silent = false) {
     try {
       const [t, b] = await Promise.all([this.api.tournament(this.id()), this.api.board(this.id())]);
       this.t.set(t);
       this.board.set(b);
-    } catch (e) { this.toast.error(e); }
+    } catch (e) { if (!silent) this.toast.error(e); }
   }
 
   onDialogClosed(changed: boolean) {
