@@ -48,7 +48,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
           <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
           <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
           <button [class.on]="tab() === 'pairs'" (click)="tab.set('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
-          <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros y resultados</button>
+          <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros y resultados@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
           <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Horario</button>
           <button [class.on]="tab() === 'sponsors'" (click)="tab.set('sponsors')">Patrocinadores</button>
         </div>
@@ -78,6 +78,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
     .page-head h1 { margin: 10px 0 10px; }
     .count { font-size: .78rem; color: var(--ink-3); margin-left: 4px; }
     .tabs .chip { margin-left: 6px; }
+    .tab-live { margin-left: 6px; font-size: .74rem; vertical-align: middle; }
     .next { margin-bottom: 18px; }
   `],
 })
@@ -96,6 +97,8 @@ export class TournamentPage implements OnInit {
   status = computed(() => this.t() ? STATUS_LABEL[this.t()!.status] : '');
   dates = computed(() => this.t() ? range(this.t()!.startDate, this.t()!.endDate) : '');
   totalPairs = computed(() => this.t()?.categories.reduce((a, c) => a + c.confirmedPairs, 0) ?? 0);
+  /** Partidos en juego ahora mismo (punto rojo en la pestaña de cuadros). */
+  liveCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.live).length, 0) ?? 0);
   pending = computed(() => this.t()?.categories.reduce((a, c) => a + c.pendingPairs, 0) ?? 0);
 
   /** Siguiente paso sugerido al organizador. */

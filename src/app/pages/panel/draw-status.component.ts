@@ -19,6 +19,8 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
   selector: 'mp-draw-status',
   imports: [LoadingOverlayComponent],
   template: `
+    <!-- Con el torneo en juego no se muestra nada (la cabecera ya dice "En juego"), salvo si hay horarios por reprogramar -->
+    @if (state() !== 'locked' || t().drawsOutdated) {
     <section class="status" [class]="'s-' + state()">
       <span class="icon" aria-hidden="true">{{ icon() }}</span>
       <div class="text">
@@ -40,6 +42,7 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
         }
       </div>
     </section>
+    }
     @if (summary(); as s) {
       <div class="notice summary" [class.warn]="s.unscheduled > 0 || s.warnings > 0">
         <b>{{ s.matches }} partidos, {{ s.scheduled }} con día y hora.</b>
@@ -107,7 +110,7 @@ export class DrawStatusComponent {
     pending: 'Cuadros sin generar',
     outdated: 'Has hecho cambios desde la última generación',
     ready: 'Cuadros generados y al día',
-    locked: 'Torneo en juego: cuadros bloqueados',
+    locked: 'Hay cambios de horario',
   })[this.state()]);
 
   detail = computed(() => {
@@ -127,8 +130,8 @@ export class DrawStatusComponent {
       }
       case 'ready': return `Puedes editar y volver a generar ${starts ? 'hasta el ' + starts : 'hasta que empiece el torneo'}.`;
       case 'locked': return this.t().drawsOutdated
-        ? 'Hay cambios de horario: puedes reprogramar el día y la hora de los partidos pendientes.'
-        : 'Ya no se pueden cambiar los cuadros. Desde el cuadro o el horario puedes empezar un partido en una pista, cambiar su hora o meter el resultado.';
+        ? 'Puedes reprogramar el día y la hora de los partidos pendientes.'
+        : '';
     }
   });
 

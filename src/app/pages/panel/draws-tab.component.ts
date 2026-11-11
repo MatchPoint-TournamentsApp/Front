@@ -18,6 +18,7 @@ import { PosterComponent } from '../../shared/poster.component';
           @for (c of board().categories; track c.category.id) {
             <button [class.on]="c.category.id === current()?.category?.id" (click)="catId.set(c.category.id)">
               <span class="dot" [style.background]="color(c)"></span>{{ c.category.name }}
+              @if (liveIn(c)) { <span class="live cat-live" [title]="liveIn(c) + ' en juego'"></span> }
             </button>
           }
         </div>
@@ -35,6 +36,7 @@ import { PosterComponent } from '../../shared/poster.component';
     @if (poster() && current(); as c) { <mp-poster [board]="board()" [category]="c" (closed)="poster.set(false)" /> }
   `,
   styles: [`
+    .cat-live { margin-left: 6px; }
     .bar { margin: 0 0 14px; }
     .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
   `],
@@ -52,6 +54,8 @@ export class DrawsTabComponent {
   anyGenerated = computed(() => this.t().categories.some(c => c.drawGenerated));
 
   color(c: CategoryBoard) { return categoryColor(c.category); }
+  /** Partidos en juego de la categoría (punto rojo en su botón). */
+  liveIn(c: CategoryBoard) { return c.matches.filter(m => m.live).length; }
   format(c: CategoryBoard) { return FORMAT_LABEL[c.category.format]; }
 
   /* Generar, regenerar y reprogramar están en la cabecera del torneo (DrawStatusComponent). */
