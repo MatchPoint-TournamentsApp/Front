@@ -28,7 +28,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
             <button class="court busy" (click)="matchClick.emit(r.m)" [style.--cat]="r.color"
                     [attr.aria-label]="c.name + ', en juego: ' + r.p1 + ' contra ' + r.p2 + '. Pulsa para meter el resultado'">
               <span class="c-top"><b class="c-name">{{ c.name }}</b><span class="live">En juego</span></span>
-              <span class="c-cat">{{ r.cat }} · P{{ r.m.number }}@if (r.m.roundName) { · {{ r.m.roundName }} }</span>
+              <span class="c-cat">{{ r.cat }}@if (r.m.roundName) { · {{ r.m.roundName }} }</span>
               <span class="c-pair">{{ r.p1 }}</span>
               <span class="c-vs">contra</span>
               <span class="c-pair">{{ r.p2 }}</span>
@@ -61,14 +61,14 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
             @for (r of s.rows; track r.m.id) {
               <div class="row-m" [class.wait]="!r.ready" [style.--cat]="r.color">
                 <div class="info">
-                  <span class="cat">{{ r.cat }} <b>P{{ r.m.number }}</b>@if (r.m.roundName) { <span class="muted"> · {{ r.m.roundName }}</span> }</span>
+                  <span class="cat">{{ r.cat }}@if (r.m.roundName) { <span class="muted"> · {{ r.m.roundName }}</span> }</span>
                   <span class="pairs"><span>{{ r.p1 }}</span> <span class="muted vs">contra</span> <span>{{ r.p2 }}</span></span>
                 </div>
                 <div class="act">
                   @if (!r.ready) {
                     <span class="tiny muted">Esperando parejas</span>
                   } @else if (choosing() === r.m.id) {
-                    <div class="pick" role="group" [attr.aria-label]="'Elige pista para P' + r.m.number">
+                    <div class="pick" role="group" [attr.aria-label]="'Elige pista para ' + r.p1 + ' contra ' + r.p2">
                       <span class="tiny muted">¿En qué pista?</span>
                       @for (c of freeCourts(); track c.id) {
                         <button class="btn ghost sm court-btn" (click)="start(r, c.id, c.name)" [disabled]="busy()">{{ c.name }}</button>
@@ -77,7 +77,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
                     </div>
                   } @else {
                     <button class="btn sm" (click)="choosing.set(r.m.id)" [disabled]="!freeCourts().length">Empezar</button>
-                    <button class="icon-btn" (click)="matchClick.emit(r.m)" [attr.aria-label]="'Más opciones de P' + r.m.number" title="Resultado, día y hora">⋯</button>
+                    <button class="icon-btn" (click)="matchClick.emit(r.m)" [attr.aria-label]="'Más opciones: ' + r.p1 + ' contra ' + r.p2" title="Resultado, día y hora">⋯</button>
                   }
                 </div>
               </div>
@@ -207,7 +207,7 @@ export class CourtsTabComponent {
     this.busy.set(true);
     try {
       await this.api.startMatch(r.m.id, courtId);
-      this.toast.ok(`P${r.m.number} en juego en ${courtName}`);
+      this.toast.ok(`${r.cat}: en juego en ${courtName}`);
       this.choosing.set(null);
       this.changed.emit();
     } catch (e) { this.toast.error(e); }

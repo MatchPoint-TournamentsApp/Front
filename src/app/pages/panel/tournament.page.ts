@@ -50,7 +50,7 @@ const REFRESH_MS = 30_000;
 
         <div class="tabs" role="tablist">
           @if (hasMatches()) {
-            <button [class.on]="tab() === 'courts'" (click)="tab.set('courts')">Pistas@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
+            <button [class.on]="tab() === 'courts'" (click)="tab.set('courts')">Panel de control@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
           }
           <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
           <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
