@@ -60,7 +60,7 @@ type Tab = 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsor
           @case ('draws') { @if (board(); as b) { <mp-draws-tab [t]="tt" [board]="b" (changed)="reload()" (matchClick)="selected.set($event)" /> } }
           @case ('schedule') {
             @if (board(); as b) {
-              <p class="muted small">Pulsa en un partido para cambiar su pista u hora o meter el resultado.</p>
+              <p class="muted small">Pulsa en un partido para empezarlo en una pista, cambiar su día u hora o meter el resultado.</p>
               <mp-schedule [board]="b" [admin]="true" (matchClick)="selected.set($event)" />
             }
           }

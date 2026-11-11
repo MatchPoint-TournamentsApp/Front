@@ -42,7 +42,7 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
     </section>
     @if (summary(); as s) {
       <div class="notice summary" [class.warn]="s.unscheduled > 0 || s.warnings > 0">
-        <b>{{ s.matches }} partidos, {{ s.scheduled }} con pista y hora.</b>
+        <b>{{ s.matches }} partidos, {{ s.scheduled }} con día y hora.</b>
         @for (m of s.messages; track $index) { <div>{{ m }}</div> }
         <button class="icon-btn close" (click)="summary.set(null)" aria-label="Cerrar resumen">✕</button>
       </div>
@@ -127,8 +127,8 @@ export class DrawStatusComponent {
       }
       case 'ready': return `Puedes editar y volver a generar ${starts ? 'hasta el ' + starts : 'hasta que empiece el torneo'}.`;
       case 'locked': return this.t().drawsOutdated
-        ? 'Hay cambios de horario: puedes reprogramar pista y hora de los partidos pendientes.'
-        : 'Ya no se pueden cambiar los cuadros. Puedes mover pista y hora de un partido desde el cuadro o el horario.';
+        ? 'Hay cambios de horario: puedes reprogramar el día y la hora de los partidos pendientes.'
+        : 'Ya no se pueden cambiar los cuadros. Desde el cuadro o el horario puedes empezar un partido en una pista, cambiar su hora o meter el resultado.';
     }
   });
 
