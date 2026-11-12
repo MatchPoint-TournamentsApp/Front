@@ -5,6 +5,7 @@ import { Category, PairStatus, PairView, Player, Tournament, Unavailability } fr
 import { dayName, hhmm } from '../../core/format';
 import { findSimilar, normalizeName } from '../../core/names';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { FORM_KIT } from '../../shared/forms';
 import { PhoneInputComponent } from '../../shared/phone-input.component';
 import { UnavailabilityEditorComponent } from '../../shared/unavailability-editor.component';
@@ -144,6 +145,7 @@ interface Form {
 export class PairsTabComponent implements OnChanges {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   t = input.required<Tournament>();
   changed = output<void>();
 
@@ -239,9 +241,9 @@ export class PairsTabComponent implements OnChanges {
 
   /** Derecho de supresión (RGPD): sin teléfono ni email y con el nombre "Jugador eliminado"; el cuadro se mantiene. */
   async erase(p: Form['p1']) {
-    if (!p.id || !confirm(`¿Borrar los datos personales de ${p.fullName}?
-
-Su nombre pasará a ser "Jugador eliminado" y se borrarán su teléfono y su email en todo el torneo. El cuadro y los resultados se mantienen. No se puede deshacer.`)) return;
+    if (!p.id || !(await this.confirm.ask({ title: `¿Borrar los datos personales de ${p.fullName}?`,
+      message: 'Su nombre pasará a ser "Jugador eliminado" y se borrarán su teléfono y su email en todo el torneo. El cuadro y los resultados se mantienen. No se puede deshacer.',
+      ok: 'Borrar datos', danger: true }))) return;
     try {
       const pl = await this.api.erasePlayer(p.id);
       p.fullName = pl.fullName; p.phone = undefined; p.email = undefined;
@@ -254,7 +256,8 @@ Su nombre pasará a ser "Jugador eliminado" y se borrarán su teléfono y su ema
   }
 
   async remove(p: PairView) {
-    if (!confirm(`¿Eliminar la pareja ${p.player1.fullName} / ${p.player2.fullName}?`)) return;
+    if (!(await this.confirm.ask({ title: '¿Eliminar la pareja?', message: `${p.player1.fullName} / ${p.player2.fullName}`,
+      ok: 'Eliminar', danger: true }))) return;
     try { await this.api.deletePair(p.id); await this.load(); this.changed.emit(); } catch (e) { this.toast.error(e); }
   }
 }

@@ -5,6 +5,7 @@ import { ApiService } from '../../core/api.service';
 import { Category, CategoryFormat, Gender, Tournament } from '../../core/models';
 import { categoryColor, FORMAT_LABEL, GENDER_LABEL } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 
 interface Form {
   id?: string; name: string; gender: Gender; level?: string; format: CategoryFormat; groupCount: number;
@@ -106,6 +107,7 @@ interface Form {
 export class CategoriesTabComponent {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   t = input.required<Tournament>();
   changed = output<void>();
   form = signal<Form | null>(null);
@@ -145,7 +147,8 @@ export class CategoriesTabComponent {
   }
 
   async remove(c: Category) {
-    if (!confirm(`¿Eliminar la categoría ${c.name} con sus parejas y partidos?`)) return;
+    if (!(await this.confirm.ask({ title: `¿Eliminar la categoría ${c.name}?`, message: 'Se borrarán también sus parejas y partidos.',
+      ok: 'Eliminar', danger: true }))) return;
     try { await this.api.deleteCategory(c.id); this.changed.emit(); } catch (e) { this.toast.error(e); }
   }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, input, output, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
 import { ToastService } from '../core/toast.service';
+import { ConfirmService } from '../core/confirm.service';
 import { Board, BoardPair, MatchView } from '../core/models';
 import { dayName, hhmm, shortDate } from '../core/format';
 
@@ -142,6 +143,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
 export class MatchDialogComponent implements OnInit {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
 
   m = input.required<MatchView>();
   board = input.required<Board>();
@@ -216,7 +218,8 @@ export class MatchDialogComponent implements OnInit {
   }
 
   async clear() {
-    if (!confirm('¿Borrar el resultado de este partido?')) return;
+    if (!(await this.confirm.ask({ title: '¿Borrar el resultado de este partido?',
+      message: 'Si el ganador ya había avanzado, se quitará de su siguiente partido.', ok: 'Borrar resultado', danger: true }))) return;
     await this.run(() => this.api.clearResult(this.m().id), 'Resultado borrado');
   }
 

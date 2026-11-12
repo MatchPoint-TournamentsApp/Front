@@ -3,11 +3,12 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { AccountService } from './core/account.service';
 import { SupabaseService } from './core/supabase.service';
 import { ToastService } from './core/toast.service';
+import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import { LogoComponent } from './shared/logo.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, LogoComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LogoComponent, ConfirmDialogComponent],
   template: `
     <header class="top on-dark">
       <div class="bar">
@@ -55,6 +56,7 @@ import { LogoComponent } from './shared/logo.component';
         <a routerLink="/condiciones">Condiciones de uso</a>
       </div>
     </footer>
+    <mp-confirm-dialog />
     <div class="toasts" aria-live="polite">
       @for (t of toast.toasts(); track t.id) { <div class="toast" [class.error]="t.kind === 'error'" [class.ok]="t.kind === 'ok'">{{ t.text }}</div> }
     </div>

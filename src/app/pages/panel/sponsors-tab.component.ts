@@ -3,6 +3,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Sponsor, SponsorTier, Tournament } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { normalizeUrl } from '../../core/validation';
 import { FORM_KIT } from '../../shared/forms';
 import { ImageUploadComponent } from '../../shared/image-upload.component';
@@ -61,6 +62,7 @@ interface Form { id?: string; name: string; website?: string; tier: SponsorTier;
 export class SponsorsTabComponent {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   t = input.required<Tournament>();
   changed = output<void>();
   form = signal<Form | null>(null);
@@ -82,7 +84,7 @@ export class SponsorsTabComponent {
   }
 
   async remove(s: Sponsor) {
-    if (!confirm(`¿Quitar a ${s.name}?`)) return;
+    if (!(await this.confirm.ask({ title: `¿Quitar a ${s.name}?`, message: 'Dejará de aparecer en la página pública y en los carteles.', ok: 'Quitar', danger: true }))) return;
     try { await this.api.deleteSponsor(s.id); this.changed.emit(); } catch (e) { this.toast.error(e); }
   }
 }

@@ -5,6 +5,7 @@ import { ApiService } from '../../core/api.service';
 import { ClubRequest, Court } from '../../core/models';
 import { DAYS } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { normalizeUrl } from '../../core/validation';
 import { AddressFieldsComponent } from '../../shared/address-fields.component';
 import { FORM_KIT } from '../../shared/forms';
@@ -121,6 +122,7 @@ interface DayHours { open: boolean; from: string; to: string; }
 export class ClubFormPage implements OnInit {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private router = inject(Router);
   id = input<string>();
 
@@ -176,7 +178,8 @@ export class ClubFormPage implements OnInit {
   }
 
   async deleteCourt(c: Court) {
-    if (!confirm(`¿Eliminar ${c.name}? Los partidos programados en ella quedarán sin pista.`)) return;
+    if (!(await this.confirm.ask({ title: `¿Eliminar ${c.name}?`, message: 'Los partidos que se estén jugando en ella quedarán sin pista.',
+      ok: 'Eliminar', danger: true }))) return;
     try { await this.api.deleteCourt(c.id); this.courts.update(l => l.filter(x => x.id !== c.id)); }
     catch (e) { this.toast.error(e); }
   }

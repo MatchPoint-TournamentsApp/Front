@@ -3,6 +3,7 @@ import { ApiService } from '../../core/api.service';
 import { DrawSummary, Tournament } from '../../core/models';
 import { dayName, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { LoadingOverlayComponent } from '../../shared/loading-overlay.component';
 
 /** Texto provisional: más adelante incluirá las instrucciones del pago. */
@@ -75,6 +76,7 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
 export class DrawStatusComponent {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   t = input.required<Tournament>();
   /** Tras generar o reprogramar: recargar el torneo. */
   changed = output<void>();
@@ -145,8 +147,10 @@ export class DrawStatusComponent {
   async regenerate() {
     const t = this.t();
     const pendingInscriptions = t.categories.filter(c => c.pendingPairs > 0).map(c => c.name);
-    if (this.generatedCats().length && !confirm('Se volverán a colocar todas las parejas y a calcular todos los horarios desde cero. ¿Continuar?')) return;
-    if (pendingInscriptions.length && !confirm(`Hay inscripciones sin confirmar en ${pendingInscriptions.join(', ')}: no entrarán en los cuadros. ¿Generar igualmente?`)) return;
+    if (this.generatedCats().length && !(await this.confirm.ask({ title: '¿Volver a generar los cuadros?',
+      message: 'Se volverán a colocar todas las parejas y a calcular todos los horarios desde cero.', ok: 'Volver a generar' }))) return;
+    if (pendingInscriptions.length && !(await this.confirm.ask({ title: 'Hay inscripciones sin confirmar',
+      message: `En ${pendingInscriptions.join(', ')}. Las parejas pendientes no entrarán en los cuadros.`, ok: 'Generar igualmente' }))) return;
     await this.run(this.generatedCats().length ? 'Regenerando cuadros y horarios…' : 'Generando cuadros y horarios…',
       () => this.api.regenerate(t.id), 'Cuadros generados', true);
   }

@@ -6,6 +6,7 @@ import { ApiService } from '../../core/api.service';
 import { Club, Day, Tournament, TournamentRequest } from '../../core/models';
 import { dayName, hhmm, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 
 /** Ajustes del torneo: datos, días y franjas, pistas, inscripción y normas. */
 @Component({
@@ -106,6 +107,7 @@ import { ToastService } from '../../core/toast.service';
 export class SettingsTabComponent implements OnChanges {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private router = inject(Router);
   t = input.required<Tournament>();
   club = input<Club | null>(null);
@@ -159,7 +161,9 @@ export class SettingsTabComponent implements OnChanges {
   }
 
   async remove() {
-    if (!confirm(`¿Eliminar "${this.t().name}"? Irá a la papelera del club: podrás recuperarlo durante 30 días; después se borrará del todo con sus categorías, parejas y resultados.`)) return;
+    if (!(await this.confirm.ask({ title: `¿Eliminar "${this.t().name}"?`,
+      message: 'Irá a la papelera del club: podrás recuperarlo durante 30 días; después se borrará del todo con sus categorías, parejas y resultados.',
+      ok: 'Enviar a la papelera', danger: true }))) return;
     try {
       await this.api.deleteTournament(this.t().id);
       this.toast.ok('Torneo enviado a la papelera');

@@ -4,6 +4,7 @@ import { ApiService } from '../../core/api.service';
 import { AdminTournament, PaymentRequest } from '../../core/models';
 import { range, STATUS_LABEL } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { euros } from './accounting';
 import { dateTime } from './admin-format';
 import { PaymentDialogComponent } from './payment-dialog.component';
@@ -107,6 +108,7 @@ type Filter = 'pending' | 'inactive' | 'active' | 'all' | 'trash';
 export class AdminTournamentsComponent {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   tournaments = input.required<AdminTournament[]>();
   changed = output<void>();
 
@@ -162,13 +164,15 @@ export class AdminTournamentsComponent {
     this.run(() => this.api.restoreTournament(t.id), `"${t.name}" recuperado de la papelera`);
   }
 
-  revoke(t: AdminTournament) {
-    if (!confirm(`¿Quitar la activación de "${t.name}"? El club no podrá generar ni regenerar cuadros. Los cobros apuntados se conservan.`)) return;
+  async revoke(t: AdminTournament) {
+    if (!(await this.confirm.ask({ title: `¿Quitar la activación de "${t.name}"?`,
+      message: 'El club no podrá generar ni regenerar cuadros. Los cobros apuntados se conservan.', ok: 'Quitar activación', danger: true }))) return;
     this.run(() => this.api.adminRevoke(t.id), 'Activación retirada');
   }
 
-  resetDraws(t: AdminTournament) {
-    if (!confirm(`Se borrarán todos los partidos y resultados de "${t.name}" (${t.generatedCategories} cuadros). No se puede deshacer. ¿Continuar?`)) return;
+  async resetDraws(t: AdminTournament) {
+    if (!(await this.confirm.ask({ title: `¿Borrar los cuadros de "${t.name}"?`,
+      message: `Se borrarán todos los partidos y resultados (${t.generatedCategories} cuadros). No se puede deshacer.`, ok: 'Borrar cuadros', danger: true }))) return;
     this.run(() => this.api.adminResetDraws(t.id), 'Cuadros borrados');
   }
 

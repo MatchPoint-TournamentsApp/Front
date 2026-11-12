@@ -3,6 +3,7 @@ import { ApiService } from '../../core/api.service';
 import { AdminPayment } from '../../core/models';
 import { parseDate, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { saveFile } from '../../shared/files';
 import { byMethod, byMonth, euros, inPeriod, METHOD_LABEL, MONTHS, Period, sum, toCsv, years } from './accounting';
 
@@ -110,6 +111,7 @@ import { byMethod, byMonth, euros, inPeriod, METHOD_LABEL, MONTHS, Period, sum, 
 export class AdminAccountingComponent {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   payments = input.required<AdminPayment[]>();
   changed = output<void>();
 
@@ -154,7 +156,8 @@ export class AdminAccountingComponent {
   }
 
   async remove(p: AdminPayment) {
-    if (!confirm(`¿Borrar el cobro de ${euros(p.amount)} de "${p.tournamentName}"? Solo para corregir errores: no se puede deshacer.`)) return;
+    if (!(await this.confirm.ask({ title: `¿Borrar el cobro de ${euros(p.amount)}?`,
+      message: `De "${p.tournamentName}". Solo para corregir errores: no se puede deshacer.`, ok: 'Borrar cobro', danger: true }))) return;
     try { await this.api.adminDeletePayment(p.id); this.toast.ok('Cobro borrado'); this.changed.emit(); }
     catch (e) { this.toast.error(e); }
   }
