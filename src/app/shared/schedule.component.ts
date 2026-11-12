@@ -112,8 +112,12 @@ export class ScheduleComponent {
     .sort((a, b) => (this.order().get(a.m.courtId!) ?? 0) - (this.order().get(b.m.courtId!) ?? 0)));
   days = computed(() => [...new Set(this.items().filter(i => i.m.playDate).map(i => i.m.playDate!))].sort());
   day = computed(() => this.selected() && this.days().includes(this.selected()!) ? this.selected()! : this.days()[0]);
-  /** Pistas del torneo (el tablero ya trae solo las suyas). */
-  courts = computed(() => this.board().courts.filter(c => c.active).length);
+  /** Pistas del día elegido: las indicadas para ese día o, si no, todas las del torneo. */
+  courts = computed(() => {
+    const all = this.board().courts.filter(c => c.active).length;
+    const n = this.board().tournament.days.find(d => d.playDate === this.day())?.courtCount;
+    return n && n < all ? n : all;
+  });
   times = computed(() => [...new Set(this.items().filter(i => i.m.playDate === this.day()).map(i => hhmm(i.m.startTime)))].sort());
   unscheduled = computed(() => this.items().filter(i => !i.m.playDate));
 

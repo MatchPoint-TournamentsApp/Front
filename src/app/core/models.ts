@@ -34,7 +34,8 @@ export interface TournamentSummary {
   registrationOpen: boolean; categories: number; pairs: number; clubName: string; clubLogoUrl?: string;
   city?: string; primaryColor: string;
 }
-export interface Day { playDate: string; startTime: string; endTime: string; }
+/** Día de juego. {@code courtCount}: pistas que el club dedica al torneo ese día (vacío = todas). */
+export interface Day { playDate: string; startTime: string; endTime: string; courtCount?: number | null; }
 export interface Category {
   id: string; name: string; gender: Gender; level?: string; format: CategoryFormat; groupCount: number;
   splitDraws?: boolean | null; maxPairs?: number | null; matchDurationMinutes?: number | null; color?: string;

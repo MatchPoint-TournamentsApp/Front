@@ -39,14 +39,19 @@ import { ToastService } from '../../core/toast.service';
 
     <section class="panel">
       <h3>Días y horario de juego</h3>
-      <p class="small muted">Franja en la que se pueden programar partidos cada día. Los cuadros se generan dentro de estas franjas.</p>
+      <p class="small muted">Franja en la que se pueden programar partidos cada día y cuántas pistas dedicas al torneo ese día. Los cuadros se generan dentro de estas franjas sin pasar de esas pistas.</p>
       <div class="days">
+        <div class="drow head" aria-hidden="true"><span></span><span>Desde</span><span></span><span>Hasta</span><span>Pistas</span><span></span></div>
         @for (d of days; track d.playDate; let i = $index) {
           <div class="drow">
             <b>{{ label(d.playDate) }}</b>
             <input type="time" [(ngModel)]="d.startTime" [attr.aria-label]="'Inicio ' + d.playDate">
             <span class="muted">a</span>
             <input type="time" [(ngModel)]="d.endTime" [attr.aria-label]="'Fin ' + d.playDate">
+            <select [(ngModel)]="d.courtCount" [attr.aria-label]="'Pistas el ' + label(d.playDate)">
+              <option [ngValue]="null">Todas ({{ courtsTotal() }})</option>
+              @for (n of courtOptions(); track n) { <option [ngValue]="n">{{ n }} {{ n === 1 ? 'pista' : 'pistas' }}</option> }
+            </select>
             <button class="icon-btn" (click)="removeDay(i)" aria-label="Quitar día">✕</button>
           </div>
         }
@@ -89,8 +94,13 @@ import { ToastService } from '../../core/toast.service';
     .courts { display: flex; flex-direction: column; gap: 8px; }
     .off { opacity: .55; }
     .days { display: grid; gap: 8px; }
-    .drow { display: grid; grid-template-columns: 180px 130px 20px 130px 32px; gap: 8px; align-items: center; }
-    @media (max-width: 600px) { .drow { grid-template-columns: 1fr 1fr; } }
+    .drow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 32px; gap: 8px; align-items: center; }
+    .drow.head span { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+    @media (max-width: 600px) {
+      .drow { grid-template-columns: 1fr 1fr; }
+      .drow.head { display: none; }
+      .drow > span.muted { display: none; }
+    }
   `],
 })
 export class SettingsTabComponent implements OnChanges {
@@ -115,7 +125,8 @@ export class SettingsTabComponent implements OnChanges {
       scoringFormat: t.scoringFormat, primaryColor: t.primaryColor, registrationOpen: t.registrationOpen,
       publicVisible: t.publicVisible,
     };
-    this.days = t.days.map(d => ({ ...d, startTime: hhmm(d.startTime), endTime: hhmm(d.endTime) }));
+    this.days = t.days.map(d => ({ ...d, startTime: hhmm(d.startTime), endTime: hhmm(d.endTime),
+      courtCount: d.courtCount && d.courtCount < t.courtIds.length ? d.courtCount : null }));
     this.courtIds = new Set(t.courtIds);
   }
 
@@ -138,6 +149,9 @@ export class SettingsTabComponent implements OnChanges {
   }
 
   removeDay(i: number) { this.days.splice(i, 1); }
+  /** Pistas del torneo (guardadas): máximo que se puede elegir cada día. */
+  courtsTotal() { return this.t().courtIds.length; }
+  courtOptions() { return Array.from({ length: Math.max(0, this.courtsTotal() - 1) }, (_, i) => i + 1); }
 
   async saveDays() {
     try { await this.api.setDays(this.t().id, this.days); this.toast.ok('Horario guardado'); this.changed.emit(); }
