@@ -88,6 +88,8 @@ export class ApiService {
     return this.post<string[]>(`/matches/${matchId}/schedule/preview`, b);
   }
   /** Empieza el partido en una pista ("en juego"). */
+  /** Comentario público del partido (vacío lo quita). */
+  setMatchNote(matchId: string, note: string) { return this.put<M.MatchView>(`/matches/${matchId}/note`, { note }); }
   startMatch(matchId: string, courtId: string) { return this.put<M.MatchView>(`/matches/${matchId}/court`, { courtId }); }
   /** Quita el partido de la pista. */
   stopMatch(matchId: string) { return this.del(`/matches/${matchId}/court`);

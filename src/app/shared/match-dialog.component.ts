@@ -19,7 +19,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
         <div class="modal-head">
           <div>
             <h3>P{{ m().number }} <span class="muted small">{{ m().roundName }}</span></h3>
-            <div class="small muted">{{ categoryName() }}@if (m().playDate) { · {{ dayLabel(m().playDate!) }} {{ hhmm(m().startTime) }} }</div>
+            <div class="small muted">{{ categoryName() }}@if (m().playDate) { · {{ dayLabel(m().playDate!) }} {{ hhmm(m().startTime) }} }@if (m().note) { · <span class="mnote"><span>{{ m().note }}</span></span> }</div>
           </div>
           <button class="icon-btn" (click)="closed.emit(false)" aria-label="Cerrar">✕</button>
         </div>
@@ -94,6 +94,16 @@ import { dayName, hhmm, shortDate } from '../core/format';
             </div>
           }
         } @else {
+          <div class="note-box">
+            <label class="field"><span>Comentario</span>
+              <div class="row-c">
+                <input type="text" maxlength="60" list="mp-match-notes" [(ngModel)]="note" placeholder="Ej.: Sede Norte" aria-describedby="note-help">
+                <button class="btn ghost sm" (click)="saveNote()" [disabled]="busy() || note.trim() === (m().note ?? '')">Guardar comentario</button>
+              </div>
+            </label>
+            <datalist id="mp-match-notes">@for (n of usedNotes(); track n) { <option [value]="n"></option> }</datalist>
+            <p id="note-help" class="tiny muted" style="margin:6px 0 0">Lo verán los jugadores junto a la hora del partido. Déjalo vacío para quitarlo.</p>
+          </div>
           <div class="grid-2">
             <label class="field"><span>Día</span>
               <select [(ngModel)]="date" (ngModelChange)="warnings.set(null)">
@@ -138,6 +148,8 @@ import { dayName, hhmm, shortDate } from '../core/format';
     .row-c + .row-c { margin-top: 10px; }
     .row-c select { width: auto; min-width: 130px; flex: 1; max-width: 220px; }
     ul { margin: 6px 0; padding-left: 18px; }
+    .note-box { padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--rule-2); }
+    .note-box .row-c input { flex: 1; min-width: 160px; }
   `],
 })
 export class MatchDialogComponent implements OnInit {
@@ -161,6 +173,7 @@ export class MatchDialogComponent implements OnInit {
   time = '';
   court: string | null = null;
   locked = true;
+  note = '';
 
   private cat = computed(() => this.board().categories.find(c => c.matches.some(x => x.id === this.m().id)));
   categoryName = computed(() => this.cat()?.category.name ?? '');
@@ -188,11 +201,20 @@ export class MatchDialogComponent implements OnInit {
     this.time = hhmm(m.startTime) || '';
     this.court = m.courtId ?? this.courts().find(c => !c.busy)?.id ?? null;
     this.locked = m.locked || !m.playDate;
+    this.note = m.note ?? '';
     if (!this.p1() || !this.p2()) this.tab.set('schedule');
   }
 
   label(p?: BoardPair) { return p ? `${p.player1} - ${p.player2}` : ''; }
   dayLabel(d: string) { return `${dayName(d)} ${shortDate(d)}`; }
+
+  /** Comentarios ya usados en el torneo (sugerencias al escribir). */
+  usedNotes = computed(() => [...new Set(this.board().categories.flatMap(c => c.matches).map(x => x.note).filter((n): n is string => !!n))].sort());
+
+  async saveNote() {
+    const note = this.note.trim();
+    await this.run(() => this.api.setMatchNote(this.m().id, note), note ? 'Comentario guardado' : 'Comentario quitado');
+  }
 
   async start() {
     if (!this.court) return;

@@ -29,6 +29,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
                     [attr.aria-label]="c.name + ', en juego: ' + r.p1 + ' contra ' + r.p2 + '. Pulsa para meter el resultado'">
               <span class="c-top"><b class="c-name">{{ c.name }}</b><span class="live">En juego</span></span>
               <span class="c-cat">{{ r.cat }}@if (r.m.roundName) { · {{ r.m.roundName }} }</span>
+              @if (r.m.note) { <span class="mnote c-note"><span>{{ r.m.note }}</span></span> }
               <span class="c-pair">{{ r.p1 }}</span>
               <span class="c-vs">contra</span>
               <span class="c-pair">{{ r.p2 }}</span>
@@ -61,7 +62,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
             @for (r of s.rows; track r.m.id) {
               <div class="row-m" [class.wait]="!r.ready" [style.--cat]="r.color">
                 <div class="info">
-                  <span class="cat">{{ r.cat }}@if (r.m.roundName) { <span class="muted"> · {{ r.m.roundName }}</span> }</span>
+                  <span class="cat">{{ r.cat }}@if (r.m.roundName) { <span class="muted"> · {{ r.m.roundName }}</span> }@if (r.m.note) { <span class="mnote rn"><span>{{ r.m.note }}</span></span> }</span>
                   <span class="pairs"><span>{{ r.p1 }}</span> <span class="muted vs">contra</span> <span>{{ r.p2 }}</span></span>
                 </div>
                 <div class="act">
@@ -111,6 +112,8 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
     .c-name { font: 600 1.05rem var(--display); letter-spacing: .02em; }
     .c-top .live { font-size: .72rem; }
     .c-cat { font: 600 .74rem var(--display); text-transform: uppercase; letter-spacing: .05em; color: var(--cat); }
+    .c-note, .rn { font-size: .76rem; }
+    .rn { margin-left: 8px; text-transform: none; letter-spacing: 0; font-family: var(--body); }
     .c-pair { font-weight: 600; font-size: .9rem; line-height: 1.25; }
     .c-vs { font-size: .72rem; color: var(--ink-3); }
     .c-foot { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 6px; }

@@ -307,3 +307,10 @@ input.ng-invalid.ng-touched:focus, select.ng-invalid.ng-touched:focus, textarea.
   50% { opacity: .35; box-shadow: 0 0 0 5px rgba(225, 45, 45, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .live::before { animation: none; } }
+
+/* Comentario público de un partido (p. ej. la sede): icono de ubicación + texto */
+.mnote { display: inline-flex; align-items: center; gap: 3px; color: var(--gold-ink); font-weight: 600; min-width: 0; }
+.mnote::before { content: ''; width: .9em; height: .9em; flex: none; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.mnote > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -78,6 +78,8 @@ export class DrawStatusComponent {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
   t = input.required<Tournament>();
+  /** Partidos con comentario (se pierden al volver a generar). */
+  notes = input(0);
   /** Tras generar o reprogramar: recargar el torneo. */
   changed = output<void>();
   /** Tras generar: ir a ver los cuadros. */
@@ -148,7 +150,9 @@ export class DrawStatusComponent {
     const t = this.t();
     const pendingInscriptions = t.categories.filter(c => c.pendingPairs > 0).map(c => c.name);
     if (this.generatedCats().length && !(await this.confirm.ask({ title: '¿Volver a generar los cuadros?',
-      message: 'Se volverán a colocar todas las parejas y a calcular todos los horarios desde cero.', ok: 'Volver a generar' }))) return;
+      message: 'Se volverán a colocar todas las parejas y a calcular todos los horarios desde cero.'
+        + (this.notes() ? ` Se perderán los comentarios de ${this.notes()} ${this.notes() === 1 ? 'partido' : 'partidos'}.` : ''),
+      ok: 'Volver a generar' }))) return;
     if (pendingInscriptions.length && !(await this.confirm.ask({ title: 'Hay inscripciones sin confirmar',
       message: `En ${pendingInscriptions.join(', ')}. Las parejas pendientes no entrarán en los cuadros.`, ok: 'Generar igualmente' }))) return;
     await this.run(this.generatedCats().length ? 'Regenerando cuadros y horarios…' : 'Generando cuadros y horarios…',

@@ -52,10 +52,10 @@ export function matchesCsv(board: Board): string {
       s.pairId ? pairLabel(byId.get(s.pairId)) : s.empty ? 'Exento' : s.placeholder ?? 'Por decidir';
     return cb.matches.filter(m => m.status !== 'BYE').map(m => [
       cb.category.name, m.number, m.roundName ?? m.groupLabel ?? '', side(m.slot1), side(m.slot2),
-      m.playDate ?? '', hhmm(m.startTime), m.courtName ?? '', MATCH_STATUS[m.status] ?? m.status,
+      m.playDate ?? '', hhmm(m.startTime), m.courtName ?? '', m.note ?? '', MATCH_STATUS[m.status] ?? m.status,
       scoreText(m.score), m.winnerPairId ? pairLabel(byId.get(m.winnerPairId)) : '',
     ]);
   });
-  return csvText(['Categoría', 'Partido', 'Ronda', 'Pareja 1', 'Pareja 2', 'Día', 'Hora', 'Pista', 'Estado',
+  return csvText(['Categoría', 'Partido', 'Ronda', 'Pareja 1', 'Pareja 2', 'Día', 'Hora', 'Pista', 'Comentario', 'Estado',
     'Resultado', 'Ganador'], rows);
 }

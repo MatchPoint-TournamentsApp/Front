@@ -56,6 +56,7 @@ interface Item { m: MatchView; cat: string; color: string; p1: string; p2: strin
         </span>
         <span class="vs">{{ it.p1 }}</span>
         <span class="vs">{{ it.p2 }}</span>
+        @if (it.m.note) { <span class="mnote sn"><span>{{ it.m.note }}</span></span> }
         <span class="round">{{ it.m.roundName }}@if (it.m.live && it.m.playDate !== day()) { · {{ dayLabel(it.m.playDate) }} {{ hhmm(it.m.startTime) }} }</span>
       </button>
     </ng-template>
@@ -84,6 +85,7 @@ interface Item { m: MatchView; cat: string; color: string; p1: string; p2: strin
     .cat { font: 600 12px var(--display); text-transform: uppercase; letter-spacing: .05em; }
     .vs { font-size: 12.5px; font-weight: 600; line-height: 1.25; }
     .round { font-size: 11px; color: var(--ink-3); }
+    .sn { font-size: 11px; }
     @media (max-width: 560px) { .hour { grid-template-columns: 52px 1fr; } }
   `],
 })

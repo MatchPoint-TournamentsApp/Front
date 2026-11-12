@@ -30,7 +30,7 @@ describe('exportar torneo', () => {
   it('lista los partidos con resultado y sin los exentos', () => {
     const lines = matchesCsv(board).split('\r\n');
     expect(lines).toHaveLength(2);
-    expect(lines[1]).toBe('4ª masculina;1;Final;A. López - E. Ruiz;B. Gil - C. Sanz;2026-11-15;18:00;Pista 1;Jugado;6-3  6-4;A. López - E. Ruiz');
+    expect(lines[1]).toBe('4ª masculina;1;Final;A. López - E. Ruiz;B. Gil - C. Sanz;2026-11-15;18:00;Pista 1;;Jugado;6-3  6-4;A. López - E. Ruiz');
   });
 
   it('la copia completa lleva el torneo, las parejas y los cuadros', () => {

@@ -45,7 +45,7 @@ const REFRESH_MS = 30_000;
           </div>
         </div>
 
-        <mp-draw-status [t]="tt" (changed)="reload()" (generated)="tab.set('draws')" />
+        <mp-draw-status [t]="tt" [notes]="noteCount()" (changed)="reload()" (generated)="tab.set('draws')" />
         @if (next(); as n) { <div class="notice next">{{ n }}</div> }
 
         <div class="tabs" role="tablist">
@@ -105,6 +105,8 @@ export class TournamentPage implements OnInit, OnDestroy {
   status = computed(() => this.t() ? STATUS_LABEL[this.t()!.status] : '');
   dates = computed(() => this.t() ? range(this.t()!.startDate, this.t()!.endDate) : '');
   totalPairs = computed(() => this.t()?.categories.reduce((a, c) => a + c.confirmedPairs, 0) ?? 0);
+  /** Partidos con comentario del club. */
+  noteCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.note).length, 0) ?? 0);
   /** Hay cuadros generados con partidos (se muestra la pestaña Pistas). */
   hasMatches = computed(() => this.board()?.categories.some(c => c.matches.length) ?? false);
   private timer?: ReturnType<typeof setInterval>;

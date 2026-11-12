@@ -20,6 +20,7 @@ interface Row { m: MatchView; cat: string; color: string; me: string; rival: str
               @if (r.m.playDate) { <b>{{ day(r.m) }}</b> <span class="num">{{ time(r.m) }}</span> } @else { <span class="muted">Sin horario</span> }
               @if (r.m.live) { <span class="live">En juego · {{ r.m.courtName }}</span> }
               @else if (r.m.courtName) { <span class="court" [class.center]="r.m.courtFeatured">{{ r.m.courtName }}</span> }
+              @if (r.m.note) { <span class="mnote"><span>{{ r.m.note }}</span></span> }
             </div>
             <div class="who"><span class="muted small">{{ r.cat }}, {{ r.m.roundName }}</span><br>{{ r.me }} <span class="muted">contra</span> {{ r.rival }}</div>
             @if (r.m.score?.length) { <div class="res num">{{ score(r.m) }}</div> }

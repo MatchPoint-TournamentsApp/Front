@@ -82,6 +82,8 @@ export interface MatchView {
   winnerPairId?: string; warning?: string;
   /** En pista ahora mismo (el club lo empezó y aún no tiene resultado). */
   live: boolean; startedAt?: string;
+  /** Comentario público del club (p. ej. la sede donde se juega). */
+  note?: string;
 }
 export interface BoardPair { id: string; player1: string; player2: string; seed?: number; groupLabel?: string; }
 export interface Standing { pairId: string; played: number; won: number; lost: number; setsFor: number; setsAgainst: number; gamesFor: number; gamesAgainst: number; }

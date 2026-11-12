@@ -19,6 +19,7 @@ import { hhmm, dayName } from '../core/format';
             <span>{{ day() }} {{ time() }}</span>
             @if (mm.courtName) { <span class="court" [class.center]="mm.courtFeatured">{{ mm.courtName }}</span> }
           } @else { <span class="none">Sin horario</span> }
+          @if (mm.note && mm.status !== 'BYE') { <span class="mnote mc-note" [title]="mm.note"><span>{{ mm.note }}</span></span> }
           @if (mm.locked && admin()) { <span class="lock" title="Horario fijado a mano">●</span> }
           @if (mm.warning && admin()) { <span class="alert" [title]="mm.warning">!</span> }
         </div>
@@ -44,6 +45,8 @@ import { hhmm, dayName } from '../core/format';
     .card.clickable:hover { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 164, 106, .25); }
     .card.done { border-color: var(--rule); }
     .card.warn { border-color: var(--warn); }
+    .mc-note { color: var(--gold); font-weight: 500; flex: 0 1 auto; }
+    .card.done .mc-note { color: var(--cream); }
     .card.is-live { border-color: var(--live); box-shadow: 0 0 0 2px rgba(225, 45, 45, .18); }
     .meta .live { font-size: 10.5px; color: #ff6b6b; }
     .meta .live::before { background: #ff4d4d; }

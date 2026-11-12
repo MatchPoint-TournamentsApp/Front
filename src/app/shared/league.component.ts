@@ -40,6 +40,7 @@ interface Group { label: string; pairs: BoardPair[]; cells: Map<string, MatchVie
                               <span class="when">{{ day(m) }} {{ time(m) }}</span>
                               @if (m.courtName) { <span class="court" [class.center]="m.courtFeatured">{{ m.courtName }}</span> }
                             } @else { <span class="muted">Sin horario</span> }
+                            @if (m.note) { <span class="mnote ln" [title]="m.note"><span>{{ m.note }}</span></span> }
                           }
                         </td>
                       }
