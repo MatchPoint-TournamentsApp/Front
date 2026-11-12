@@ -34,7 +34,7 @@ import { MyMatchesComponent } from './my-matches.component';
       <div class="page">
         @if (b.tournament.description) { <p class="desc">{{ b.tournament.description }}</p> }
         <div class="tabs">
-          <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros</button>
+          <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros@if (liveCount(b)) { <span class="live tab-live" [title]="liveCount(b) + ' en juego'">{{ liveCount(b) }}</span> }</button>
           <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Horario</button>
           <button [class.on]="tab() === 'rules'" (click)="tab.set('rules')">Normas</button>
           @if (b.tournament.registrationOpen) { <button [class.on]="tab() === 'signup'" (click)="tab.set('signup')">Inscripción</button> }
@@ -50,6 +50,7 @@ import { MyMatchesComponent } from './my-matches.component';
                   @for (c of b.categories; track c.category.id) {
                     <button [class.on]="c.category.id === current()?.category?.id" (click)="catId.set(c.category.id)">
                       <span class="dot" [style.background]="color(c)"></span>{{ c.category.name }}
+                      @if (liveIn(c)) { <span class="live cat-live" [title]="liveIn(c) + ' en juego'"></span> }
                     </button>
                   }
                 </div>
@@ -76,6 +77,8 @@ import { MyMatchesComponent } from './my-matches.component';
     }
   `,
   styles: [`
+    .tab-live { margin-left: 6px; font-size: .74rem; vertical-align: middle; }
+    .cat-live { margin-left: 6px; }
     .band { background: radial-gradient(100% 120% at 85% 0%, #142033 0%, var(--night) 60%); color: var(--cream); }
     .band .inner { max-width: 1200px; margin: 0 auto; padding: 40px 20px 36px; display: flex; gap: 24px; align-items: center; }
     .band h1 { margin: 12px 0 10px; color: var(--cream); font-weight: 300; font-size: clamp(1.9rem, 4vw, 2.8rem); }
@@ -119,4 +122,7 @@ export class PublicTournamentPage {
   }
 
   color(c: CategoryBoard) { return categoryColor(c.category); }
+  /** Partidos en juego ahora mismo (punto rojo en la pestaña Cuadros y en cada categoría). */
+  liveIn(c: CategoryBoard) { return c.matches.filter(m => m.live).length; }
+  liveCount(b: { categories: CategoryBoard[] }) { return b.categories.reduce((a, c) => a + this.liveIn(c), 0); }
 }
