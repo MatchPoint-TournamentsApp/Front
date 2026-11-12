@@ -75,6 +75,8 @@ export class ApiService {
   regenerate(tid: string) { return this.post<M.DrawSummary>(`/tournaments/${tid}/draw/regenerate`); }
   /** El torneo aún no está activado: pedir a MatchZone que lo active para poder generar. */
   requestGeneration(tid: string) { return this.post<M.Tournament>(`/tournaments/${tid}/generation-request`); }
+  /** Parejas con problemas de horario (restricciones o jugador en dos partidos). */
+  conflicts(tid: string) { return this.get<M.PairConflict[]>(`/tournaments/${tid}/conflicts`); }
   reschedule(tid: string) { return this.post<M.DrawSummary>(`/tournaments/${tid}/reschedule`); }
   saveResult(matchId: string, b: { sets?: number[][]; walkover: boolean; winnerPairId?: string }) {
     return this.put<M.CategoryBoard>(`/matches/${matchId}/result`, b);

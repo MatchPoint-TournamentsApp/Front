@@ -85,6 +85,10 @@ export interface MatchView {
   /** Comentario público del club (p. ej. la sede donde se juega). */
   note?: string;
 }
+/** Pareja con problemas de horario (solo el club: incluye contacto). */
+export interface ConflictPlayer { fullName: string; phone?: string; email?: string; }
+export interface ConflictMatch { matchId: string; number: number; roundName?: string; playDate: string; startTime: string; sure: boolean; reason: string; }
+export interface PairConflict { pairId: string; categoryId: string; categoryName: string; player1: ConflictPlayer; player2: ConflictPlayer; matches: ConflictMatch[]; }
 export interface BoardPair { id: string; player1: string; player2: string; seed?: number; groupLabel?: string; }
 export interface Standing { pairId: string; played: number; won: number; lost: number; setsFor: number; setsAgainst: number; gamesFor: number; gamesAgainst: number; }
 export interface CategoryBoard { category: Category; pairs: BoardPair[]; matches: MatchView[]; standings: Record<string, Standing[]>; }

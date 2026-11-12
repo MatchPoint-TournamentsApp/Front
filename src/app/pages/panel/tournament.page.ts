@@ -14,6 +14,7 @@ import { SponsorsTabComponent } from './sponsors-tab.component';
 import { DrawStatusComponent } from './draw-status.component';
 import { ExportMenuComponent } from './export-menu.component';
 import { CourtsTabComponent } from './courts-tab.component';
+import { ConflictsDialogComponent } from './conflicts-dialog.component';
 
 type Tab = 'courts' | 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsors';
 
@@ -24,7 +25,7 @@ const REFRESH_MS = 30_000;
 @Component({
   selector: 'mp-tournament',
   imports: [RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
-    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent, CourtsTabComponent],
+    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent, CourtsTabComponent, ConflictsDialogComponent],
   template: `
     <div class="page">
       @if (t(); as tt) {
@@ -45,8 +46,14 @@ const REFRESH_MS = 30_000;
           </div>
         </div>
 
-        <mp-draw-status [t]="tt" [notes]="noteCount()" (changed)="reload()" (generated)="tab.set('draws')" />
+        <mp-draw-status [t]="tt" [notes]="noteCount()" (showConflicts)="conflictsFor.set({ matchId: null })" (changed)="reload()" (generated)="tab.set('draws')" />
         @if (next(); as n) { <div class="notice next">{{ n }}</div> }
+        @if (warningCount()) {
+          <div class="notice warn conflicts-bar">
+            <span><b>{{ warningCount() }} {{ warningCount() === 1 ? 'partido tiene' : 'partidos tienen' }} avisos de horario.</b> Revisa las parejas afectadas y contacta con ellas.</span>
+            <button class="btn ghost sm" (click)="conflictsFor.set({ matchId: null })">Ver parejas con problemas</button>
+          </div>
+        }
 
         <div class="tabs" role="tablist">
           @if (hasMatches()) {
@@ -64,7 +71,7 @@ const REFRESH_MS = 30_000;
           @case ('courts') { @if (board(); as b) { <mp-courts-tab [board]="b" (changed)="reload()" (matchClick)="selected.set($event)" /> } }
           @case ('settings') { <mp-settings-tab [t]="tt" [club]="club()" (changed)="reload()" /> }
           @case ('categories') { <mp-categories-tab [t]="tt" (changed)="reload()" /> }
-          @case ('pairs') { <mp-pairs-tab [t]="tt" (changed)="reload()" /> }
+          @case ('pairs') { <mp-pairs-tab [t]="tt" [open]="pairToOpen()" (opened)="pairToOpen.set(null)" (changed)="reload()" /> }
           @case ('draws') { @if (board(); as b) { <mp-draws-tab [t]="tt" [board]="b" (changed)="reload()" (matchClick)="selected.set($event)" /> } }
           @case ('schedule') {
             @if (board(); as b) {
@@ -75,7 +82,12 @@ const REFRESH_MS = 30_000;
           @case ('sponsors') { <mp-sponsors-tab [t]="tt" (changed)="reload()" /> }
         }
         @if (selected() && board(); as b) {
-          <mp-match-dialog [m]="selected()!" [board]="b" (closed)="onDialogClosed($event)" />
+          <mp-match-dialog [m]="selected()!" [board]="b" (closed)="onDialogClosed($event)"
+                           (conflicts)="selected.set(null); conflictsFor.set({ matchId: $event })" />
+        }
+        @if (conflictsFor(); as cf) {
+          <mp-conflicts-dialog [t]="tt" [focusMatchId]="cf.matchId" (closed)="onConflictsClosed($event)"
+                               (editPair)="openPair($event)" />
         }
       } @else { <p class="muted">Cargando torneo…</p> }
     </div>
@@ -88,6 +100,7 @@ const REFRESH_MS = 30_000;
     .tabs .chip { margin-left: 6px; }
     .tab-live { margin-left: 6px; font-size: .74rem; vertical-align: middle; }
     .next { margin-bottom: 18px; }
+    .conflicts-bar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 18px; }
   `],
 })
 export class TournamentPage implements OnInit, OnDestroy {
@@ -101,6 +114,12 @@ export class TournamentPage implements OnInit, OnDestroy {
   club = signal<Club | null>(null);
   tab = signal<Tab>('settings');
   selected = signal<MatchView | null>(null);
+  /** Ventana de parejas con problemas abierta (opcionalmente centrada en un partido). */
+  conflictsFor = signal<{ matchId: string | null } | null>(null);
+  /** Pareja a abrir en la pestaña Parejas. */
+  pairToOpen = signal<{ categoryId: string; pairId: string } | null>(null);
+  /** Partidos pendientes con avisos de horario. */
+  warningCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.warning && m.status === 'PENDING').length, 0) ?? 0);
 
   status = computed(() => this.t() ? STATUS_LABEL[this.t()!.status] : '');
   dates = computed(() => this.t() ? range(this.t()!.startDate, this.t()!.endDate) : '');
@@ -145,6 +164,18 @@ export class TournamentPage implements OnInit, OnDestroy {
       this.t.set(t);
       this.board.set(b);
     } catch (e) { if (!silent) this.toast.error(e); }
+  }
+
+  onConflictsClosed(changed: boolean) {
+    this.conflictsFor.set(null);
+    if (changed) this.reload();
+  }
+
+  /** Desde «Parejas con problemas»: abrir la ficha de la pareja para cambiar sus restricciones. */
+  openPair(p: { categoryId: string; pairId: string }) {
+    this.conflictsFor.set(null);
+    this.pairToOpen.set(p);
+    this.tab.set('pairs');
   }
 
   onDialogClosed(changed: boolean) {

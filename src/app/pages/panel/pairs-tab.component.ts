@@ -148,6 +148,9 @@ export class PairsTabComponent implements OnChanges {
   private confirm = inject(ConfirmService);
   t = input.required<Tournament>();
   changed = output<void>();
+  /** Pareja a abrir al entrar (desde «Parejas con problemas»). */
+  open = input<{ categoryId: string; pairId: string } | null>(null);
+  opened = output<void>();
 
   catId = signal<string | null>(null);
   cat = computed<Category | undefined>(() => this.t().categories.find(c => c.id === this.catId()) ?? this.t().categories[0]);
@@ -160,7 +163,14 @@ export class PairsTabComponent implements OnChanges {
   pendingCount = computed(() => this.pairs().filter(p => p.status === 'PENDING').length);
 
   ngOnChanges() {
-    this.load();
+    const o = this.open();
+    if (o) this.catId.set(o.categoryId);
+    this.load().then(() => {
+      if (!o) return;
+      const p = this.pairs().find(x => x.id === o.pairId);
+      if (p) this.edit(p);
+      this.opened.emit();
+    });
     this.api.players(this.t().id).then(p => this.players.set(p)).catch(() => {});
   }
 

@@ -48,6 +48,7 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
       <div class="notice summary" [class.warn]="s.unscheduled > 0 || s.warnings > 0">
         <b>{{ s.matches }} partidos, {{ s.scheduled }} con día y hora.</b>
         @for (m of s.messages; track $index) { <div>{{ m }}</div> }
+        @if (s.warnings > 0) { <button class="btn ghost sm" style="margin-top:8px" (click)="showConflicts.emit()">Ver parejas con problemas</button> }
         <button class="icon-btn close" (click)="summary.set(null)" aria-label="Cerrar resumen">✕</button>
       </div>
     }
@@ -82,6 +83,8 @@ export class DrawStatusComponent {
   notes = input(0);
   /** Tras generar o reprogramar: recargar el torneo. */
   changed = output<void>();
+  /** Abrir la ventana de parejas con problemas. */
+  showConflicts = output<void>();
   /** Tras generar: ir a ver los cuadros. */
   generated = output<void>();
 

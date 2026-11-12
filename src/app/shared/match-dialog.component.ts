@@ -24,6 +24,12 @@ import { dayName, hhmm, shortDate } from '../core/format';
           <button class="icon-btn" (click)="closed.emit(false)" aria-label="Cerrar">✕</button>
         </div>
 
+        @if (m().warning) {
+          <div class="notice warn conflict-note">
+            <span>{{ m().warning }}</span>
+            <button class="btn ghost sm" (click)="conflicts.emit(m().id)">Ver parejas con problemas</button>
+          </div>
+        }
         @if (m().status === 'PENDING' && p1() && p2()) {
           <div class="court-box" [class.on]="m().live">
             @if (m().live) {
@@ -148,6 +154,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
     .row-c + .row-c { margin-top: 10px; }
     .row-c select { width: auto; min-width: 130px; flex: 1; max-width: 220px; }
     ul { margin: 6px 0; padding-left: 18px; }
+    .conflict-note { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
     .note-box { padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--rule-2); }
     .note-box .row-c input { flex: 1; min-width: 160px; }
   `],
@@ -160,6 +167,8 @@ export class MatchDialogComponent implements OnInit {
   m = input.required<MatchView>();
   board = input.required<Board>();
   closed = output<boolean>();
+  /** Abrir las parejas con problemas de este partido. */
+  conflicts = output<string>();
 
   tab = signal<'result' | 'schedule'>('result');
   busy = signal(false);
