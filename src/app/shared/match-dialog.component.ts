@@ -53,6 +53,16 @@ import { dayName, hhmm, shortDate } from '../core/format';
           <p class="small muted" style="margin:0 0 14px">Jugado en {{ m().courtName }}.</p>
         }
 
+        <div class="note-box">
+          <label class="field"><span>Comentario</span>
+            <div class="row-c">
+              <input type="text" maxlength="60" list="mp-match-notes" [(ngModel)]="note" placeholder="Ej.: Sede Norte" aria-describedby="note-help">
+              <button class="btn ghost sm" (click)="saveNote()" [disabled]="busy() || note.trim() === (m().note ?? '')">Guardar comentario</button>
+            </div>
+          </label>
+          <datalist id="mp-match-notes">@for (n of usedNotes(); track n) { <option [value]="n"></option> }</datalist>
+          <p id="note-help" class="tiny muted" style="margin:6px 0 0">Lo verán los jugadores junto a la hora del partido. Déjalo vacío para quitarlo.</p>
+        </div>
         <div class="seg" style="margin-bottom:18px">
           <button [class.on]="tab() === 'result'" (click)="tab.set('result')">Resultado</button>
           <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Día y hora</button>
@@ -94,16 +104,6 @@ import { dayName, hhmm, shortDate } from '../core/format';
             </div>
           }
         } @else {
-          <div class="note-box">
-            <label class="field"><span>Comentario</span>
-              <div class="row-c">
-                <input type="text" maxlength="60" list="mp-match-notes" [(ngModel)]="note" placeholder="Ej.: Sede Norte" aria-describedby="note-help">
-                <button class="btn ghost sm" (click)="saveNote()" [disabled]="busy() || note.trim() === (m().note ?? '')">Guardar comentario</button>
-              </div>
-            </label>
-            <datalist id="mp-match-notes">@for (n of usedNotes(); track n) { <option [value]="n"></option> }</datalist>
-            <p id="note-help" class="tiny muted" style="margin:6px 0 0">Lo verán los jugadores junto a la hora del partido. Déjalo vacío para quitarlo.</p>
-          </div>
           <div class="grid-2">
             <label class="field"><span>Día</span>
               <select [(ngModel)]="date" (ngModelChange)="warnings.set(null)">
@@ -148,7 +148,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
     .row-c + .row-c { margin-top: 10px; }
     .row-c select { width: auto; min-width: 130px; flex: 1; max-width: 220px; }
     ul { margin: 6px 0; padding-left: 18px; }
-    .note-box { padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--rule-2); }
+    .note-box { padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--rule-2); }
     .note-box .row-c input { flex: 1; min-width: 160px; }
   `],
 })
