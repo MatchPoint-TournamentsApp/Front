@@ -43,7 +43,7 @@ type Filter = 'all' | 'unpaid' | 'paid';
                   @if (p.phone) { <span class="tiny muted">{{ p.phone }}</span> }
                 </div>
                 <label class="check" [class.on]="!!p.paidAt">
-                  <input type="checkbox" [checked]="!!p.paidAt" [disabled]="busy() === key(p)" (click)="toggle(p, $event)">
+                  <input type="checkbox" [attr.aria-label]="'Pagado: ' + p.fullName" [checked]="!!p.paidAt" [disabled]="busy() === key(p)" (click)="toggle(p, $event)">
                   <span>{{ p.paidAt ? 'Pagado' : 'Sin pagar' }}</span>
                 </label>
               </li>
