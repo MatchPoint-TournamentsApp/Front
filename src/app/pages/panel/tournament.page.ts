@@ -57,15 +57,16 @@ const REFRESH_MS = 30_000;
         }
 
         <div class="tabs" role="tablist">
+          <!-- Orden: ajustes, herramientas del día del torneo y, al final, la preparación. -->
+          <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
           @if (hasMatches()) {
             <button [class.on]="tab() === 'courts'" (click)="tab.set('courts')">Panel de control@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
           }
-          <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
-          <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
-          <button [class.on]="tab() === 'pairs'" (click)="tab.set('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
           <button [class.on]="tab() === 'payments'" (click)="tab.set('payments')">Pagos</button>
           <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros y resultados@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
           <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Horario</button>
+          <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
+          <button [class.on]="tab() === 'pairs'" (click)="tab.set('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
           <button [class.on]="tab() === 'sponsors'" (click)="tab.set('sponsors')">Patrocinadores</button>
         </div>
 
