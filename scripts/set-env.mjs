@@ -1,5 +1,5 @@
 // Genera src/environments/environment.production.ts (no se versiona) antes del build de producción.
-// En Vercel los valores llegan por variables de entorno: API_URL, SUPABASE_URL, SUPABASE_ANON_KEY.
+// En Cloudflare Pages (producción) y Vercel los valores llegan por variables de entorno: API_URL, SUPABASE_URL, SUPABASE_ANON_KEY.
 // En local, sin variables, se respeta el archivo si ya existe o se crea con los valores de environment.ts.
 import { copyFileSync, existsSync, writeFileSync } from 'node:fs';
 
@@ -17,8 +17,8 @@ export const environment = {
 };
 `);
   console.log('environment.production.ts generado desde variables de entorno');
-} else if (process.env.VERCEL) {
-  console.error('Faltan variables de entorno en Vercel: API_URL, SUPABASE_URL y SUPABASE_ANON_KEY');
+} else if (process.env.CF_PAGES || process.env.VERCEL) {
+  console.error('Faltan variables de entorno en el despliegue: API_URL, SUPABASE_URL y SUPABASE_ANON_KEY');
   process.exit(1);
 } else if (!existsSync(target)) {
   copyFileSync(new URL('environment.ts', dir), target);
