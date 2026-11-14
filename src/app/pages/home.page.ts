@@ -12,7 +12,6 @@ import { SupabaseService } from '../core/supabase.service';
         <img class="mark" src="brand/mark-800.png" alt="">
         <h1><span>Matchzon<span class="last">e</span></span><span class="app">app</span></h1>
         <hr>
-        <p class="tag">Torneos de pádel</p>
         <p class="lead">Cuadros, horarios y resultados en un solo lugar.</p>
         <div class="cta">
           <a class="btn lg ball" routerLink="/torneos">Ver torneos</a>
@@ -40,7 +39,6 @@ import { SupabaseService } from '../core/supabase.service';
     h1 .last { letter-spacing: 0; }
     h1 .app { align-self: flex-end; margin: .5em -.4em 0 0; font-size: .26em; font-weight: 500; letter-spacing: .4em; color: var(--gold); }
     hr { width: min(320px, 70%); height: 1px; border: 0; margin: 22px 0 18px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
-    .tag { margin: 0; font-size: .85rem; font-weight: 500; letter-spacing: .4em; margin-right: -.4em; text-transform: uppercase; color: var(--gold); }
     .lead { margin: 30px 0 34px; font-size: 1.1rem; font-weight: 300; color: var(--cream-2); max-width: 40ch; }
     .cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
     @media (max-width: 420px) { .cta { flex-direction: column; width: 100%; } .cta .btn { width: 100%; } }
