@@ -32,7 +32,7 @@ export class FillComponent {
           <p>En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa de los datos del titular de este sitio web y de la aplicación {{ L.brand }}:</p>
           <ul>
             <li>Titular: <mp-fill [v]="L.titular" /></li>
-            <li>NIF: <mp-fill [v]="L.nif" /></li>
+            @if (!pending(L.nif)) { <li>NIF: <mp-fill [v]="L.nif" /></li> }
             <li>Domicilio: <mp-fill [v]="L.address" /></li>
             <li>Correo electrónico: <mp-fill [v]="L.email" /></li>
             <li>Datos registrales: <mp-fill [v]="L.registry" /></li>
@@ -67,7 +67,7 @@ export class FillComponent {
           <h2>1. Quién es responsable de tus datos</h2>
           <p>Depende de la relación que tengas con {{ L.brand }}:</p>
           <ul>
-            <li><b>Si tienes una cuenta</b> (organizadores de clubes): el responsable es el titular de {{ L.brand }} — <mp-fill [v]="L.titular" />, NIF <mp-fill [v]="L.nif" />, <mp-fill [v]="L.address" />, <mp-fill [v]="L.email" />.</li>
+            <li><b>Si tienes una cuenta</b> (organizadores de clubes): el responsable es el titular de {{ L.brand }} — <mp-fill [v]="L.titular" />@if (!pending(L.nif)) {, NIF <mp-fill [v]="L.nif" />}, <mp-fill [v]="L.address" />, <mp-fill [v]="L.email" />.</li>
             <li><b>Si participas en un torneo</b> (te inscribes por el enlace del torneo o te inscribe el club): el responsable es el <b>club que organiza el torneo</b>, cuyos datos figuran en la página del torneo. {{ L.brand }} actúa como <b>encargado del tratamiento</b> (artículo 28 del RGPD): trata esos datos únicamente por cuenta del club y para prestarle el servicio.</li>
           </ul>
 
@@ -198,5 +198,7 @@ export class FillComponent {
 })
 export class LegalPage {
   L = LEGAL;
+  // El NIF se oculta mientras esté pendiente (el usuario lo añadirá más adelante).
+  pending = isPending;
   doc = inject(ActivatedRoute).snapshot.data['doc'] as 'legal' | 'privacy' | 'terms';
 }
