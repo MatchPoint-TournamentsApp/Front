@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, input, output, signal } from '@ang
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
 import { ToastService } from '../core/toast.service';
+import { UnpaidCheckService } from '../core/unpaid-check.service';
 import { ConfirmService } from '../core/confirm.service';
 import { Board, BoardPair, MatchView } from '../core/models';
 import { dayName, hhmm, shortDate } from '../core/format';
@@ -163,6 +164,7 @@ export class MatchDialogComponent implements OnInit {
   private api = inject(ApiService);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
+  private unpaid = inject(UnpaidCheckService);
 
   m = input.required<MatchView>();
   board = input.required<Board>();
@@ -227,6 +229,7 @@ export class MatchDialogComponent implements OnInit {
 
   async start() {
     if (!this.court) return;
+    if (!(await this.unpaid.okToStart(this.board().tournament.id, [this.m().slot1.pairId, this.m().slot2.pairId]))) return;
     const name = this.courts().find(c => c.id === this.court)?.name ?? 'la pista';
     await this.run(() => this.api.startMatch(this.m().id, this.court!), `P${this.m().number} en juego en ${name}`);
   }

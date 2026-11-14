@@ -2,6 +2,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { ApiService } from '../../core/api.service';
 import { Board, BoardPair, MatchView, SlotView } from '../../core/models';
 import { categoryColor, dayName, hhmm, pairLabel, shortDate } from '../../core/format';
+import { UnpaidCheckService } from '../../core/unpaid-check.service';
 import { ToastService } from '../../core/toast.service';
 
 /** Partido con los datos ya resueltos para pintarlo. */
@@ -151,6 +152,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
 export class CourtsTabComponent {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private unpaid = inject(UnpaidCheckService);
   board = input.required<Board>();
   /** Abre la ventana del partido (resultado, día y hora). */
   matchClick = output<MatchView>();
@@ -208,6 +210,8 @@ export class CourtsTabComponent {
 
   async start(r: Row, courtId: string, courtName: string) {
     this.busy.set(true);
+    const go = await this.unpaid.okToStart(this.board().tournament.id, [r.m.slot1.pairId, r.m.slot2.pairId]);
+    if (!go) { this.busy.set(false); return; }
     try {
       await this.api.startMatch(r.m.id, courtId);
       this.toast.ok(`${r.cat}: en juego en ${courtName}`);
