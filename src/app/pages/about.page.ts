@@ -93,8 +93,15 @@ import { FillComponent } from './legal.page';
     </div>
   `,
   styles: [`
-    .band { background: radial-gradient(100% 120% at 85% 0%, #142033 0%, var(--night) 60%); color: var(--cream); }
-    .band .inner { max-width: 1200px; margin: 0 auto; padding: 56px 20px 48px; }
+    /* Pista y red al fondo (recorte de la imagen de marca, sin el texto antiguo); velo noche para leer el texto. */
+    .band { color: var(--cream); background-color: var(--night);
+      background-image: linear-gradient(90deg, var(--night) 0%, rgba(10, 17, 26, .92) 38%, rgba(10, 17, 26, .45) 75%, rgba(10, 17, 26, .25) 100%), url('/brand/about-court.jpg');
+      background-size: cover, cover; background-position: center, right center; background-repeat: no-repeat; }
+    .band .inner { max-width: 1200px; margin: 0 auto; padding: 72px 20px 64px; }
+    @media (max-width: 700px) {
+      .band { background-image: linear-gradient(180deg, rgba(10, 17, 26, .45) 0%, rgba(10, 17, 26, .82) 100%), url('/brand/about-court.jpg'); background-position: center, 70% center; }
+      .band .inner { padding: 48px 20px 40px; }
+    }
     .band h1 { color: var(--cream); font-weight: 300; font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1.05; margin: 14px 0 18px; }
     .lead { max-width: 62ch; color: var(--cream-2); font-size: 1.08rem; line-height: 1.6; margin: 0; }
     .about section { margin: 0 0 56px; }
