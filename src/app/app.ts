@@ -44,7 +44,7 @@ import { LogoComponent } from './shared/logo.component';
     <main><router-outlet /></main>
     <footer class="foot on-dark">
       <div class="inner">
-        <mp-logo [size]="40" [inverse]="true" [tagline]="true" />
+        <mp-logo [size]="40" [inverse]="true" />
         <nav>
           <a routerLink="/torneos">Torneos</a>
           <a [routerLink]="supa.loggedIn() ? '/panel' : '/registro'">Organizar un torneo</a>
