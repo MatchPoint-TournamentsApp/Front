@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LEGAL } from '../core/legal';
+import { isPending, LEGAL } from '../core/legal';
 import { SupabaseService } from '../core/supabase.service';
 import { FillComponent } from './legal.page';
 
@@ -73,13 +73,13 @@ import { FillComponent } from './legal.page';
         <div>
           <span class="eyebrow">Datos</span>
           <h2 class="sec">Quién está detrás</h2>
+          <p class="muted who">{{ L.brand }} está diseñada y desarrollada por {{ L.titular }}, en Mérida.</p>
           <p class="muted">Más información en el <a routerLink="/aviso-legal">aviso legal</a>, la <a routerLink="/privacidad">política de privacidad</a> y las <a routerLink="/condiciones">condiciones de uso</a>.</p>
         </div>
         <dl class="facts">
-          <dt>Titular</dt><dd><mp-fill [v]="L.titular" /></dd>
-          <dt>NIF</dt><dd><mp-fill [v]="L.nif" /></dd>
-          <dt>Domicilio</dt><dd><mp-fill [v]="L.address" /></dd>
-          <dt>Contacto</dt><dd><mp-fill [v]="L.email" /></dd>
+          <dt>Desarrollador</dt><dd><mp-fill [v]="L.titular" /></dd>
+          <dt>Ubicación</dt><dd><mp-fill [v]="L.address" /></dd>
+          <dt>Contacto</dt><dd>@if (pending(L.email)) { <mp-fill [v]="L.email" /> } @else { <a [href]="'mailto:' + L.email">{{ L.email }}</a> }</dd>
         </dl>
       </section>
 
@@ -115,6 +115,7 @@ import { FillComponent } from './legal.page';
     .features span { color: var(--ink-2); font-size: .94rem; line-height: 1.5; }
     .split { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; }
     .split p { line-height: 1.6; margin: 0; }
+    .split p.who { margin-bottom: 10px; }
     .doc { display: flex; align-items: center; gap: 16px; padding: 18px 20px; background: #fff; border: 1px solid var(--rule); border-radius: 14px; text-decoration: none; color: var(--ink); transition: border-color .2s, transform .2s; }
     .doc:hover { border-color: var(--gold); transform: translateY(-1px); }
     .doc .ico { width: 48px; height: 56px; border-radius: 6px; background: var(--night); color: var(--gold); display: grid; place-items: center; font: 600 .78rem var(--body); letter-spacing: .1em; flex: none; }
@@ -136,6 +137,7 @@ import { FillComponent } from './legal.page';
 })
 export class AboutPage {
   readonly L = LEGAL;
+  readonly pending = isPending;
   readonly supa = inject(SupabaseService);
 
   readonly values = [

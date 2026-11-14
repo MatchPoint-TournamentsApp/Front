@@ -4,12 +4,12 @@
 
 export const LEGAL = {
   brand: 'MatchZone',
-  titular: '[completar: nombre o razón social del titular]',
+  titular: 'Cristo Macías',
   nif: '[completar: NIF/CIF]',
-  address: '[completar: domicilio completo]',
-  email: '[completar: email de contacto]',
-  registry: '[completar, si es una sociedad: datos de inscripción en el Registro Mercantil]',
-  updated: '29 de octubre de 2026',
+  address: 'Mérida, Extremadura, España',
+  email: 'cristomac.izaguirre@gmail.com',
+  registry: 'No aplica (persona física, sin inscripción en el Registro Mercantil)',
+  updated: '14 de noviembre de 2026',
 };
 
 export function isPending(v: string) { return v.startsWith('[completar'); }
