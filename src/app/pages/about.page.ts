@@ -12,8 +12,8 @@ import { FillComponent } from './legal.page';
     <header class="band on-dark">
       <div class="inner">
         <span class="eyebrow">Quiénes somos</span>
-        <h1>Torneos de pádel,<br>bien organizados</h1>
-        <p class="lead">{{ L.brand }} es la herramienta con la que los clubes organizan sus torneos de pádel: inscripciones, cuadros, horarios y resultados en un solo sitio, y una página pública para que los jugadores lo sigan todo desde el móvil.</p>
+        <h1>Torneos deportivos,<br>bien organizados</h1>
+        <p class="lead">{{ L.brand }} es la herramienta con la que los clubes organizan sus torneos deportivos, empezando por el pádel: inscripciones, cuadros, horarios y resultados en un solo sitio, y una página pública para que los jugadores lo sigan todo desde el móvil.</p>
       </div>
       <hr class="gold-rule">
     </header>
@@ -27,8 +27,8 @@ import { FillComponent } from './legal.page';
         </article>
         <article class="card">
           <span class="eyebrow">Visión</span>
-          <h2>La referencia de los clubes de pádel</h2>
-          <p>Queremos ser la herramienta de referencia para organizar torneos de pádel, primero en España y después en Europa, con una experiencia igual de clara para el club que organiza y para el jugador que se inscribe.</p>
+          <h2>La referencia de los clubes deportivos</h2>
+          <p>Queremos ser la herramienta de referencia para organizar torneos deportivos: empezando por el pádel, primero en España y después en Europa, con una experiencia igual de clara para el club que organiza y para el jugador que se inscribe.</p>
         </article>
       </section>
 

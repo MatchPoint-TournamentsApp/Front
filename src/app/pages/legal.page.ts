@@ -39,7 +39,7 @@ export class FillComponent {
           </ul>
 
           <h2>2. Objeto</h2>
-          <p>{{ L.brand }} es una aplicación web para la organización de torneos de pádel: permite a los clubes gestionar inscripciones, categorías, cuadros, horarios y resultados, y a jugadores e invitados consultarlos e inscribirse en los torneos publicados.</p>
+          <p>{{ L.brand }} es una aplicación web para la organización de torneos deportivos (actualmente, de pádel): permite a los clubes gestionar inscripciones, categorías, cuadros, horarios y resultados, y a jugadores e invitados consultarlos e inscribirse en los torneos publicados.</p>
 
           <h2>3. Condiciones de uso</h2>
           <p>El acceso y el uso de {{ L.brand }} implican la aceptación de las <a routerLink="/condiciones">condiciones de uso</a>. El tratamiento de los datos personales se rige por la <a routerLink="/privacidad">política de privacidad</a>.</p>

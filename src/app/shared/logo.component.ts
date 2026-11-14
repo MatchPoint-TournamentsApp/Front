@@ -12,7 +12,7 @@ import { Component, input } from '@angular/core';
       <span class="word" [class.inv]="inverse()" [style.font-size.px]="size() * .5">
         <span class="name">Matchzon<span class="last">e</span></span>
         <span class="app">sports</span>
-        @if (tagline()) { <small>Torneos de pádel</small> }
+        @if (tagline()) { <small>Gestión de torneos</small> }
       </span>
     }
   `,
