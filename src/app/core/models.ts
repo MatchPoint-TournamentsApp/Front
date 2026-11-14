@@ -89,6 +89,9 @@ export interface MatchView {
 export interface ConflictPlayer { fullName: string; phone?: string; email?: string; }
 export interface ConflictMatch { matchId: string; number: number; roundName?: string; playDate: string; startTime: string; sure: boolean; reason: string; }
 export interface PairConflict { pairId: string; categoryId: string; categoryName: string; player1: ConflictPlayer; player2: ConflictPlayer; matches: ConflictMatch[]; }
+/** Pago de inscripción de un jugador de una pareja (slot 1 o 2). */
+export interface PlayerPayment { pairId: string; slot: 1 | 2; playerId?: string; fullName: string; phone?: string; pairStatus: PairStatus; paidAt?: string | null; }
+export interface CategoryPayments { categoryId: string; categoryName: string; players: PlayerPayment[]; }
 export interface BoardPair { id: string; player1: string; player2: string; seed?: number; groupLabel?: string; }
 export interface Standing { pairId: string; played: number; won: number; lost: number; setsFor: number; setsAgainst: number; gamesFor: number; gamesAgainst: number; }
 export interface CategoryBoard { category: Category; pairs: BoardPair[]; matches: MatchView[]; standings: Record<string, Standing[]>; }

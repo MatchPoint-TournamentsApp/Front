@@ -63,6 +63,9 @@ export class ApiService {
   pairs(categoryId: string) { return this.get<M.PairView[]>(`/categories/${categoryId}/pairs`); }
   addPair(categoryId: string, b: M.PairRequest) { return this.post<M.PairView>(`/categories/${categoryId}/pairs`, b); }
   updatePair(id: string, b: M.PairRequest) { return this.put<M.PairView>(`/pairs/${id}`, b); }
+  /** Pagos de inscripción de los jugadores, por categoría. */
+  payments(tid: string) { return this.get<M.CategoryPayments[]>(`/tournaments/${tid}/payments`); }
+  setPlayerPaid(pairId: string, player: 1 | 2, paid: boolean) { return this.put<M.PlayerPayment>(`/pairs/${pairId}/payment`, { player, paid }); }
   setPairStatus(id: string, status: M.PairStatus) { return this.patch<M.PairView>(`/pairs/${id}/status`, { status }); }
   deletePair(id: string) { return this.del(`/pairs/${id}`); }
   /** Derecho de supresión (RGPD): borra nombre, teléfono y email del jugador sin romper el cuadro. */

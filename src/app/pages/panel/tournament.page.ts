@@ -14,9 +14,10 @@ import { SponsorsTabComponent } from './sponsors-tab.component';
 import { DrawStatusComponent } from './draw-status.component';
 import { ExportMenuComponent } from './export-menu.component';
 import { CourtsTabComponent } from './courts-tab.component';
+import { PaymentsTabComponent } from './payments-tab.component';
 import { ConflictsDialogComponent } from './conflicts-dialog.component';
 
-type Tab = 'courts' | 'settings' | 'categories' | 'pairs' | 'draws' | 'schedule' | 'sponsors';
+type Tab = 'courts' | 'settings' | 'categories' | 'pairs' | 'payments' | 'draws' | 'schedule' | 'sponsors';
 
 /** Cada cuánto se refresca el panel de pistas (varias personas pueden llevar el torneo a la vez). */
 const REFRESH_MS = 30_000;
@@ -25,7 +26,7 @@ const REFRESH_MS = 30_000;
 @Component({
   selector: 'mp-tournament',
   imports: [RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
-    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent, CourtsTabComponent, ConflictsDialogComponent],
+    ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent, CourtsTabComponent, ConflictsDialogComponent, PaymentsTabComponent],
   template: `
     <div class="page">
       @if (t(); as tt) {
@@ -62,6 +63,7 @@ const REFRESH_MS = 30_000;
           <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
           <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
           <button [class.on]="tab() === 'pairs'" (click)="tab.set('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
+          <button [class.on]="tab() === 'payments'" (click)="tab.set('payments')">Pagos</button>
           <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros y resultados@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
           <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Horario</button>
           <button [class.on]="tab() === 'sponsors'" (click)="tab.set('sponsors')">Patrocinadores</button>
@@ -72,6 +74,7 @@ const REFRESH_MS = 30_000;
           @case ('settings') { <mp-settings-tab [t]="tt" [club]="club()" (changed)="reload()" /> }
           @case ('categories') { <mp-categories-tab [t]="tt" (changed)="reload()" /> }
           @case ('pairs') { <mp-pairs-tab [t]="tt" [open]="pairToOpen()" (opened)="pairToOpen.set(null)" (changed)="reload()" /> }
+          @case ('payments') { <mp-payments-tab [t]="tt" /> }
           @case ('draws') { @if (board(); as b) { <mp-draws-tab [t]="tt" [board]="b" (changed)="reload()" (matchClick)="selected.set($event)" /> } }
           @case ('schedule') {
             @if (board(); as b) {
@@ -146,7 +149,7 @@ export class TournamentPage implements OnInit, OnDestroy {
   async ngOnInit() {
     const p = this.tabParam() as Tab;
     await this.reload();
-    if (['courts', 'settings', 'categories', 'pairs', 'draws', 'schedule', 'sponsors'].includes(p)) this.tab.set(p);
+    if (['courts', 'settings', 'categories', 'pairs', 'payments', 'draws', 'schedule', 'sponsors'].includes(p)) this.tab.set(p);
     else if (this.t()?.status === 'IN_PROGRESS' && this.hasMatches()) this.tab.set('courts');
     // Panel de pistas: refresco periódico mientras está a la vista y sin ventana abierta
     this.timer = setInterval(() => {

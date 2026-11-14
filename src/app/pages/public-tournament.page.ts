@@ -5,6 +5,8 @@ import { categoryColor, range } from '../core/format';
 import { CategoryBoardComponent } from '../shared/category-board.component';
 import { ScheduleComponent } from '../shared/schedule.component';
 import { PosterComponent } from '../shared/poster.component';
+import { HonorBoardComponent } from '../shared/honor-board.component';
+import { podium } from '../shared/honor';
 import { RegistrationFormComponent } from './registration-form.component';
 import { SponsorStripComponent } from './sponsor-strip.component';
 import { MyMatchesComponent } from './my-matches.component';
@@ -12,7 +14,7 @@ import { MyMatchesComponent } from './my-matches.component';
 /** Página pública del torneo (invitados): cuadros, horario, normas e inscripción. */
 @Component({
   selector: 'mp-public-tournament',
-  imports: [CategoryBoardComponent, ScheduleComponent, PosterComponent, RegistrationFormComponent, SponsorStripComponent, MyMatchesComponent],
+  imports: [CategoryBoardComponent, HonorBoardComponent, ScheduleComponent, PosterComponent, RegistrationFormComponent, SponsorStripComponent, MyMatchesComponent],
   template: `
     @if (error()) {
       <div class="page"><div class="panel empty"><h3>Torneo no disponible</h3><p>{{ error() }}</p></div></div>
@@ -48,15 +50,31 @@ import { MyMatchesComponent } from './my-matches.component';
               <div class="row between" style="margin-bottom:14px">
                 <div class="seg">
                   @for (c of b.categories; track c.category.id) {
-                    <button [class.on]="c.category.id === current()?.category?.id" (click)="catId.set(c.category.id)">
+                    <button [class.on]="!honor() && c.category.id === current()?.category?.id" (click)="catId.set(c.category.id)">
                       <span class="dot" [style.background]="color(c)"></span>{{ c.category.name }}
                       @if (liveIn(c)) { <span class="live cat-live" [title]="liveIn(c) + ' en juego'"></span> }
                     </button>
                   }
+                  @if (hasHonor()) { <button class="honor-chip" [class.on]="honor()" (click)="catId.set('honor')">🏆 Cuadro de honor</button> }
                 </div>
-                @if (current()?.category?.drawGenerated) { <button class="btn ghost sm" (click)="poster.set(true)">Descargar PDF</button> }
               </div>
-              @if (current(); as c) { <mp-category-board [board]="c" /> }
+              @if (honor()) {
+                <mp-honor-board [board]="b" />
+                <div class="dl">
+                <span class="tiny muted">Descargar</span>
+                <button class="dl-btn" (click)="openPoster('pdf')">PDF</button>
+                <button class="dl-btn" (click)="openPoster('png')">Imagen</button>
+              </div>
+              } @else if (current(); as c) {
+                <mp-category-board [board]="c" />
+                @if (c.category.drawGenerated) {
+                <div class="dl">
+                <span class="tiny muted">Descargar</span>
+                <button class="dl-btn" (click)="openPoster('pdf')">PDF</button>
+                <button class="dl-btn" (click)="openPoster('png')">Imagen</button>
+              </div>
+                }
+              }
             }
           }
           @case ('schedule') { <mp-schedule [board]="b" /> }
@@ -71,12 +89,16 @@ import { MyMatchesComponent } from './my-matches.component';
         }
         <mp-sponsor-strip [sponsors]="b.tournament.sponsors" />
       </div>
-      @if (poster() && current(); as c) { <mp-poster [board]="b" [category]="c" (closed)="poster.set(false)" /> }
+      @if (poster(); as kind) { <mp-poster [board]="b" [category]="honor() ? null : current() ?? null" [kind]="kind" (closed)="poster.set(null)" /> }
     } @else {
       <div class="page"><p class="muted">Cargando torneo…</p></div>
     }
   `,
   styles: [`
+    .honor-chip { color: var(--gold-ink); font-weight: 600; }
+    .dl { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 10px; }
+    .dl-btn { background: none; border: 0; padding: 4px 8px; border-radius: 6px; font: 500 .82rem var(--body); color: var(--ink-2); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); }
+    .dl-btn:hover { color: var(--ink); background: var(--glass); }
     .tab-live { margin-left: 6px; font-size: .74rem; vertical-align: middle; }
     .cat-live { margin-left: 6px; }
     .band { background: radial-gradient(100% 120% at 85% 0%, #142033 0%, var(--night) 60%); color: var(--cream); }
@@ -105,13 +127,18 @@ export class PublicTournamentPage {
   error = signal('');
   tab = signal<'draws' | 'schedule' | 'rules' | 'signup'>('draws');
   catId = signal<string | null>(null);
-  poster = signal(false);
+  /** Ventana de descarga abierta (PDF o imagen). */
+  poster = signal<'pdf' | 'png' | null>(null);
 
   current = computed<CategoryBoard | undefined>(() => {
     const b = this.board();
     if (!b) return undefined;
     return b.categories.find(c => c.category.id === this.catId()) ?? b.categories[0];
   });
+  /** Cuadro de honor elegido en la fila de categorías. */
+  honor = computed(() => this.catId() === 'honor' && this.hasHonor());
+  /** Alguna categoría tiene ya campeón. */
+  hasHonor = computed(() => !!this.board()?.categories.some(c => podium(c).done));
   dates = computed(() => this.board() ? range(this.board()!.tournament.startDate, this.board()!.tournament.endDate) : '');
 
   constructor() {
@@ -121,6 +148,7 @@ export class PublicTournamentPage {
     });
   }
 
+  openPoster(kind: 'pdf' | 'png') { this.poster.set(kind); }
   color(c: CategoryBoard) { return categoryColor(c.category); }
   /** Partidos en juego ahora mismo (punto rojo en la pestaña Cuadros y en cada categoría). */
   liveIn(c: CategoryBoard) { return c.matches.filter(m => m.live).length; }
