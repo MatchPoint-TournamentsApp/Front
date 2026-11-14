@@ -10,7 +10,7 @@ import { SupabaseService } from '../core/supabase.service';
     <section class="hero on-dark">
       <div class="inner">
         <img class="mark" src="brand/mark-800.png" alt="">
-        <h1>Matchzone</h1>
+        <h1><span>Matchzon<span class="last">e</span></span><span class="app">app</span></h1>
         <hr>
         <p class="tag">Torneos de pádel</p>
         <p class="lead">Cuadros, horarios y resultados en un solo lugar.</p>
@@ -35,6 +35,10 @@ import { SupabaseService } from '../core/supabase.service';
       margin: 0; color: var(--cream); font-weight: 300; text-transform: uppercase;
       font-size: clamp(2rem, 6vw, 3.4rem); letter-spacing: .32em; margin-right: -.32em; line-height: 1;
     }
+    /* «app» pequeño al final, bajo el nombre (dominio matchzoneapp.com) */
+    h1 { display: flex; flex-direction: column; margin-right: 0; }
+    h1 .last { letter-spacing: 0; }
+    h1 .app { align-self: flex-end; margin: .5em -.4em 0 0; font-size: .26em; font-weight: 500; letter-spacing: .4em; color: var(--gold); }
     hr { width: min(320px, 70%); height: 1px; border: 0; margin: 22px 0 18px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
     .tag { margin: 0; font-size: .85rem; font-weight: 500; letter-spacing: .4em; margin-right: -.4em; text-transform: uppercase; color: var(--gold); }
     .lead { margin: 30px 0 34px; font-size: 1.1rem; font-weight: 300; color: var(--cream-2); max-width: 40ch; }

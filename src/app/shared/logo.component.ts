@@ -10,7 +10,8 @@ import { Component, input } from '@angular/core';
     <img class="mark" src="brand/icon-512.png" alt="" [style.width.px]="size()" [style.height.px]="size()" [class.framed]="!inverse()">
     @if (wordmark()) {
       <span class="word" [class.inv]="inverse()" [style.font-size.px]="size() * .5">
-        Matchzone
+        <span class="name">Matchzon<span class="last">e</span></span>
+        <span class="app">app</span>
         @if (tagline()) { <small>Torneos de pádel</small> }
       </span>
     }
@@ -26,6 +27,11 @@ import { Component, input } from '@angular/core';
       min-width: 12px;
     }
     .word.inv { color: var(--cream); font-weight: 300; }
+    /* «app» pequeño al final, bajo el nombre (dominio matchzoneapp.com). Margen negativo: compensa el espaciado. */
+    /* Sin espaciado tras la última letra: así «app» termina justo bajo la E. */
+    .name .last { letter-spacing: 0; }
+    .app { align-self: flex-end; margin: -.25em -.4em 0 0; font-size: max(8px, .42em); font-weight: 500; letter-spacing: .4em; color: var(--gold-ink); }
+    .word.inv .app { color: var(--gold); }
     small { font-size: .42em; font-weight: 500; letter-spacing: .34em; color: var(--gold-ink); }
     .word.inv small { color: var(--gold); }
   `],
