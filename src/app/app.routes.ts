@@ -20,6 +20,7 @@ export const routes: Routes = [
     ],
   },
   { path: 'admin', canActivate: [authGuard, adminGuard], loadComponent: () => import('./pages/admin/admin.page').then(m => m.AdminPage) },
+  { path: 'quienes-somos', loadComponent: () => import('./pages/about.page').then(m => m.AboutPage) },
   { path: 'aviso-legal', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'legal' } },
   { path: 'privacidad', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'privacy' } },
   { path: 'condiciones', loadComponent: () => import('./pages/legal.page').then(m => m.LegalPage), data: { doc: 'terms' } },

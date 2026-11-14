@@ -18,6 +18,7 @@ import { LogoComponent } from './shared/logo.component';
         </button>
         <nav id="mp-nav" [class.open]="menu()">
           <a routerLink="/torneos" routerLinkActive="on">Torneos</a>
+          <a routerLink="/quienes-somos" routerLinkActive="on">Quiénes somos</a>
           @if (supa.loggedIn()) {
             <a routerLink="/panel" routerLinkActive="on">Mi club</a>
             @if (account.isAdmin()) { <a routerLink="/admin" routerLinkActive="on">Administración</a> }
@@ -47,6 +48,7 @@ import { LogoComponent } from './shared/logo.component';
         <nav>
           <a routerLink="/torneos">Torneos</a>
           <a [routerLink]="supa.loggedIn() ? '/panel' : '/registro'">Organizar un torneo</a>
+          <a routerLink="/quienes-somos">Quiénes somos</a>
         </nav>
         <span class="copy">© {{ year }} MatchZone</span>
       </div>
@@ -89,7 +91,8 @@ import { LogoComponent } from './shared/logo.component';
     .config { background: var(--warn-bg); color: #6e4a12; text-align: center; padding: 8px 16px; font-size: .88rem; }
     .foot { background: var(--night); color: var(--cream-2); margin-top: 40px; border-top: 1px solid var(--night-3); }
     .foot .inner { max-width: 1200px; margin: 0 auto; padding: 36px 20px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-    .foot nav { gap: 22px; flex: 1; justify-content: center; }
+    .foot nav { gap: 10px 22px; flex: 1; justify-content: center; flex-wrap: wrap; }
+    .foot nav a { white-space: nowrap; }
     .copy { font-size: .8rem; letter-spacing: .08em; }
     .legal { max-width: 1200px; margin: 0 auto; padding: 14px 20px 22px; border-top: 1px solid var(--night-3); display: flex; flex-wrap: wrap; gap: 6px 22px; }
     .legal a { color: var(--cream-2); font-size: .78rem; letter-spacing: .04em; text-decoration: none; opacity: .8; }
