@@ -121,13 +121,13 @@ export interface AdminClub {
   ownerName?: string; ownerEmail?: string; ownerPhone?: string; tournaments: number; sameTaxId: number;
 }
 /** Formulario de contacto: soporte va a support@, el resto a info@. */
-export type ContactReason = 'ORGANIZE' | 'SUPPORT' | 'OTHER';
+export type ContactReason = 'ORGANIZE' | 'SUPPORT' | 'OTHER' | 'SUGGESTION';
 export interface ContactRequest {
-  reason: ContactReason; name: string; email: string; club?: string; phone?: string; message: string;
+  reason: ContactReason; name?: string; email?: string; club?: string; phone?: string; message: string;
   privacyAccepted: boolean; website?: string; elapsedMs?: number;
 }
 export interface AdminContactMessage {
-  id: string; reason: ContactReason; name: string; email: string; phone?: string | null; club?: string | null; message: string;
+  id: string; reason: ContactReason; name?: string | null; email?: string | null; phone?: string | null; club?: string | null; message: string;
   emailSent: boolean; handledAt?: string | null; replyText?: string | null; repliedAt?: string | null; createdAt: string;
 }
 export interface AdminTournament {

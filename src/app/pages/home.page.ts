@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
+import { SuggestionDialogComponent } from '../shared/suggestion-dialog.component';
 
 /** Portada: solo la marca, un eslogan y los accesos principales. */
 @Component({
   selector: 'mp-home',
-  imports: [RouterLink],
+  imports: [RouterLink, SuggestionDialogComponent],
   template: `
     <section class="hero on-dark">
       <div class="inner">
@@ -18,8 +19,10 @@ import { SupabaseService } from '../core/supabase.service';
           @if (supa.loggedIn()) { <a class="btn lg ghost" routerLink="/panel">Mi club</a> }
           @else { <a class="btn lg ghost" routerLink="/entrar">Acceder</a> }
         </div>
+        <button class="improve" type="button" (click)="suggest.set(true)">¿Nos ayudas a mejorar? <span>Cuéntanos tu idea →</span></button>
       </div>
     </section>
+    @if (suggest()) { <mp-suggestion-dialog (closed)="suggest.set(false)" /> }
   `,
   styles: [`
     :host { display: block; margin-bottom: -40px; }
@@ -40,10 +43,15 @@ import { SupabaseService } from '../core/supabase.service';
     h1 .app { align-self: flex-end; margin: .5em -.4em 0 0; font-size: max(10px, .26em); font-weight: 500; letter-spacing: .4em; color: var(--gold); }
     hr { width: min(320px, 70%); height: 1px; border: 0; margin: 22px 0 18px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
     .lead { margin: 30px 0 34px; font-size: 1.1rem; font-weight: 300; color: var(--cream-2); max-width: 40ch; }
+    .improve { margin-top: 34px; background: none; border: 0; padding: 6px 4px; cursor: pointer; font: 400 .92rem var(--body); color: var(--cream-2); }
+    .improve span { color: var(--gold); border-bottom: 1px solid rgba(201, 164, 106, .4); margin-left: 4px; transition: border-color .2s; }
+    .improve:hover span { border-color: var(--gold); }
     .cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
     @media (max-width: 420px) { .cta { flex-direction: column; width: 100%; } .cta .btn { width: 100%; } }
   `],
 })
 export class HomePage {
   supa = inject(SupabaseService);
+  /** Ventana «¿Nos ayudas a mejorar?» abierta. */
+  suggest = signal(false);
 }

@@ -6,7 +6,7 @@ import { AdminContactMessage, ContactReason } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { dateTime } from './admin-format';
 
-const REASON: Record<ContactReason, string> = { ORGANIZE: 'Organizar un torneo', SUPPORT: 'Soporte técnico', OTHER: 'Otro' };
+const REASON: Record<ContactReason, string> = { ORGANIZE: 'Organizar un torneo', SUPPORT: 'Soporte técnico', OTHER: 'Otro', SUGGESTION: 'Sugerencia' };
 
 /**
  * Mensajes del formulario de contacto: leerlos, responderlos desde aquí (sale desde info@ o support@ con la
@@ -27,7 +27,7 @@ const REASON: Record<ContactReason, string> = { ORGANIZE: 'Organizar un torneo',
       <article class="panel msg" [class.done]="!!m.handledAt">
         <header>
           <div>
-            <b>{{ m.name }}</b>
+            <b>{{ m.name || m.email || 'Anónimo' }}</b>
             <span class="chip" [class.warn]="m.reason === 'SUPPORT'">{{ reason(m.reason) }}</span>
             @if (m.handledAt) { <span class="chip ok">Respondido</span> }
             @if (!m.emailSent) { <span class="chip warn" title="No se pudo reenviar al correo">Sin reenviar</span> }
@@ -35,7 +35,7 @@ const REASON: Record<ContactReason, string> = { ORGANIZE: 'Organizar un torneo',
           <span class="small muted">{{ when(m.createdAt) }}</span>
         </header>
         <p class="meta small">
-          {{ m.email }}
+          {{ m.email || 'Sin email (no se puede responder)' }}
           @if (m.phone) { · <a [href]="'tel:' + m.phone.replace(' ', '')">{{ m.phone }}</a> }
           @if (m.club) { · {{ m.club }} }
         </p>
@@ -60,7 +60,7 @@ const REASON: Record<ContactReason, string> = { ORGANIZE: 'Organizar un torneo',
           </div>
         } @else {
           <div class="row">
-            <button class="btn sm" (click)="write(m)">{{ m.replyText ? 'Responder otra vez' : 'Responder' }}</button>
+            @if (m.email) { <button class="btn sm" (click)="write(m)">{{ m.replyText ? 'Responder otra vez' : 'Responder' }}</button> }
             <button class="btn ghost sm" (click)="toggle(m)" [disabled]="busy() === m.id">{{ m.handledAt ? 'Marcar sin responder' : 'Marcar como respondido' }}</button>
           </div>
         }
@@ -105,7 +105,7 @@ export class AdminMessagesComponent {
   from(m: AdminContactMessage) { return m.reason === 'SUPPORT' ? 'support@matchzonesports.com' : 'info@matchzonesports.com'; }
 
   write(m: AdminContactMessage) {
-    this.draft = `Hola ${m.name.split(' ')[0]},\n\n`;
+    this.draft = m.name ? `Hola ${m.name.split(' ')[0]},\n\n` : 'Hola,\n\n';
     this.writing.set(m.id);
   }
   cancel() { this.writing.set(null); this.draft = ''; }
@@ -113,7 +113,7 @@ export class AdminMessagesComponent {
   async send(m: AdminContactMessage) {
     const text = this.draft.trim();
     if (!text) return;
-    if (!(await this.confirm.ask({ title: `¿Enviar la respuesta a ${m.name}?`, message: `Se enviará a ${m.email} desde ${this.from(m)}, con tu firma y su mensaje citado.`, ok: 'Enviar' }))) return;
+    if (!(await this.confirm.ask({ title: `¿Enviar la respuesta a ${m.name || m.email}?`, message: `Se enviará a ${m.email} desde ${this.from(m)}, con tu firma y su mensaje citado.`, ok: 'Enviar' }))) return;
     this.busy.set(m.id);
     try {
       await this.api.adminContactReply(m.id, text);
