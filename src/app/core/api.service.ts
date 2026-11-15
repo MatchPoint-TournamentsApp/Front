@@ -126,5 +126,6 @@ export class ApiService {
   adminDeletePayment(id: string) { return this.del(`/admin/payments/${id}`); }
   adminActions() { return this.get<M.AdminAction[]>('/admin/actions'); }
   adminContactMessages() { return this.get<M.AdminContactMessage[]>('/admin/contact-messages'); }
+  adminContactReply(id: string, text: string) { return this.post<M.AdminContactMessage>(`/admin/contact-messages/${id}/reply`, { text }); }
   adminContactHandled(id: string, handled: boolean) { return this.put<M.AdminContactMessage>(`/admin/contact-messages/${id}/handled`, { handled }); }
 }

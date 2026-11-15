@@ -111,7 +111,7 @@ export interface ContactRequest {
 }
 export interface AdminContactMessage {
   id: string; reason: ContactReason; name: string; email: string; phone?: string | null; club?: string | null; message: string;
-  emailSent: boolean; handledAt?: string | null; createdAt: string;
+  emailSent: boolean; handledAt?: string | null; replyText?: string | null; repliedAt?: string | null; createdAt: string;
 }
 export interface AdminTournament {
   id: string; name: string; slug: string; startDate: string; endDate: string; status: TournamentStatus; publicVisible: boolean;
