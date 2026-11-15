@@ -1,18 +1,19 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
-import { AdminAction, AdminOverview, AdminPayment, AdminTournament, AdminUser } from '../../core/models';
+import { AdminAction, AdminContactMessage, AdminOverview, AdminPayment, AdminTournament, AdminUser } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { AdminAccountingComponent } from './admin-accounting.component';
 import { ACTION_LABEL, dateTime } from './admin-format';
 import { AdminTournamentsComponent } from './admin-tournaments.component';
 import { AdminUsersComponent } from './admin-users.component';
+import { AdminMessagesComponent } from './admin-messages.component';
 
-type Tab = 'tournaments' | 'accounting' | 'users' | 'log';
+type Tab = 'tournaments' | 'messages' | 'accounting' | 'users' | 'log';
 
 /** Panel de administración de MatchZone (solo SUPERADMIN). */
 @Component({
   selector: 'mp-admin',
-  imports: [AdminTournamentsComponent, AdminAccountingComponent, AdminUsersComponent],
+  imports: [AdminTournamentsComponent, AdminAccountingComponent, AdminUsersComponent, AdminMessagesComponent],
   template: `
     <div class="page">
       <div class="page-head">
@@ -25,14 +26,16 @@ type Tab = 'tournaments' | 'accounting' | 'users' | 'log';
         <div class="stats">
           <button class="stat" [class.hot]="o.pendingRequests > 0" (click)="tab.set('tournaments')">
             <b class="num">{{ o.pendingRequests }}</b><span>{{ o.pendingRequests === 1 ? 'solicitud pendiente' : 'solicitudes pendientes' }}</span></button>
+          <button class="stat" [class.hot]="o.newMessages > 0" (click)="tab.set('messages')">
+            <b class="num">{{ o.newMessages }}</b><span>{{ o.newMessages === 1 ? 'mensaje sin responder' : 'mensajes sin responder' }}</span></button>
           <div class="stat"><b class="num">{{ o.tournaments }}</b><span>torneos</span></div>
-          <div class="stat"><b class="num">{{ o.clubs }}</b><span>clubes</span></div>
           <div class="stat"><b class="num">{{ o.users }}</b><span>cuentas{{ o.blockedUsers ? ' · ' + o.blockedUsers + ' bloqueadas' : '' }}</span></div>
         </div>
       }
 
       <div class="tabs" role="tablist">
         <button [class.on]="tab() === 'tournaments'" (click)="tab.set('tournaments')">Solicitudes y torneos</button>
+        <button [class.on]="tab() === 'messages'" (click)="tab.set('messages')">Mensajes@if (overview()?.newMessages) { <span class="chip warn">{{ overview()!.newMessages }}</span> }</button>
         <button [class.on]="tab() === 'accounting'" (click)="tab.set('accounting')">Contabilidad</button>
         <button [class.on]="tab() === 'users'" (click)="tab.set('users')">Usuarios</button>
         <button [class.on]="tab() === 'log'" (click)="tab.set('log')">Registro</button>
@@ -45,6 +48,7 @@ type Tab = 'tournaments' | 'accounting' | 'users' | 'log';
       } @else {
         @switch (tab()) {
           @case ('tournaments') { <mp-admin-tournaments [tournaments]="tournaments()" (changed)="load()" /> }
+          @case ('messages') { <mp-admin-messages [messages]="messages()" (changed)="load()" /> }
           @case ('accounting') { <mp-admin-accounting [payments]="payments()" (changed)="load()" /> }
           @case ('users') { <mp-admin-users [users]="users()" (changed)="load()" /> }
           @case ('log') {
@@ -88,6 +92,7 @@ export class AdminPage implements OnInit {
   payments = signal<AdminPayment[]>([]);
   users = signal<AdminUser[]>([]);
   actions = signal<AdminAction[]>([]);
+  messages = signal<AdminContactMessage[]>([]);
 
   ngOnInit() { this.load(); }
 
@@ -95,13 +100,14 @@ export class AdminPage implements OnInit {
     this.loading.set(true);
     this.error.set('');
     try {
-      const [o, t, p, u, a] = await Promise.all([this.api.adminOverview(), this.api.adminTournaments(),
-        this.api.adminPayments(), this.api.adminUsers(), this.api.adminActions()]);
+      const [o, t, p, u, a, m] = await Promise.all([this.api.adminOverview(), this.api.adminTournaments(),
+        this.api.adminPayments(), this.api.adminUsers(), this.api.adminActions(), this.api.adminContactMessages()]);
       this.overview.set(o);
       this.tournaments.set(t);
       this.payments.set(p);
       this.users.set(u);
       this.actions.set(a);
+      this.messages.set(m);
     } catch (e) {
       this.error.set((e as Error).message);
       this.toast.error(e);

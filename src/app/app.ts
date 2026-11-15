@@ -19,6 +19,7 @@ import { LogoComponent } from './shared/logo.component';
         <nav id="mp-nav" [class.open]="menu()">
           <a routerLink="/torneos" routerLinkActive="on">Torneos</a>
           <a routerLink="/quienes-somos" routerLinkActive="on">Quiénes somos</a>
+          <a routerLink="/contacto" routerLinkActive="on">Contacto</a>
           @if (supa.loggedIn()) {
             <a routerLink="/panel" routerLinkActive="on">Mi club</a>
             @if (account.isAdmin()) { <a routerLink="/admin" routerLinkActive="on">Administración</a> }
@@ -49,6 +50,7 @@ import { LogoComponent } from './shared/logo.component';
           <a routerLink="/torneos">Torneos</a>
           <a [routerLink]="supa.loggedIn() ? '/panel' : '/registro'">Organizar un torneo</a>
           <a routerLink="/quienes-somos">Quiénes somos</a>
+          <a routerLink="/contacto">Contacto</a>
         </nav>
         <span class="copy">© {{ year }} MatchZone</span>
       </div>

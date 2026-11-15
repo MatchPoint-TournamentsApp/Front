@@ -108,6 +108,9 @@ export class ApiService {
     return this.post<{ message: string }>(`/public/tournaments/${slug}/registrations`, b);
   }
 
+  /** Formulario de contacto (llega a info@ o support@). */
+  contact(b: M.ContactRequest) { return this.post<{ message: string }>('/public/contact', b); }
+
   // administración (solo SUPERADMIN)
   adminOverview() { return this.get<M.AdminOverview>('/admin/overview'); }
   adminTournaments() { return this.get<M.AdminTournament[]>('/admin/tournaments'); }
@@ -122,4 +125,6 @@ export class ApiService {
   adminPayments() { return this.get<M.AdminPayment[]>('/admin/payments'); }
   adminDeletePayment(id: string) { return this.del(`/admin/payments/${id}`); }
   adminActions() { return this.get<M.AdminAction[]>('/admin/actions'); }
+  adminContactMessages() { return this.get<M.AdminContactMessage[]>('/admin/contact-messages'); }
+  adminContactHandled(id: string, handled: boolean) { return this.put<M.AdminContactMessage>(`/admin/contact-messages/${id}/handled`, { handled }); }
 }

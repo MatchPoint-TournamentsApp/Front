@@ -76,6 +76,7 @@ export class FillComponent {
             <li><b>Cuenta de organizador:</b> nombre, email y contraseña (guardada cifrada por el proveedor de autenticación; nadie puede leerla).</li>
             <li><b>Club:</b> nombre, dirección, teléfono, email, web, redes sociales, logotipo, horario y pistas.</li>
             <li><b>Jugadores:</b> nombre y apellidos, teléfono y email (si se facilitan), categoría, franjas en las que no pueden jugar, partidos y resultados.</li>
+            <li><b>Formulario de contacto:</b> nombre, email, mensaje y, si los indicas, teléfono y club.</li>
             <li><b>Datos técnicos:</b> dirección IP y registros del servidor, solo para la seguridad del servicio y para evitar abusos.</li>
           </ul>
 
@@ -84,6 +85,7 @@ export class FillComponent {
             <li><b>Prestar el servicio a los organizadores</b> (cuenta, club y torneos): ejecución del contrato (art. 6.1.b RGPD).</li>
             <li><b>Gestionar tu participación en un torneo</b> (inscripción, cuadros, horarios, resultados y contacto del club contigo): tu consentimiento al inscribirte (art. 6.1.a) y la relación que mantienes con el club organizador (art. 6.1.b).</li>
             <li><b>Publicar los cuadros, horarios y resultados</b> del torneo, en los que aparece tu nombre: es parte esencial de la organización del torneo que aceptas al inscribirte. El teléfono y el email <b>nunca</b> se publican; solo los ve el club.</li>
+            <li><b>Responder a los mensajes del formulario de contacto</b>: tu consentimiento al enviarlo (art. 6.1.a). El responsable es el titular de {{ L.brand }}.</li>
             <li><b>Seguridad y prevención del fraude o del spam</b> (por ejemplo, limitar inscripciones repetidas desde la misma conexión): interés legítimo (art. 6.1.f).</li>
           </ul>
           <p>No se toman decisiones automatizadas con efectos jurídicos sobre ti ni se elaboran perfiles. El generador de horarios solo usa tus franjas de disponibilidad para colocar los partidos.</p>
@@ -93,7 +95,8 @@ export class FillComponent {
           <ul>
             <li>Base de datos y autenticación: Supabase (servidores en la Unión Europea, Frankfurt).</li>
             <li>Servidor de la aplicación: Render (servidores en la Unión Europea, Frankfurt).</li>
-            <li>Alojamiento de la web y red de distribución: Vercel y Cloudflare.</li>
+            <li>Alojamiento de la web y red de distribución: Cloudflare (y Vercel, mientras se completa el cambio de alojamiento).</li>
+            <li>Envío de correos (confirmación de cuenta, recuperación de contraseña y mensajes de contacto): Brevo (Sendinblue SAS, Francia).</li>
           </ul>
           <p>Algunos de estos proveedores tienen sede en Estados Unidos y pueden tratar datos fuera del Espacio Económico Europeo. En ese caso, las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en las cláusulas contractuales tipo de la Comisión Europea.</p>
           <p>El buscador de municipios consulta un servicio público de datos (OpenDataSoft) enviando solo el texto que escribes en ese campo, sin datos personales.</p>
@@ -102,6 +105,7 @@ export class FillComponent {
           <ul>
             <li>Datos de la cuenta y del club: mientras la cuenta esté activa. Al darla de baja se eliminan, salvo los que deban conservarse por obligación legal.</li>
             <li>Datos de jugadores y torneos: mientras el club organizador mantenga el torneo en {{ L.brand }} o hasta que solicites su supresión.</li>
+            <li>Mensajes del formulario de contacto: el tiempo necesario para atender tu consulta y, como máximo, dos años.</li>
             <li>Datos técnicos de seguridad: el tiempo imprescindible (los contadores contra el spam se borran en una hora).</li>
           </ul>
 

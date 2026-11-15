@@ -87,7 +87,7 @@ import { FillComponent } from './legal.page';
         <h2>¿Organizas torneos en tu club?</h2>
         <div class="row">
           <a class="btn ball" [routerLink]="supa.loggedIn() ? '/panel' : '/registro'">Organizar un torneo</a>
-          <a class="btn ghost" routerLink="/torneos">Ver torneos</a>
+          <a class="btn ghost" routerLink="/contacto">Contactar</a>
         </div>
       </section>
     </div>

@@ -102,7 +102,17 @@ export interface DrawSummary { categories: number; matches: number; scheduled: n
 // ------------------------------------------------------------ administración (solo SUPERADMIN)
 export type PaymentMethod = 'BIZUM' | 'EFECTIVO' | 'TRANSFERENCIA' | 'OTRO';
 export interface PaymentRequest { amount: number; method: PaymentMethod; paidOn: string; note?: string; }
-export interface AdminOverview { users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; }
+export interface AdminOverview { users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; newMessages: number; }
+/** Formulario de contacto: soporte va a support@, el resto a info@. */
+export type ContactReason = 'ORGANIZE' | 'SUPPORT' | 'OTHER';
+export interface ContactRequest {
+  reason: ContactReason; name: string; email: string; club?: string; phone?: string; message: string;
+  privacyAccepted: boolean; website?: string; elapsedMs?: number;
+}
+export interface AdminContactMessage {
+  id: string; reason: ContactReason; name: string; email: string; phone?: string | null; club?: string | null; message: string;
+  emailSent: boolean; handledAt?: string | null; createdAt: string;
+}
 export interface AdminTournament {
   id: string; name: string; slug: string; startDate: string; endDate: string; status: TournamentStatus; publicVisible: boolean;
   generationRequestedAt?: string | null; generationApprovedAt?: string | null;
