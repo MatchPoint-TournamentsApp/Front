@@ -55,7 +55,7 @@ interface DayHours { open: boolean; from: string; to: string; }
             <div class="notice warn small"><b>No pudimos verificar el club.</b> {{ rejection() }} Corrige los datos y guarda: volveremos a revisarlos.</div>
           }
           <label class="field"><span>Razón social o nombre oficial</span>
-            <input name="legal" [(ngModel)]="f.legalName" #legalRef="ngModel" required maxlength="200" placeholder="Club Deportivo Pádel Mérida">
+            <input name="legal" [(ngModel)]="f.legalName" #legalRef="ngModel" required maxlength="200" placeholder="Club Deportivo Es+Padel">
             <mp-error [control]="legalRef" /></label>
           <div class="grid-2">
             <label class="field"><span>CIF / NIF de la entidad</span>
