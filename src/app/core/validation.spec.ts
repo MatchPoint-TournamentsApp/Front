@@ -1,4 +1,5 @@
 import { isEmail, isUrl, joinPhone, normalizeUrl, phoneError, postalCodeError, provinceCode, splitPhone } from './validation';
+import { isTaxId, normalizeTaxId } from './validation';
 
 describe('validation', () => {
   it('teléfonos de España', () => {
@@ -47,4 +48,14 @@ describe('validation', () => {
     expect(provinceCode('Araba')).toBe('01');
     expect(provinceCode('Valencia/València')).toBe('46');
   });
+});
+
+describe('CIF/NIF (igual que TaxIds.java)', () => {
+  it('acepta CIF, DNI y NIE válidos', () => {
+    for (const v of ['B12345674', 'g-1234567-4', 'G1234567D', 'Q1234567D', '12345678Z', 'X1234567L', '']) expect(isTaxId(v)).toBe(true);
+  });
+  it('rechaza controles erróneos', () => {
+    for (const v of ['B12345675', 'B1234567D', 'Q12345674', '12345678A', 'ABC']) expect(isTaxId(v)).toBe(false);
+  });
+  it('normaliza', () => { expect(normalizeTaxId(' g-12.345.67-4 ')).toBe('G12345674'); });
 });

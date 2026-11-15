@@ -109,3 +109,23 @@ const PROVINCES: Record<string, string[]> = {
   '43': ['Tarragona'], '44': ['Teruel'], '45': ['Toledo'], '46': ['Valencia', 'València', 'Valencia/València'],
   '47': ['Valladolid'], '48': ['Bizkaia', 'Vizcaya'], '49': ['Zamora'], '50': ['Zaragoza'], '51': ['Ceuta'], '52': ['Melilla'],
 };
+
+/** CIF de entidades, DNI y NIE: formato y dígito de control (como TaxIds.java). */
+export function normalizeTaxId(v: string | null | undefined) { return (v ?? '').replace(/[\s.-]/g, '').toUpperCase(); }
+export function isTaxId(v: string | null | undefined): boolean {
+  const s = normalizeTaxId(v);
+  if (!s) return true;
+  const dni = 'TRWAGMYFPDXBNJZSQVHLCKE';
+  if (/^\d{8}[A-Z]$/.test(s)) return dni[+s.slice(0, 8) % 23] === s[8];
+  if (/^[XYZ]\d{7}[A-Z]$/.test(s)) return dni[+('XYZ'.indexOf(s[0]) + s.slice(1, 8)) % 23] === s[8];
+  if (!/^[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]$/.test(s)) return false;
+  let sum = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = +s[i + 1];
+    if (i % 2 === 0) { const x = d * 2; sum += Math.floor(x / 10) + (x % 10); } else sum += d;
+  }
+  const control = (10 - (sum % 10)) % 10, letter = 'JABCDEFGHI'[control], got = s[8];
+  if ('NPQRSW'.includes(s[0])) return got === letter;
+  if ('ABEH'.includes(s[0])) return got === String(control);
+  return got === String(control) || got === letter;
+}

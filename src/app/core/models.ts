@@ -9,7 +9,11 @@ export type SponsorTier = 'PRINCIPAL' | 'COLABORADOR';
 export type Stage = 'MAIN' | 'CONSOLATION' | 'GROUP' | 'FINAL' | 'CONSOLATION_FINAL' | 'THIRD_PLACE';
 export type MatchStatus = 'PENDING' | 'PLAYED' | 'WALKOVER' | 'BYE';
 
-export interface ClubSummary { id: string; name: string; slug: string; city?: string; logoUrl?: string; }
+/** Verificación de la entidad del club por MatchZone. */
+export type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+/** Cargo de quien da de alta el club en la entidad. */
+export type ClubRole = 'PRESIDENT' | 'SECRETARY' | 'TREASURER' | 'BOARD_MEMBER' | 'OWNER' | 'MANAGER' | 'STAFF';
+export interface ClubSummary { id: string; name: string; slug: string; city?: string; logoUrl?: string; verificationStatus: VerificationStatus; }
 export interface Profile {
   id: string; fullName?: string; phone?: string; email?: string; role: Role; clubs: ClubSummary[];
   /** Cuenta bloqueada por el administrador de MatchZone. */
@@ -21,6 +25,10 @@ export interface Club {
   id: string; name: string; slug: string; address?: string; city?: string; province?: string; postalCode?: string;
   phone?: string; email?: string; website?: string; instagram?: string; logoUrl?: string; description?: string;
   courts: Court[]; openingHours: OpeningHour[];
+
+  /** Datos de la entidad y estado de la verificación. */
+  legalName?: string; taxId?: string; fiscalAddress?: string; contactRole?: ClubRole;
+  verificationStatus: VerificationStatus; rejectionReason?: string | null;
 }
 export interface ClubRequest {
   name: string; address?: string; city?: string; province?: string; postalCode?: string; phone?: string;
@@ -28,6 +36,9 @@ export interface ClubRequest {
   courtCount?: number; openingHours?: OpeningHour[];
   /** Solo en el alta: acepta condiciones y encargo de tratamiento de datos (RGPD). */
   termsAccepted?: boolean;
+  legalName?: string; taxId?: string; fiscalAddress?: string; contactRole?: ClubRole;
+  /** Solo en el alta: declaración responsable de que puede representar a la entidad. */
+  declarationAccepted?: boolean;
 }
 export interface TournamentSummary {
   id: string; name: string; slug: string; startDate: string; endDate: string; status: TournamentStatus;
@@ -102,7 +113,13 @@ export interface DrawSummary { categories: number; matches: number; scheduled: n
 // ------------------------------------------------------------ administración (solo SUPERADMIN)
 export type PaymentMethod = 'BIZUM' | 'EFECTIVO' | 'TRANSFERENCIA' | 'OTRO';
 export interface PaymentRequest { amount: number; method: PaymentMethod; paidOn: string; note?: string; }
-export interface AdminOverview { users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; newMessages: number; }
+export interface AdminOverview { users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; newMessages: number; pendingClubs: number; }
+export interface AdminClub {
+  id: string; name: string; city?: string; province?: string; phone?: string; email?: string; website?: string;
+  legalName?: string; taxId?: string; taxIdKind?: string; fiscalAddress?: string; contactRole?: ClubRole | null;
+  verificationStatus: VerificationStatus; rejectionReason?: string | null; verifiedAt?: string | null; createdAt: string;
+  ownerName?: string; ownerEmail?: string; ownerPhone?: string; tournaments: number; sameTaxId: number;
+}
 /** Formulario de contacto: soporte va a support@, el resto a info@. */
 export type ContactReason = 'ORGANIZE' | 'SUPPORT' | 'OTHER';
 export interface ContactRequest {

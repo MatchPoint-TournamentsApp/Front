@@ -37,3 +37,9 @@ export const CATEGORY_COLORS = ['#2c4a72', '#a07a3f', '#3c6e5a', '#7a4660', '#9a
 export function categoryColor(c: { color?: string; position: number }) {
   return c.color || CATEGORY_COLORS[Math.abs(c.position - 1) % CATEGORY_COLORS.length];
 }
+
+/** Cargo de quien da de alta el club en la entidad. */
+export const CLUB_ROLE: Record<import('./models').ClubRole, string> = {
+  PRESIDENT: 'Presidente/a', SECRETARY: 'Secretario/a', TREASURER: 'Tesorero/a', BOARD_MEMBER: 'Miembro de la junta directiva',
+  OWNER: 'Propietario/a o administrador/a de la empresa', MANAGER: 'Gerente o director/a', STAFF: 'Empleado/a autorizado/a',
+};

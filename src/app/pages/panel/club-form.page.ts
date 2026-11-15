@@ -2,11 +2,11 @@ import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
-import { ClubRequest, Court } from '../../core/models';
-import { DAYS } from '../../core/format';
+import { ClubRequest, ClubRole, Court, VerificationStatus } from '../../core/models';
+import { CLUB_ROLE, DAYS } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
-import { normalizeUrl } from '../../core/validation';
+import { normalizeTaxId, normalizeUrl } from '../../core/validation';
 import { AddressFieldsComponent } from '../../shared/address-fields.component';
 import { FORM_KIT } from '../../shared/forms';
 import { ImageUploadComponent } from '../../shared/image-upload.component';
@@ -47,6 +47,33 @@ interface DayHours { open: boolean; from: string; to: string; }
           </div>
         </section>
 
+        <section class="panel stack">
+          <h3>Datos de la entidad</h3>
+          <p class="small muted">Antes de publicar torneos comprobamos que el club existe y que puedes representarlo. Son los datos oficiales
+            de la asociación, club o empresa (los que usaremos también en las facturas). No se muestran en la web.</p>
+          @if (status() === 'REJECTED') {
+            <div class="notice warn small"><b>No pudimos verificar el club.</b> {{ rejection() }} Corrige los datos y guarda: volveremos a revisarlos.</div>
+          }
+          <label class="field"><span>Razón social o nombre oficial</span>
+            <input name="legal" [(ngModel)]="f.legalName" #legalRef="ngModel" required maxlength="200" placeholder="Club Deportivo Pádel Mérida">
+            <mp-error [control]="legalRef" /></label>
+          <div class="grid-2">
+            <label class="field"><span>CIF / NIF de la entidad</span>
+              <input name="tax" [(ngModel)]="f.taxId" #taxRef="ngModel" required mpTaxId maxlength="15" autocomplete="off" placeholder="G12345678"
+                     (blur)="f.taxId = normalize(f.taxId)">
+              <mp-error [control]="taxRef" /></label>
+            <label class="field"><span>Tu cargo en la entidad</span>
+              <select name="role" [(ngModel)]="f.contactRole" #roleRef="ngModel" required>
+                <option [ngValue]="undefined" disabled>Elige tu cargo</option>
+                @for (r of roles; track r.value) { <option [ngValue]="r.value">{{ r.label }}</option> }
+              </select>
+              <mp-error [control]="roleRef" /></label>
+          </div>
+          <label class="field"><span>Domicilio fiscal</span>
+            <input name="fiscal" [(ngModel)]="f.fiscalAddress" #fiscalRef="ngModel" required maxlength="300" placeholder="Calle, número, código postal y municipio">
+            <mp-error [control]="fiscalRef" /></label>
+        </section>
+
         <section class="panel">
           <h3>Horario de apertura</h3>
           <p class="small muted">Se usa como horario por defecto de los torneos. Podrás ajustarlo en cada torneo.</p>
@@ -79,6 +106,13 @@ interface DayHours { open: boolean; from: string; to: string; }
                 Como organizador, informaré a los jugadores que inscriba yo mismo y contaré con su autorización para tratar sus datos.</span>
             </label>
             <mp-error [control]="termsRef" requiredText="Para dar de alta el club tienes que aceptar las condiciones de uso" />
+            <label class="check terms">
+              <input type="checkbox" name="decl" [(ngModel)]="declaration" #declRef="ngModel" required>
+              <span><b>Declaración responsable.</b> Declaro que los datos de la entidad son ciertos y que, por mi cargo, tengo autorización
+                para darla de alta y gestionar sus torneos en MatchZone. Sé que lo comprobaréis antes de publicar torneos.</span>
+            </label>
+            <mp-error [control]="declRef" requiredText="Para dar de alta el club tienes que hacer la declaración responsable" />
+            <p class="small muted" style="margin:0">Tras el alta, revisaremos los datos (normalmente en 24–48 h). Mientras tanto podrás preparar tus torneos.</p>
           </section>
         }
 
@@ -132,6 +166,11 @@ export class ClubFormPage implements OnInit {
   hours: DayHours[] = DAYS.map((_, i) => ({ open: true, from: i < 5 ? '09:00' : '09:00', to: i < 5 ? '23:00' : '22:00' }));
   courtCount = 4;
   terms = false;
+  declaration = false;
+  status = signal<VerificationStatus | null>(null);
+  rejection = signal('');
+  readonly roles = (Object.keys(CLUB_ROLE) as ClubRole[]).map(value => ({ value, label: CLUB_ROLE[value] }));
+  normalize = normalizeTaxId;
   courts = signal<Court[]>([]);
   busy = signal(false);
 
@@ -140,6 +179,8 @@ export class ClubFormPage implements OnInit {
     try {
       const c = await this.api.club(this.id()!);
       this.f = { ...c };
+      this.status.set(c.verificationStatus);
+      this.rejection.set(c.rejectionReason ?? '');
       this.logo.set(c.logoUrl ?? '');
       this.courts.set(c.courts);
       this.hours = DAYS.map((_, i) => {
@@ -153,14 +194,16 @@ export class ClubFormPage implements OnInit {
     if (form.invalid) return;
     if (this.hours.some(h => h.open && h.to <= h.from)) { this.toast.error('En el horario, la hora de cierre debe ser posterior a la de apertura'); return; }
     const body: ClubRequest = {
-      ...this.f, termsAccepted: this.id() ? undefined : this.terms, website: normalizeUrl(this.f.website) || undefined, logoUrl: this.logo() || undefined, courtCount: this.courtCount,
+      ...this.f, termsAccepted: this.id() ? undefined : this.terms, declarationAccepted: this.id() ? undefined : this.declaration,
+      taxId: normalizeTaxId(this.f.taxId), website: normalizeUrl(this.f.website) || undefined, logoUrl: this.logo() || undefined, courtCount: this.courtCount,
       openingHours: this.hours.map((h, i) => ({ dayOfWeek: i + 1, openTime: h.from, closeTime: h.to, open: h.open }))
         .filter(h => h.open).map(({ open: _o, ...h }) => h),
     };
     this.busy.set(true);
     try {
       const c = this.id() ? await this.api.updateClub(this.id()!, body) : await this.api.createClub(body);
-      this.toast.ok(this.id() ? 'Club actualizado' : 'Club dado de alta');
+      this.toast.ok(this.id() ? (c.verificationStatus === 'PENDING' && this.status() !== 'PENDING' ? 'Datos guardados: volveremos a verificar el club' : 'Club actualizado')
+        : 'Club dado de alta: lo revisaremos en breve');
       this.router.navigate(['/panel/club', c.id]);
     } catch (e) { this.toast.error(e); }
     finally { this.busy.set(false); }

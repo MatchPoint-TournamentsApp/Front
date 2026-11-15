@@ -13,4 +13,6 @@ export const ACTION_LABEL: Record<string, string> = {
   HIDE_TOURNAMENT: 'Ocultó un torneo',
   BLOCK_USER: 'Bloqueó una cuenta',
   UNBLOCK_USER: 'Desbloqueó una cuenta',
+  VERIFY_CLUB: 'Verificó un club',
+  REJECT_CLUB: 'Rechazó un club',
 };

@@ -2,7 +2,7 @@ import {
   Component, DestroyRef, Directive, ElementRef, Injector, OnChanges, afterNextRender, computed, effect, forwardRef, inject, input, signal,
 } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, NgForm, NgModel, ValidationErrors, Validator } from '@angular/forms';
-import { isEmail, isUrl, postalCodeError, provinceCode } from '../core/validation';
+import { isEmail, isTaxId, isUrl, postalCodeError, provinceCode } from '../core/validation';
 
 /**
  * Ayudas para formularios con plantilla (ngModel):
@@ -26,6 +26,15 @@ export class EmailValidatorDirective implements Validator {
 })
 export class UrlValidatorDirective implements Validator {
   validate(c: AbstractControl): ValidationErrors | null { return isUrl(c.value) ? null : { url: true }; }
+}
+
+/** CIF/NIF español (entidad, DNI o NIE) con su dígito de control. */
+@Directive({
+  selector: '[mpTaxId][ngModel]',
+  providers: [{ provide: NG_VALIDATORS, useExisting: forwardRef(() => TaxIdValidatorDirective), multi: true }],
+})
+export class TaxIdValidatorDirective implements Validator {
+  validate(c: AbstractControl): ValidationErrors | null { return isTaxId(c.value) ? null : { taxId: true }; }
 }
 
 /** Código postal de 5 cifras que, si se indica la provincia, empieza por su código. */
@@ -86,6 +95,7 @@ const MESSAGES: Record<string, (e: unknown) => string> = {
   phone: e => String(e),
   postalCode: e => String(e),
   custom: e => String(e),
+  taxId: () => 'CIF/NIF no válido: revisa las letras y los números',
 };
 
 export function errorMessage(errors: ValidationErrors | null | undefined): string {
@@ -180,6 +190,6 @@ export function focusFirstInvalid(root: HTMLElement) {
 
 /** Todo lo necesario para validar un formulario, para importarlo de una vez. */
 export const FORM_KIT = [
-  EmailValidatorDirective, UrlValidatorDirective, PostalCodeValidatorDirective, NotBeforeValidatorDirective, SameAsValidatorDirective,
+  EmailValidatorDirective, UrlValidatorDirective, TaxIdValidatorDirective, PostalCodeValidatorDirective, NotBeforeValidatorDirective, SameAsValidatorDirective,
   FieldErrorComponent, FormErrorsComponent, FormFocusDirective,
 ] as const;

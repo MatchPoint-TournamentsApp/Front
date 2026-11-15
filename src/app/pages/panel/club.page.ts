@@ -23,6 +23,13 @@ import { TournamentCardComponent } from '../tournament-card.component';
             <a class="btn ball" [routerLink]="['/panel/club', c.id, 'torneo', 'nuevo']">Nuevo torneo</a>
           </div>
         </div>
+        @if (c.verificationStatus === 'PENDING') {
+          <div class="notice verify"><b>Club pendiente de verificación.</b> Estamos comprobando los datos de la entidad (normalmente en 24–48 h).
+            Mientras tanto puedes crear y preparar tus torneos; cuando lo verifiquemos podrás publicarlos, abrir inscripciones y generar los cuadros.</div>
+        } @else if (c.verificationStatus === 'REJECTED') {
+          <div class="notice warn verify"><b>No hemos podido verificar el club.</b> {{ c.rejectionReason }}
+            <a [routerLink]="['/panel/club', c.id, 'editar']">Corrige los datos de la entidad</a> y lo revisaremos de nuevo.</div>
+        }
         <div class="section"><span class="eyebrow">Torneos del club</span></div>
         @if (!tournaments().length) {
           <div class="panel empty">
@@ -51,6 +58,7 @@ import { TournamentCardComponent } from '../tournament-card.component';
     </div>
   `,
   styles: [`
+    .verify { margin: 0 0 20px; }
     .head { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 36px; }
     .info { flex: 1; min-width: 240px; }
     .info h1 { margin: 0 0 6px; }

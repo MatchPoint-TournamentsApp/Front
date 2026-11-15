@@ -125,6 +125,9 @@ export class ApiService {
   adminPayments() { return this.get<M.AdminPayment[]>('/admin/payments'); }
   adminDeletePayment(id: string) { return this.del(`/admin/payments/${id}`); }
   adminActions() { return this.get<M.AdminAction[]>('/admin/actions'); }
+  adminClubs() { return this.get<M.AdminClub[]>('/admin/clubs'); }
+  adminVerifyClub(id: string) { return this.post<void>(`/admin/clubs/${id}/verify`); }
+  adminRejectClub(id: string, reason: string) { return this.post<void>(`/admin/clubs/${id}/reject`, { reason }); }
   adminContactMessages() { return this.get<M.AdminContactMessage[]>('/admin/contact-messages'); }
   adminContactReply(id: string, text: string) { return this.post<M.AdminContactMessage>(`/admin/contact-messages/${id}/reply`, { text }); }
   adminContactHandled(id: string, handled: boolean) { return this.put<M.AdminContactMessage>(`/admin/contact-messages/${id}/handled`, { handled }); }

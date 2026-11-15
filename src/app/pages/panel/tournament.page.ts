@@ -48,6 +48,13 @@ const REFRESH_MS = 30_000;
         </div>
 
         <mp-draw-status [t]="tt" [notes]="noteCount()" (showConflicts)="conflictsFor.set({ matchId: null })" (changed)="reload()" (generated)="tab.set('draws')" />
+        @if (club() && club()!.verificationStatus !== 'VERIFIED') {
+          <div class="notice warn next">
+            @if (club()!.verificationStatus === 'REJECTED') { <b>No hemos podido verificar tu club.</b> Corrige los datos de la entidad en «Datos del club». }
+            @else { <b>Tu club está pendiente de verificación.</b> }
+            Hasta entonces la página pública del torneo no se verá, no se podrán inscribir parejas por el enlace y no podrás generar los cuadros.
+          </div>
+        }
         @if (next(); as n) { <div class="notice next">{{ n }}</div> }
         @if (warningCount()) {
           <div class="notice warn conflicts-bar">

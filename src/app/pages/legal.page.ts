@@ -75,6 +75,7 @@ export class FillComponent {
           <ul>
             <li><b>Cuenta de organizador:</b> nombre, email y contraseña (guardada cifrada por el proveedor de autenticación; nadie puede leerla).</li>
             <li><b>Club:</b> nombre, dirección, teléfono, email, web, redes sociales, logotipo, horario y pistas.</li>
+            <li><b>Entidad del club:</b> razón social, CIF/NIF, domicilio fiscal y el cargo que ocupa en ella quien la da de alta.</li>
             <li><b>Jugadores:</b> nombre y apellidos, teléfono y email (si se facilitan), categoría, franjas en las que no pueden jugar, partidos y resultados.</li>
             <li><b>Formulario de contacto:</b> nombre, email, mensaje y, si los indicas, teléfono y club.</li>
             <li><b>Datos técnicos:</b> dirección IP y registros del servidor, solo para la seguridad del servicio y para evitar abusos.</li>
@@ -85,6 +86,7 @@ export class FillComponent {
             <li><b>Prestar el servicio a los organizadores</b> (cuenta, club y torneos): ejecución del contrato (art. 6.1.b RGPD).</li>
             <li><b>Gestionar tu participación en un torneo</b> (inscripción, cuadros, horarios, resultados y contacto del club contigo): tu consentimiento al inscribirte (art. 6.1.a) y la relación que mantienes con el club organizador (art. 6.1.b).</li>
             <li><b>Publicar los cuadros, horarios y resultados</b> del torneo, en los que aparece tu nombre: es parte esencial de la organización del torneo que aceptas al inscribirte. El teléfono y el email <b>nunca</b> se publican; solo los ve el club.</li>
+            <li><b>Verificar que el club existe y que quien lo da de alta puede representarlo</b>, y emitir las facturas de los servicios: ejecución del contrato (art. 6.1.b), interés legítimo en evitar suplantaciones (art. 6.1.f) y cumplimiento de obligaciones fiscales (art. 6.1.c). Para verificarlo podemos consultar registros públicos y contactar con el club por sus canales oficiales.</li>
             <li><b>Responder a los mensajes del formulario de contacto</b>: tu consentimiento al enviarlo (art. 6.1.a). El responsable es el titular de {{ L.brand }}.</li>
             <li><b>Seguridad y prevención del fraude o del spam</b> (por ejemplo, limitar inscripciones repetidas desde la misma conexión): interés legítimo (art. 6.1.f).</li>
           </ul>
@@ -142,6 +144,7 @@ export class FillComponent {
           <ul>
             <li><b>Invitados y jugadores:</b> pueden consultar los torneos publicados e inscribirse sin cuenta.</li>
             <li><b>Organizadores:</b> crean una cuenta, dan de alta su club y gestionan sus torneos. Al dar de alta un club pasan a ser sus administradores.</li>
+            <li><b>Verificación de clubes:</b> quien da de alta un club declara, bajo su responsabilidad, que los datos de la entidad son ciertos y que tiene autorización para representarla. {{ L.brand }} comprobará estos datos antes de permitir publicar torneos, abrir inscripciones o generar cuadros, y podrá rechazar, suspender o dar de baja los clubes cuyos datos no pueda verificar o resulten falsos.</li>
           </ul>
 
           <h2>3. Cuenta de organizador</h2>
