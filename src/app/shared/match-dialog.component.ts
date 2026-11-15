@@ -4,12 +4,12 @@ import { ApiService } from '../core/api.service';
 import { ToastService } from '../core/toast.service';
 import { UnpaidCheckService } from '../core/unpaid-check.service';
 import { ConfirmService } from '../core/confirm.service';
-import { Board, BoardPair, MatchView } from '../core/models';
+import { Board, BoardPair, MatchView, PairView, Player, Unavailability } from '../core/models';
 import { dayName, hhmm, shortDate } from '../core/format';
 
 /**
  * Ventana del organizador para un partido: pista (se elige al empezar a jugarlo),
- * resultado (avanza el cuadro) y día/hora.
+ * resultado (avanza el cuadro), día/hora e información de contacto de las dos parejas.
  */
 @Component({
   selector: 'mp-match-dialog',
@@ -73,9 +73,42 @@ import { dayName, hhmm, shortDate } from '../core/format';
         <div class="seg" style="margin-bottom:18px">
           <button [class.on]="tab() === 'result'" (click)="tab.set('result')">Resultado</button>
           <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Día y hora</button>
+          <button [class.on]="tab() === 'info'" (click)="openInfo()">Información</button>
         </div>
 
-        @if (tab() === 'result') {
+        @if (tab() === 'info') {
+          @if (infoLoading()) { <p class="muted">Cargando datos de las parejas…</p> }
+          @else {
+            <div class="info">
+              @for (slot of [m().slot1, m().slot2]; track $index) {
+                <section class="pair-info">
+                  @if (slot.pairId && info().get(slot.pairId); as pv) {
+                    @for (pl of [pv.player1, pv.player2]; track pl.id) {
+                      <div class="player">
+                        <b>{{ pl.fullName }}</b>
+                        @if (pl.phone) {
+                          <div class="row-c contact">
+                            <span class="num">{{ pl.phone }}</span>
+                            <a class="btn sm" [href]="'tel:' + digits(pl.phone)">Llamar</a>
+                            <a class="btn ghost sm" [href]="whatsapp(pl)" target="_blank" rel="noopener">WhatsApp</a>
+                          </div>
+                        } @else { <span class="tiny muted">Sin teléfono</span> }
+                        @if (pl.email) { <a class="small" [href]="'mailto:' + pl.email">{{ pl.email }}</a> }
+                      </div>
+                    }
+                    @if (pv.notes) { <p class="small notes"><b>Comentarios:</b> {{ pv.notes }}</p> }
+                    @if (pv.unavailabilities.length) {
+                      <p class="small muted notes"><b>No pueden:</b> {{ unavText(pv.unavailabilities) }}</p>
+                    }
+                  } @else {
+                    <span class="muted small">{{ slot.placeholder || 'Pareja por decidir' }}</span>
+                  }
+                </section>
+              }
+            </div>
+            <p class="tiny muted" style="margin:10px 0 0">Datos de contacto privados: solo los ve el club. Se editan en la pestaña «Parejas».</p>
+          }
+        } @else if (tab() === 'result') {
           @if (!p1() || !p2()) {
             <div class="notice">Todavía no se conocen las dos parejas de este partido.</div>
           } @else {
@@ -158,6 +191,12 @@ import { dayName, hhmm, shortDate } from '../core/format';
     .conflict-note { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
     .note-box { padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid var(--rule-2); }
     .note-box .row-c input { flex: 1; min-width: 160px; }
+    .info { display: grid; gap: 12px; }
+    .pair-info { border: 1px solid var(--rule); border-radius: var(--r-md); padding: 12px 14px; display: grid; gap: 12px; }
+    .player { display: grid; gap: 4px; }
+    .player + .player { border-top: 1px solid var(--rule-2); padding-top: 10px; }
+    .contact .num { font-family: var(--display); font-size: 1.05rem; min-width: 120px; }
+    .notes { margin: 0; max-width: none; }
   `],
 })
 export class MatchDialogComponent implements OnInit {
@@ -172,7 +211,11 @@ export class MatchDialogComponent implements OnInit {
   /** Abrir las parejas con problemas de este partido. */
   conflicts = output<string>();
 
-  tab = signal<'result' | 'schedule'>('result');
+  tab = signal<'result' | 'schedule' | 'info'>('result');
+  /** Datos completos de las parejas de la categoría (nombre, teléfono, email), cargados al abrir «Información». */
+  info = signal(new Map<string, PairView>());
+  infoLoading = signal(false);
+  private infoLoaded = false;
   busy = signal(false);
   /** Avisos del horario elegido, pendientes de que el club confirme. */
   warnings = signal<string[] | null>(null);
@@ -214,6 +257,37 @@ export class MatchDialogComponent implements OnInit {
     this.locked = m.locked || !m.playDate;
     this.note = m.note ?? '';
     if (!this.p1() || !this.p2()) this.tab.set('schedule');
+  }
+
+  /** Pestaña «Información»: carga una vez las parejas de la categoría con sus datos de contacto. */
+  async openInfo() {
+    this.tab.set('info');
+    const catId = this.cat()?.category.id;
+    if (this.infoLoaded || !catId) return;
+    this.infoLoading.set(true);
+    try {
+      const list = await this.api.pairs(catId);
+      this.info.set(new Map(list.map(p => [p.id, p])));
+      this.infoLoaded = true;
+    } catch (e) { this.toast.error(e); }
+    finally { this.infoLoading.set(false); }
+  }
+
+  digits(phone: string) { return phone.replace(/[^\d+]/g, ''); }
+  whatsapp(pl: Player) {
+    const when = this.m().playDate ? ` (${this.dayLabel(this.m().playDate!)} a las ${hhmm(this.m().startTime)})` : '';
+    const text = `Hola ${pl.fullName.split(' ')[0]}, te escribimos del torneo «${this.board().tournament.name}» por vuestro partido de ${this.categoryName()}${when}.`;
+    return `https://wa.me/${this.digits(pl.phone!).replace('+', '')}?text=${encodeURIComponent(text)}`;
+  }
+  /** «Viernes 13 nov: hasta las 10:00 · Sábado 14 nov: todo el día». */
+  unavText(list: Unavailability[]) {
+    return list.map(u => {
+      const d = this.dayLabel(u.playDate);
+      if (!u.fromTime && !u.toTime) return `${d}: todo el día`;
+      if (!u.fromTime) return `${d}: hasta las ${hhmm(u.toTime)}`;
+      if (!u.toTime) return `${d}: desde las ${hhmm(u.fromTime)}`;
+      return `${d}: de ${hhmm(u.fromTime)} a ${hhmm(u.toTime)}`;
+    }).join(' · ');
   }
 
   label(p?: BoardPair) { return p ? `${p.player1} - ${p.player2}` : ''; }
