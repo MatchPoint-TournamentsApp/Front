@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnChanges, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
@@ -20,7 +21,7 @@ interface Form {
 /** Parejas por categoría con sus restricciones horarias. */
 @Component({
   selector: 'mp-pairs-tab',
-  imports: [FormsModule, UnavailabilityEditorComponent, PhoneInputComponent, FORM_KIT],
+  imports: [LoadingComponent, FormsModule, UnavailabilityEditorComponent, PhoneInputComponent, FORM_KIT],
   template: `
     @if (!t().categories.length) {
       <div class="panel empty"><h3>Primero crea una categoría</h3></div>
@@ -41,7 +42,7 @@ interface Form {
       } @else if (cat()?.drawGenerated) {
         <div class="notice" style="margin-bottom:14px">Esta categoría ya tiene cuadro. Si añades, quitas o cambias parejas, tendrás que volver a generar los cuadros (botón de arriba).</div>
       }
-      @if (loading()) { <p class="muted">Cargando parejas…</p> }
+      @if (loading()) { <mp-loading text="Cargando parejas…" /> }
       @else if (!pairs().length) {
         <div class="panel empty"><h3>Sin parejas en {{ cat()?.name }}</h3><p>Añádelas tú o abre la inscripción pública en Ajustes.</p></div>
       } @else {

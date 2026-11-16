@@ -1,16 +1,20 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnChanges, computed, inject, input, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { CategoryPayments, PlayerPayment, Tournament } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { saveFile } from '../../shared/files';
+import { paymentsCsv, paymentsFileName } from './payments-export';
 
 type Filter = 'all' | 'unpaid' | 'paid';
 
 /** Pagos de inscripción: jugadores por categoría con su check de pagado (solo un registro, no bloquea nada). */
 @Component({
   selector: 'mp-payments-tab',
+  imports: [LoadingComponent],
   template: `
-    @if (loading()) { <p class="muted">Cargando jugadores…</p> }
+    @if (loading()) { <mp-loading text="Cargando jugadores…" /> }
     @else {
       <div class="row between head">
         <div>
@@ -18,6 +22,7 @@ type Filter = 'all' | 'unpaid' | 'paid';
           <div class="bar"><span [style.width.%]="total() ? paidCount() * 100 / total() : 0"></span></div>
         </div>
         <div class="row">
+          <button class="btn ghost sm" (click)="exportCsv()" [disabled]="!total()" title="Descarga el estado de los pagos en este momento">Exportar a Excel</button>
           <input class="search" type="search" placeholder="Buscar jugador" [value]="q()" (input)="q.set($any($event.target).value)" aria-label="Buscar jugador">
           <div class="seg">
             <button [class.on]="filter() === 'all'" (click)="filter.set('all')">Todos</button>
@@ -107,6 +112,12 @@ export class PaymentsTabComponent implements OnChanges {
     try { this.data.set(await this.api.payments(this.t().id)); }
     catch (e) { this.toast.error(e); }
     finally { this.loading.set(false); }
+  }
+
+  /** Excel (CSV) con todos los jugadores y si han pagado, tal como están ahora (sin filtros ni búsqueda). */
+  exportCsv() {
+    saveFile(paymentsFileName(this.t().slug), paymentsCsv(this.data()), 'text/csv;charset=utf-8');
+    this.toast.ok('Pagos exportados');
   }
 
   paidIn(c: CategoryPayments) { return c.players.filter(p => p.paidAt).length; }

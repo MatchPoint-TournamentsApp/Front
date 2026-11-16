@@ -1,3 +1,4 @@
+import { LoadingComponent } from './loading.component';
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
@@ -13,7 +14,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
  */
 @Component({
   selector: 'mp-match-dialog',
-  imports: [FormsModule],
+  imports: [LoadingComponent, FormsModule],
   template: `
     <div class="backdrop" (click)="closed.emit(false)">
       <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
@@ -36,6 +37,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
             @if (m().live) {
               <div class="row-c">
                 <span class="live">En juego · {{ m().courtName }}</span>
+                @if (m().startTime) { <span class="tiny muted">previsto a las {{ hhmm(m().startTime) }}</span> }
                 @if (m().startedAt) { <span class="tiny muted">desde las {{ since() }}</span> }
               </div>
               <div class="row-c">
@@ -77,7 +79,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
         </div>
 
         @if (tab() === 'info') {
-          @if (infoLoading()) { <p class="muted">Cargando datos de las parejas…</p> }
+          @if (infoLoading()) { <mp-loading text="Cargando datos de las parejas…" [inline]="true" /> }
           @else {
             <div class="info">
               @for (slot of [m().slot1, m().slot2]; track $index) {

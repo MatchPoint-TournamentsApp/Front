@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../shared/loading.component';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../core/api.service';
@@ -6,7 +7,7 @@ import { TournamentCardComponent } from './tournament-card.component';
 
 @Component({
   selector: 'mp-explore',
-  imports: [FormsModule, TournamentCardComponent],
+  imports: [LoadingComponent, FormsModule, TournamentCardComponent],
   template: `
     <div class="page">
       <div class="page-head">
@@ -16,7 +17,7 @@ import { TournamentCardComponent } from './tournament-card.component';
           <input type="search" placeholder="Torneo, club o ciudad" [(ngModel)]="q" (ngModelChange)="query.set($event)" aria-label="Buscar torneos">
         </label>
       </div>
-      @if (loading()) { <p class="muted">Cargando torneos…</p> }
+      @if (loading()) { <mp-loading text="Cargando torneos…" /> }
       @else if (!filtered().length) {
         <div class="panel empty">
           @if (query()) { <h3>Sin resultados para "{{ query() }}"</h3><p>Prueba con el nombre del club o la ciudad.</p> }

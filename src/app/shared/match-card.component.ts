@@ -14,7 +14,10 @@ import { hhmm, dayName } from '../core/format';
         <div class="meta">
           <b class="num">P{{ mm.number }}</b>
           @if (mm.status === 'BYE') { <span>Pasa directo</span> }
-          @else if (mm.live) { <span class="live">En juego · {{ mm.courtName }}</span> }
+          @else if (mm.live) {
+            @if (mm.playDate) { <span>{{ day() }} {{ time() }}</span> }
+            <span class="live">{{ mm.courtName || 'En juego' }}</span>
+          }
           @else if (mm.playDate) {
             <span>{{ day() }} {{ time() }}</span>
             @if (mm.courtName) { <span class="court" [class.center]="mm.courtFeatured">{{ mm.courtName }}</span> }

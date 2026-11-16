@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -8,7 +9,7 @@ import { TournamentCardComponent } from '../tournament-card.component';
 
 @Component({
   selector: 'mp-club',
-  imports: [RouterLink, TournamentCardComponent],
+  imports: [LoadingComponent, RouterLink, TournamentCardComponent],
   template: `
     <div class="page">
       @if (club(); as c) {
@@ -54,7 +55,7 @@ import { TournamentCardComponent } from '../tournament-card.component';
             }
           </details>
         }
-      } @else { <p class="muted">Cargando…</p> }
+      } @else { <mp-loading text="Cargando el club…" /> }
     </div>
   `,
   styles: [`

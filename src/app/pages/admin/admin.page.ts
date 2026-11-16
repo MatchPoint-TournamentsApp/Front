@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 import { AdminAction, AdminClub, AdminContactMessage, AdminOverview, AdminPayment, AdminTournament, AdminUser } from '../../core/models';
@@ -14,7 +15,7 @@ type Tab = 'tournaments' | 'clubs' | 'messages' | 'accounting' | 'users' | 'log'
 /** Panel de administración de MatchZone (solo SUPERADMIN). */
 @Component({
   selector: 'mp-admin',
-  imports: [AdminTournamentsComponent, AdminAccountingComponent, AdminUsersComponent, AdminMessagesComponent, AdminClubsComponent],
+  imports: [LoadingComponent, AdminTournamentsComponent, AdminAccountingComponent, AdminUsersComponent, AdminMessagesComponent, AdminClubsComponent],
   template: `
     <div class="page">
       <div class="page-head">
@@ -47,7 +48,7 @@ type Tab = 'tournaments' | 'clubs' | 'messages' | 'accounting' | 'users' | 'log'
       @if (error()) {
         <div class="panel empty"><h3>No se ha podido cargar el panel</h3><p>{{ error() }}</p><button class="btn" (click)="load()">Reintentar</button></div>
       } @else if (loading() && !overview()) {
-        <p class="muted">Cargando…</p>
+        <mp-loading text="Cargando el panel…" />
       } @else {
         @switch (tab()) {
           @case ('tournaments') { <mp-admin-tournaments [tournaments]="tournaments()" (changed)="load()" /> }

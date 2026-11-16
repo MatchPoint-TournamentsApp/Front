@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnChanges, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FORM_KIT } from '../../shared/forms';
@@ -11,7 +12,7 @@ import { ConfirmService } from '../../core/confirm.service';
 /** Ajustes del torneo: datos, días y franjas, pistas, inscripción y normas. */
 @Component({
   selector: 'mp-settings-tab',
-  imports: [FormsModule, FORM_KIT],
+  imports: [LoadingComponent, FormsModule, FORM_KIT],
   template: `
     <div class="grid-2 top">
       <section class="panel stack">
@@ -34,7 +35,7 @@ import { ConfirmService } from '../../core/confirm.service';
             }
           </div>
           <div><button class="btn ghost sm" (click)="saveCourts()">Guardar pistas</button></div>
-        } @else { <p class="muted small">Cargando pistas…</p> }
+        } @else { <mp-loading text="Cargando pistas…" [inline]="true" /> }
       </section>
     </div>
 

@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 import { ConfirmService } from '../../core/confirm.service';
@@ -11,6 +12,7 @@ import { ToastService } from '../../core/toast.service';
  */
 @Component({
   selector: 'mp-conflicts-dialog',
+  imports: [LoadingComponent],
   template: `
     <div class="backdrop" (click)="closed.emit(changed)">
       <div class="modal wide-ish" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="conf-title">
@@ -29,7 +31,7 @@ import { ToastService } from '../../core/toast.service';
           </div>
         }
 
-        @if (loading()) { <p class="muted">Buscando conflictos…</p> }
+        @if (loading()) { <mp-loading text="Buscando conflictos…" [inline]="true" /> }
         @else if (!shown().length) {
           <div class="notice ok-box"><b>No hay parejas con problemas.</b> Todos los partidos respetan las restricciones de las parejas.</div>
         } @else {

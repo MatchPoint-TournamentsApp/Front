@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnDestroy, OnInit, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -25,7 +26,7 @@ const REFRESH_MS = 30_000;
 /** Gestión completa de un torneo por el organizador. */
 @Component({
   selector: 'mp-tournament',
-  imports: [RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
+  imports: [LoadingComponent, RouterLink, SettingsTabComponent, CategoriesTabComponent, PairsTabComponent, DrawsTabComponent,
     ScheduleComponent, SponsorsTabComponent, MatchDialogComponent, DrawStatusComponent, ExportMenuComponent, CourtsTabComponent, ConflictsDialogComponent, PaymentsTabComponent],
   template: `
     <div class="page">
@@ -100,7 +101,7 @@ const REFRESH_MS = 30_000;
           <mp-conflicts-dialog [t]="tt" [focusMatchId]="cf.matchId" (closed)="onConflictsClosed($event)"
                                (editPair)="openPair($event)" />
         }
-      } @else { <p class="muted">Cargando torneo…</p> }
+      } @else { <mp-loading text="Cargando torneo…" /> }
     </div>
   `,
   styles: [`

@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../shared/loading.component';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { ApiService } from '../core/api.service';
 import { Board, CategoryBoard } from '../core/models';
@@ -14,7 +15,7 @@ import { MyMatchesComponent } from './my-matches.component';
 /** Página pública del torneo (invitados): cuadros, horario, normas e inscripción. */
 @Component({
   selector: 'mp-public-tournament',
-  imports: [CategoryBoardComponent, HonorBoardComponent, ScheduleComponent, PosterComponent, RegistrationFormComponent, SponsorStripComponent, MyMatchesComponent],
+  imports: [LoadingComponent, CategoryBoardComponent, HonorBoardComponent, ScheduleComponent, PosterComponent, RegistrationFormComponent, SponsorStripComponent, MyMatchesComponent],
   template: `
     @if (error()) {
       <div class="page"><div class="panel empty"><h3>Torneo no disponible</h3><p>{{ error() }}</p></div></div>
@@ -91,7 +92,7 @@ import { MyMatchesComponent } from './my-matches.component';
       </div>
       @if (poster(); as kind) { <mp-poster [board]="b" [category]="honor() ? null : current() ?? null" [kind]="kind" (closed)="poster.set(null)" /> }
     } @else {
-      <div class="page"><p class="muted">Cargando torneo…</p></div>
+      <div class="page"><mp-loading text="Cargando torneo…" /></div>
     }
   `,
   styles: [`

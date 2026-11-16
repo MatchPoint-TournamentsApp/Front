@@ -1,3 +1,4 @@
+import { LoadingComponent } from '../../shared/loading.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -6,7 +7,7 @@ import { ToastService } from '../../core/toast.service';
 
 @Component({
   selector: 'mp-dashboard',
-  imports: [RouterLink],
+  imports: [LoadingComponent, RouterLink],
   template: `
     <div class="page">
       @if (me(); as p) {
@@ -39,7 +40,7 @@ import { ToastService } from '../../core/toast.service';
           <p>{{ error() }}</p>
           <button class="btn" (click)="load()">Reintentar</button>
         </div>
-      } @else { <p class="muted">Cargando…</p> }
+      } @else { <mp-loading text="Cargando tus clubes…" /> }
     </div>
   `,
   styles: [`

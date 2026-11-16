@@ -35,7 +35,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
               <span class="c-vs">contra</span>
               <span class="c-pair">{{ r.p2 }}</span>
               <span class="c-foot">
-                @if (since(r.m); as s) { <span class="tiny muted">Desde las {{ s }}</span> }
+                <span class="tiny muted">@if (r.m.startTime) { Previsto {{ hhmm(r.m.startTime) }} · }@if (since(r.m); as s) { empezó {{ s }} }</span>
                 <span class="c-action">Resultado →</span>
               </span>
             </button>
@@ -203,6 +203,7 @@ export class CourtsTabComponent {
   shown = computed(() => this.slots().slice(0, this.limit()));
   today = computed(() => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date()));
 
+  hhmm = hhmm;
   dayLabel(d: string) { return `${dayName(d)} ${shortDate(d)}`; }
   since(m: MatchView) {
     return m.startedAt ? new Date(m.startedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '';

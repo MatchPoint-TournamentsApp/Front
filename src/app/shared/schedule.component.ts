@@ -57,7 +57,7 @@ interface Item { m: MatchView; cat: string; color: string; p1: string; p2: strin
         <span class="vs">{{ it.p1 }}</span>
         <span class="vs">{{ it.p2 }}</span>
         @if (it.m.note) { <span class="mnote sn"><span>{{ it.m.note }}</span></span> }
-        <span class="round">{{ it.m.roundName }}@if (it.m.live && it.m.playDate !== day()) { · {{ dayLabel(it.m.playDate) }} {{ hhmm(it.m.startTime) }} }</span>
+        <span class="round">{{ it.m.roundName }}@if (it.m.live && it.m.startTime) { · @if (it.m.playDate !== day()) { {{ dayLabel(it.m.playDate) }} }{{ hhmm(it.m.startTime) }} }</span>
       </button>
     </ng-template>
   `,
