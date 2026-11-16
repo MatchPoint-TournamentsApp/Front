@@ -2,7 +2,7 @@ import {
   Component, DestroyRef, Directive, ElementRef, Injector, OnChanges, afterNextRender, computed, effect, forwardRef, inject, input, signal,
 } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, NgForm, NgModel, ValidationErrors, Validator } from '@angular/forms';
-import { isEmail, isTaxId, isUrl, postalCodeError, provinceCode } from '../core/validation';
+import { isEmail, isTaxId, isUrl, passwordProblem, postalCodeError, provinceCode } from '../core/validation';
 
 /**
  * Ayudas para formularios con plantilla (ngModel):
@@ -35,6 +35,26 @@ export class UrlValidatorDirective implements Validator {
 })
 export class TaxIdValidatorDirective implements Validator {
   validate(c: AbstractControl): ValidationErrors | null { return isTaxId(c.value) ? null : { taxId: true }; }
+}
+
+/**
+ * Contraseña nueva (registro o cambio): mínimo de caracteres, letras y números. Con [mpNewPassword]="false" no
+ * comprueba nada (p. ej. al iniciar sesión, para no bloquear contraseñas antiguas).
+ */
+@Directive({
+  selector: '[mpNewPassword][ngModel]',
+  providers: [{ provide: NG_VALIDATORS, useExisting: forwardRef(() => NewPasswordValidatorDirective), multi: true }],
+})
+export class NewPasswordValidatorDirective implements Validator, OnChanges {
+  enabled = input<boolean | ''>(true, { alias: 'mpNewPassword' });
+  private changed?: () => void;
+  ngOnChanges() { this.changed?.(); }
+  registerOnValidatorChange(fn: () => void) { this.changed = fn; }
+  validate(c: AbstractControl): ValidationErrors | null {
+    if (this.enabled() === false) return null;
+    const e = passwordProblem(c.value);
+    return e ? { custom: e } : null;
+  }
 }
 
 /** Código postal de 5 cifras que, si se indica la provincia, empieza por su código. */
@@ -190,6 +210,6 @@ export function focusFirstInvalid(root: HTMLElement) {
 
 /** Todo lo necesario para validar un formulario, para importarlo de una vez. */
 export const FORM_KIT = [
-  EmailValidatorDirective, UrlValidatorDirective, TaxIdValidatorDirective, PostalCodeValidatorDirective, NotBeforeValidatorDirective, SameAsValidatorDirective,
+  EmailValidatorDirective, UrlValidatorDirective, TaxIdValidatorDirective, PostalCodeValidatorDirective, NotBeforeValidatorDirective, SameAsValidatorDirective, NewPasswordValidatorDirective,
   FieldErrorComponent, FormErrorsComponent, FormFocusDirective,
 ] as const;

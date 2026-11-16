@@ -3,6 +3,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
+import { PASSWORD_HINT } from '../core/validation';
 import { FORM_KIT } from '../shared/forms';
 import { RevealPasswordComponent } from '../shared/reveal-password.component';
 
@@ -26,9 +27,9 @@ import { RevealPasswordComponent } from '../shared/reveal-password.component';
         <label class="field"><span>Email</span><input name="email" type="email" [(ngModel)]="email" #emailRef="ngModel" required mpEmail autocomplete="email"><mp-error [control]="emailRef" /></label>
         @if (mode() !== 'reset') {
           <label class="field"><span>Contraseña</span>
-            <span class="pw"><input #pw name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6"
+            <span class="pw"><input #pw name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required [minlength]="mode() === 'register' ? 0 : 6" [mpNewPassword]="mode() === 'register'"
               [autocomplete]="mode() === 'register' ? 'new-password' : 'current-password'"><mp-reveal [for]="pw" /></span>
-            @if (mode() === 'register') { <small>Mínimo 6 caracteres.</small> }
+            @if (mode() === 'register') { <small>{{ hint }}</small> }
             <mp-error [control]="passRef" /></label>
         }
         @if (mode() === 'register') {
@@ -77,6 +78,7 @@ import { RevealPasswordComponent } from '../shared/reveal-password.component';
   `],
 })
 export class AuthPage {
+  hint = PASSWORD_HINT;
   private supa = inject(SupabaseService);
   private toast = inject(ToastService);
   private router = inject(Router);

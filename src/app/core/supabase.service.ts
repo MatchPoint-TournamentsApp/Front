@@ -87,16 +87,29 @@ export class SupabaseService {
   }
 }
 
-function translate(msg: string): string {
+export function translate(msg: string): string {
   const m = msg.toLowerCase();
   if (m.includes('invalid login')) return 'Email o contraseña incorrectos';
   if (m.includes('already registered')) return 'Ya existe una cuenta con ese email';
   if (m.includes('email not confirmed')) return 'Confirma tu email antes de entrar (revisa tu bandeja de entrada)';
-  if (m.includes('password should be')) return 'La contraseña debe tener al menos 6 caracteres';
+  const len = /password should be at least (\d+)/.exec(m);
+  if (len) return `La contraseña debe tener al menos ${len[1]} caracteres`;
+  if (m.includes('password should contain')) return passwordRules(msg);
+  if (m.includes('weak') && m.includes('password')) return 'Contraseña demasiado débil o muy conocida: elige otra más difícil de adivinar';
   if (m.includes('fetch')) return 'No se puede conectar con el servidor de acceso';
   if (m.includes('should be different')) return 'La contraseña nueva tiene que ser distinta de la anterior';
   if (m.includes('session missing') || m.includes('not authenticated')) return 'El enlace ha caducado. Pide uno nuevo para cambiar la contraseña';
   return msg;
+}
+
+/** «Password should contain at least one character of each: abc…, ABC…, 0123456789» → qué tipos de caracteres pide. */
+export function passwordRules(msg: string): string {
+  const need: string[] = [];
+  if (msg.includes('abcdefghijklmnopqrstuvwxyz')) need.push('minúsculas');
+  if (msg.includes('ABCDEFGHIJKLMNOPQRSTUVWXYZ')) need.push('mayúsculas');
+  if (msg.includes('0123456789')) need.push('números');
+  if (/[!@#$%^&*]/.test(msg)) need.push('algún símbolo (!@#$…)');
+  return need.length ? `La contraseña tiene que llevar ${need.join(', ').replace(/, ([^,]*)$/, ' y $1')}` : 'La contraseña no cumple los requisitos de seguridad';
 }
 
 /** "#error=access_denied&error_code=otp_expired&error_description=..." en la URL de vuelta del email. */

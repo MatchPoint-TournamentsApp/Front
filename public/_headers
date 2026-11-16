@@ -1,0 +1,12 @@
+# Cabeceras de seguridad de Cloudflare Pages (se copia tal cual a dist/…/browser).
+# Cloudflare Pages ya envía por su cuenta X-Content-Type-Options: nosniff y Referrer-Policy.
+# - HSTS: el navegador usa siempre HTTPS con el dominio (1 año).
+# - frame-ancestors / X-Frame-Options: ninguna web ajena puede meter MatchZone en un iframe (clickjacking).
+# - Permissions-Policy: la web no usa cámara, micrófono, ubicación ni pagos del navegador.
+# No hay CSP completa a propósito: Supabase, la API de Render, OpenDataSoft y los estilos en línea de Angular
+# necesitarían una lista que se rompe con facilidad.
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

@@ -3,6 +3,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
+import { PASSWORD_HINT } from '../core/validation';
 import { FORM_KIT } from '../shared/forms';
 import { RevealPasswordComponent } from '../shared/reveal-password.component';
 
@@ -21,8 +22,8 @@ import { RevealPasswordComponent } from '../shared/reveal-password.component';
           <p class="muted small center">Para la cuenta {{ supa.email() }}</p>
           <form #form="ngForm" mpForm (ngSubmit)="save(form)" novalidate class="stack">
             <label class="field"><span>Contraseña nueva</span>
-              <span class="pw"><input #pw1 name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required minlength="6" autocomplete="new-password"><mp-reveal [for]="pw1" /></span>
-              <small>Mínimo 6 caracteres.</small>
+              <span class="pw"><input #pw1 name="password" type="password" [(ngModel)]="password" #passRef="ngModel" required mpNewPassword autocomplete="new-password"><mp-reveal [for]="pw1" /></span>
+              <small>{{ hint }}</small>
               <mp-error [control]="passRef" /></label>
             <label class="field"><span>Repite la contraseña</span>
               <span class="pw"><input #pw2 name="repeat" type="password" [(ngModel)]="repeat" #repRef="ngModel" required [mpSameAs]="password"
@@ -50,6 +51,7 @@ import { RevealPasswordComponent } from '../shared/reveal-password.component';
   `],
 })
 export class ResetPasswordPage {
+  hint = PASSWORD_HINT;
   supa = inject(SupabaseService);
   private toast = inject(ToastService);
   private router = inject(Router);

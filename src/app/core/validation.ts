@@ -129,3 +129,17 @@ export function isTaxId(v: string | null | undefined): boolean {
   if ('ABEH'.includes(s[0])) return got === String(control);
   return got === String(control) || got === letter;
 }
+
+/** Requisitos de las contraseñas nuevas (los mismos que en Supabase Auth): longitud mínima, letras y números. */
+export const PASSWORD_MIN = 10;
+export const PASSWORD_HINT = `Mínimo ${PASSWORD_MIN} caracteres, con letras y números.`;
+
+/** Qué le falta a una contraseña nueva, o '' si cumple. Las ya existentes no se comprueban (solo al crearla o cambiarla). */
+export function passwordProblem(v: string | null | undefined): string {
+  if (!v) return '';
+  const missing: string[] = [];
+  if (v.length < PASSWORD_MIN) missing.push(`${PASSWORD_MIN} caracteres como mínimo (llevas ${v.length})`);
+  if (!/\p{L}/u.test(v)) missing.push('alguna letra');
+  if (!/\d/.test(v)) missing.push('algún número');
+  return missing.length ? 'Falta: ' + missing.join(', ') : '';
+}
