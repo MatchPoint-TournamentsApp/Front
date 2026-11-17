@@ -81,6 +81,8 @@ export class DrawStatusComponent {
   t = input.required<Tournament>();
   /** Partidos con comentario (se pierden al volver a generar). */
   notes = input(0);
+  /** Apartados de Ajustes con cambios sin guardar: generar con ellos usaría los datos anteriores. */
+  unsaved = input<string[]>([]);
   /** Tras generar o reprogramar: recargar el torneo. */
   changed = output<void>();
   /** Abrir la ventana de parejas con problemas. */
@@ -149,8 +151,20 @@ export class DrawStatusComponent {
     return `${dayName(d).toLowerCase()} ${shortDate(d)} a las ${time.slice(0, 5)}`;
   }
 
+  /** Si hay cambios sin guardar en Ajustes, avisa antes de generar o reprogramar con los datos anteriores. */
+  private async unsavedOk(action: string) {
+    if (!this.unsaved().length) return true;
+    return this.confirm.ask({
+      title: 'Tienes cambios sin guardar en Ajustes',
+      message: `En ${this.unsaved().join(', ')}. Si continúas, se usarán los datos guardados, no los que acabas de escribir. `
+        + 'Pulsa Cancelar y guárdalos con su botón «Guardar».',
+      ok: `${action} sin guardar`, danger: true,
+    });
+  }
+
   async regenerate() {
     const t = this.t();
+    if (!(await this.unsavedOk(this.generatedCats().length ? 'Regenerar' : 'Generar'))) return;
     const pendingInscriptions = t.categories.filter(c => c.pendingPairs > 0).map(c => c.name);
     if (this.generatedCats().length && !(await this.confirm.ask({ title: '¿Volver a generar los cuadros?',
       message: 'Se volverán a colocar todas las parejas y a calcular todos los horarios desde cero.'
@@ -172,6 +186,7 @@ export class DrawStatusComponent {
   }
 
   async reschedule() {
+    if (!(await this.unsavedOk('Reprogramar'))) return;
     await this.run('Recalculando pistas y horarios…', () => this.api.reschedule(this.t().id), 'Horarios recalculados', false);
   }
 

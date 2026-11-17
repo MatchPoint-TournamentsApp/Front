@@ -1,5 +1,5 @@
 import { LoadingComponent } from '../../shared/loading.component';
-import { Component, OnChanges, inject, input, output, signal } from '@angular/core';
+import { Component, OnChanges, OnDestroy, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FORM_KIT } from '../../shared/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,13 @@ import { Club, Day, Tournament, TournamentRequest } from '../../core/models';
 import { dayName, hhmm, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
+
+type Section = 'general' | 'days' | 'courts';
+const SECTION_LABEL: Record<Section, string> = {
+  general: 'Datos del torneo (duración del partido, descanso…)',
+  days: 'Días y horario de juego',
+  courts: 'Pistas del torneo',
+};
 
 /** Ajustes del torneo: datos, días y franjas, pistas, inscripción y normas. */
 @Component({
@@ -29,12 +36,12 @@ import { ConfirmService } from '../../core/confirm.service';
           <div class="courts">
             @for (ct of c.courts; track ct.id) {
               <label class="check" [class.off]="!ct.active">
-                <input type="checkbox" [checked]="courtIds.has(ct.id)" [disabled]="!ct.active" (change)="toggleCourt(ct.id)">
+                <input type="checkbox" [checked]="courtIds.has(ct.id)" [disabled]="!ct.active" (change)="toggleCourt(ct.id); touch('courts')">
                 {{ ct.name }} @if (ct.featured) { <span class="chip ball">Central</span> } @if (!ct.active) { <span class="tiny muted">(inactiva)</span> }
               </label>
             }
           </div>
-          <div><button class="btn ghost sm" (click)="saveCourts()">Guardar pistas</button></div>
+          <div class="row"><button class="btn ghost sm" (click)="saveCourts()">Guardar pistas</button>@if (isDirty('courts')) { <span class="chip warn">Sin guardar</span> }</div>
         } @else { <mp-loading text="Cargando pistas…" [inline]="true" /> }
       </section>
     </div>
@@ -42,7 +49,7 @@ import { ConfirmService } from '../../core/confirm.service';
     <section class="panel">
       <h3>Días y horario de juego</h3>
       <p class="small muted">Franja en la que se pueden programar partidos cada día y cuántas pistas dedicas al torneo ese día. Los cuadros se generan dentro de estas franjas sin pasar de esas pistas.</p>
-      <div class="days">
+      <div class="days" (input)="touch('days')" (change)="touch('days')">
         <div class="drow head" aria-hidden="true"><span></span><span>Desde</span><span></span><span>Hasta</span><span>Pistas</span><span></span></div>
         @for (d of days; track d.playDate; let i = $index) {
           <div class="drow">
@@ -54,14 +61,15 @@ import { ConfirmService } from '../../core/confirm.service';
               <option [ngValue]="null">Todas ({{ courtsTotal() }})</option>
               @for (n of courtOptions(); track n) { <option [ngValue]="n">{{ n }} {{ n === 1 ? 'pista' : 'pistas' }}</option> }
             </select>
-            <button class="icon-btn" (click)="removeDay(i)" aria-label="Quitar día">✕</button>
+            <button class="icon-btn" (click)="removeDay(i); touch('days')" aria-label="Quitar día">✕</button>
           </div>
         }
       </div>
-      <div class="row" style="margin-top:12px"><button class="btn ghost sm" (click)="saveDays()">Guardar horario</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn ghost sm" (click)="saveDays()">Guardar horario</button>@if (isDirty('days')) { <span class="chip warn">Sin guardar</span> }</div>
     </section>
 
-    <form class="panel stack" #gform="ngForm" mpForm (ngSubmit)="gform.valid && saveGeneral(true)" novalidate>
+    <form class="panel stack" #gform="ngForm" mpForm (ngSubmit)="gform.valid && saveGeneral(true)" novalidate
+          (input)="touch('general')" (change)="touch('general')">
       <mp-form-errors [form]="gform" />
       <h3>Datos del torneo</h3>
       <label class="field"><span>Nombre</span><input name="n" [(ngModel)]="f.name" #nRef="ngModel" required><mp-error [control]="nRef" /></label>
@@ -86,7 +94,8 @@ import { ConfirmService } from '../../core/confirm.service';
         placeholder="Ajustes pendientes, peticiones de parejas, recordatorios…"></textarea></label>
       <div class="row between">
         <button type="button" class="btn danger" (click)="remove()">Eliminar torneo</button>
-        <button class="btn" type="submit">Guardar datos</button>
+        <span class="row">@if (isDirty('general')) { <span class="chip warn">Cambios sin guardar</span> }
+          <button class="btn" type="submit">Guardar datos</button></span>
       </div>
     </form>
   `,
@@ -105,7 +114,7 @@ import { ConfirmService } from '../../core/confirm.service';
     }
   `],
 })
-export class SettingsTabComponent implements OnChanges {
+export class SettingsTabComponent implements OnChanges, OnDestroy {
   private api = inject(ApiService);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
@@ -113,24 +122,39 @@ export class SettingsTabComponent implements OnChanges {
   t = input.required<Tournament>();
   club = input<Club | null>(null);
   changed = output<void>();
+  /** Apartados con cambios sin guardar (para avisar antes de generar o de salir de Ajustes). */
+  unsaved = output<string[]>();
 
   f: TournamentRequest = { name: '', startDate: '', endDate: '' };
   days: Day[] = [];
   courtIds = new Set<string>();
   busy = signal(false);
+  /** Apartados editados y aún sin guardar: al recargar el torneo no se pisan. */
+  private dirty = signal<ReadonlySet<Section>>(new Set());
+
+  isDirty(s: Section) { return this.dirty().has(s); }
+  touch(s: Section) { if (!this.isDirty(s)) this.setDirty(s, true); }
+  private setDirty(s: Section, on: boolean) {
+    const n = new Set(this.dirty());
+    on ? n.add(s) : n.delete(s);
+    this.dirty.set(n);
+    this.unsaved.emit([...n].map(x => SECTION_LABEL[x]));
+  }
+
+  ngOnDestroy() { if (this.dirty().size) this.unsaved.emit([]); }
 
   ngOnChanges() {
     const t = this.t();
-    this.f = {
+    if (!this.isDirty('general')) this.f = {
       name: t.name, description: t.description, rules: t.rules, organizerNotes: t.organizerNotes, startDate: t.startDate,
       endDate: t.endDate, matchDurationMinutes: t.matchDurationMinutes, minRestMinutes: t.minRestMinutes,
       courtStaggerMinutes: t.courtStaggerMinutes, splitThreshold: t.splitThreshold, entryFee: t.entryFee ?? null,
       scoringFormat: t.scoringFormat, primaryColor: t.primaryColor, registrationOpen: t.registrationOpen,
       publicVisible: t.publicVisible,
     };
-    this.days = t.days.map(d => ({ ...d, startTime: hhmm(d.startTime), endTime: hhmm(d.endTime),
+    if (!this.isDirty('days')) this.days = t.days.map(d => ({ ...d, startTime: hhmm(d.startTime), endTime: hhmm(d.endTime),
       courtCount: d.courtCount && d.courtCount < t.courtIds.length ? d.courtCount : null }));
-    this.courtIds = new Set(t.courtIds);
+    if (!this.isDirty('courts')) this.courtIds = new Set(t.courtIds);
   }
 
   label(d: string) { return `${dayName(d)} ${shortDate(d)}`; }
@@ -138,6 +162,7 @@ export class SettingsTabComponent implements OnChanges {
   async saveGeneral(notify = false) {
     try {
       await this.api.updateTournament(this.t().id, this.f);
+      this.setDirty('general', false);
       this.toast.ok(notify ? 'Datos guardados' : 'Guardado');
       this.changed.emit();
     } catch (e) { this.toast.error(e); }
@@ -147,7 +172,7 @@ export class SettingsTabComponent implements OnChanges {
 
   async saveCourts() {
     if (!this.courtIds.size) { this.toast.error('Selecciona al menos una pista'); return; }
-    try { await this.api.setCourts(this.t().id, [...this.courtIds]); this.toast.ok('Pistas guardadas'); this.changed.emit(); }
+    try { await this.api.setCourts(this.t().id, [...this.courtIds]); this.setDirty('courts', false); this.toast.ok('Pistas guardadas'); this.changed.emit(); }
     catch (e) { this.toast.error(e); }
   }
 
@@ -157,7 +182,7 @@ export class SettingsTabComponent implements OnChanges {
   courtOptions() { return Array.from({ length: Math.max(0, this.courtsTotal() - 1) }, (_, i) => i + 1); }
 
   async saveDays() {
-    try { await this.api.setDays(this.t().id, this.days); this.toast.ok('Horario guardado'); this.changed.emit(); }
+    try { await this.api.setDays(this.t().id, this.days); this.setDirty('days', false); this.toast.ok('Horario guardado'); this.changed.emit(); }
     catch (e) { this.toast.error(e); }
   }
 

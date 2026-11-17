@@ -5,6 +5,7 @@ import { ApiService } from '../../core/api.service';
 import { Board, Club, MatchView, Tournament } from '../../core/models';
 import { range, STATUS_LABEL } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
+import { ConfirmService } from '../../core/confirm.service';
 import { MatchDialogComponent } from '../../shared/match-dialog.component';
 import { ScheduleComponent } from '../../shared/schedule.component';
 import { CategoriesTabComponent } from './categories-tab.component';
@@ -16,7 +17,7 @@ import { DrawStatusComponent } from './draw-status.component';
 import { ExportMenuComponent } from './export-menu.component';
 import { CourtsTabComponent } from './courts-tab.component';
 import { PaymentsTabComponent } from './payments-tab.component';
-import { ConflictsDialogComponent } from './conflicts-dialog.component';
+import { ConflictsDialogComponent, NoSlotMatch } from './conflicts-dialog.component';
 
 type Tab = 'courts' | 'settings' | 'categories' | 'pairs' | 'payments' | 'draws' | 'schedule' | 'sponsors';
 
@@ -48,7 +49,7 @@ const REFRESH_MS = 30_000;
           </div>
         </div>
 
-        <mp-draw-status [t]="tt" [notes]="noteCount()" (showConflicts)="conflictsFor.set({ matchId: null })" (changed)="reload()" (generated)="tab.set('draws')" />
+        <mp-draw-status [t]="tt" [notes]="noteCount()" [unsaved]="unsaved()" (showConflicts)="conflictsFor.set({ matchId: null })" (changed)="reload()" (generated)="tab.set('draws')" />
         @if (club() && club()!.verificationStatus !== 'VERIFIED') {
           <div class="notice warn next">
             @if (club()!.verificationStatus === 'REJECTED') { <b>No hemos podido verificar tu club.</b> Corrige los datos de la entidad en «Datos del club». }
@@ -59,28 +60,34 @@ const REFRESH_MS = 30_000;
         @if (next(); as n) { <div class="notice next">{{ n }}</div> }
         @if (warningCount()) {
           <div class="notice warn conflicts-bar">
-            <span><b>{{ warningCount() }} {{ warningCount() === 1 ? 'partido tiene' : 'partidos tienen' }} avisos de horario.</b> Revisa las parejas afectadas y contacta con ellas.</span>
-            <button class="btn ghost sm" (click)="conflictsFor.set({ matchId: null })">Ver parejas con problemas</button>
+            @if (noSlot().length === warningCount()) {
+              <span><b>{{ warningCount() }} {{ warningCount() === 1 ? 'partido no cabe' : 'partidos no caben' }} en el horario.</b>
+                Amplía el horario, los días o las pistas, o baja la duración del partido, y pulsa «Reprogramar».</span>
+              <button class="btn ghost sm" (click)="conflictsFor.set({ matchId: null })">Ver cuáles</button>
+            } @else {
+              <span><b>{{ warningCount() }} {{ warningCount() === 1 ? 'partido tiene' : 'partidos tienen' }} avisos de horario.</b> Revisa las parejas afectadas y contacta con ellas.</span>
+              <button class="btn ghost sm" (click)="conflictsFor.set({ matchId: null })">Ver parejas con problemas</button>
+            }
           </div>
         }
 
         <div class="tabs" role="tablist">
           <!-- Orden: ajustes, herramientas del día del torneo y, al final, la preparación. -->
-          <button [class.on]="tab() === 'settings'" (click)="tab.set('settings')">Ajustes</button>
+          <button [class.on]="tab() === 'settings'" (click)="go('settings')">Ajustes</button>
           @if (hasMatches()) {
-            <button [class.on]="tab() === 'courts'" (click)="tab.set('courts')">Panel de control@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
+            <button [class.on]="tab() === 'courts'" (click)="go('courts')">Panel de control@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
           }
-          <button [class.on]="tab() === 'payments'" (click)="tab.set('payments')">Pagos</button>
-          <button [class.on]="tab() === 'draws'" (click)="tab.set('draws')">Cuadros y resultados@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
-          <button [class.on]="tab() === 'schedule'" (click)="tab.set('schedule')">Horario</button>
-          <button [class.on]="tab() === 'categories'" (click)="tab.set('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
-          <button [class.on]="tab() === 'pairs'" (click)="tab.set('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
-          <button [class.on]="tab() === 'sponsors'" (click)="tab.set('sponsors')">Patrocinadores</button>
+          <button [class.on]="tab() === 'payments'" (click)="go('payments')">Pagos</button>
+          <button [class.on]="tab() === 'draws'" (click)="go('draws')">Cuadros y resultados@if (liveCount()) { <span class="live tab-live" [title]="liveCount() + ' en juego'">{{ liveCount() }}</span> }</button>
+          <button [class.on]="tab() === 'schedule'" (click)="go('schedule')">Horario</button>
+          <button [class.on]="tab() === 'categories'" (click)="go('categories')">Categorías <span class="count">{{ tt.categories.length }}</span></button>
+          <button [class.on]="tab() === 'pairs'" (click)="go('pairs')">Parejas <span class="count">{{ totalPairs() }}</span>@if (pending()) { <span class="chip warn">{{ pending() }} pendientes</span> }</button>
+          <button [class.on]="tab() === 'sponsors'" (click)="go('sponsors')">Patrocinadores</button>
         </div>
 
         @switch (tab()) {
           @case ('courts') { @if (board(); as b) { <mp-courts-tab [board]="b" (changed)="reload()" (matchClick)="selected.set($event)" /> } }
-          @case ('settings') { <mp-settings-tab [t]="tt" [club]="club()" (changed)="reload()" /> }
+          @case ('settings') { <mp-settings-tab [t]="tt" [club]="club()" (changed)="reload()" (unsaved)="unsaved.set($event)" /> }
           @case ('categories') { <mp-categories-tab [t]="tt" (changed)="reload()" /> }
           @case ('pairs') { <mp-pairs-tab [t]="tt" [open]="pairToOpen()" (opened)="pairToOpen.set(null)" (changed)="reload()" /> }
           @case ('payments') { <mp-payments-tab [t]="tt" /> }
@@ -98,7 +105,7 @@ const REFRESH_MS = 30_000;
                            (conflicts)="selected.set(null); conflictsFor.set({ matchId: $event })" />
         }
         @if (conflictsFor(); as cf) {
-          <mp-conflicts-dialog [t]="tt" [focusMatchId]="cf.matchId" (closed)="onConflictsClosed($event)"
+          <mp-conflicts-dialog [t]="tt" [focusMatchId]="cf.matchId" [noSlot]="noSlot()" (closed)="onConflictsClosed($event)"
                                (editPair)="openPair($event)" />
         }
       } @else { <mp-loading text="Cargando torneo…" /> }
@@ -118,6 +125,7 @@ const REFRESH_MS = 30_000;
 export class TournamentPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
   id = input.required<string>();
   tabParam = input<string>('', { alias: 'tab' });
 
@@ -132,6 +140,13 @@ export class TournamentPage implements OnInit, OnDestroy {
   pairToOpen = signal<{ categoryId: string; pairId: string } | null>(null);
   /** Partidos pendientes con avisos de horario. */
   warningCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.warning && m.status === 'PENDING').length, 0) ?? 0);
+
+  /** Partidos pendientes a los que el generador no ha encontrado hueco (pueden no tener aún parejas). */
+  noSlot = computed<NoSlotMatch[]>(() => this.board()?.categories.flatMap(c => c.matches
+    .filter(m => m.status === 'PENDING' && m.warning && !m.playDate)
+    .map(m => ({ id: m.id, number: m.number, roundName: m.roundName, categoryName: c.category.name, reason: m.warning! }))) ?? []);
+  /** Apartados de Ajustes editados y sin guardar. */
+  unsaved = signal<string[]>([]);
 
   status = computed(() => this.t() ? STATUS_LABEL[this.t()!.status] : '');
   dates = computed(() => this.t() ? range(this.t()!.startDate, this.t()!.endDate) : '');
@@ -178,6 +193,18 @@ export class TournamentPage implements OnInit, OnDestroy {
     } catch (e) { if (!silent) this.toast.error(e); }
   }
 
+  /** Cambiar de pestaña avisando si en Ajustes hay cambios sin guardar (se perderían). */
+  async go(tab: Tab) {
+    if (tab === this.tab()) return;
+    if (this.tab() === 'settings' && this.unsaved().length && !(await this.confirm.ask({
+      title: 'Tienes cambios sin guardar',
+      message: `En ${this.unsaved().join(', ')}. Si sales ahora se perderán. Pulsa Cancelar y guárdalos con su botón «Guardar».`,
+      ok: 'Salir sin guardar', danger: true,
+    }))) return;
+    this.unsaved.set([]);
+    this.tab.set(tab);
+  }
+
   onConflictsClosed(changed: boolean) {
     this.conflictsFor.set(null);
     if (changed) this.reload();
@@ -187,7 +214,7 @@ export class TournamentPage implements OnInit, OnDestroy {
   openPair(p: { categoryId: string; pairId: string }) {
     this.conflictsFor.set(null);
     this.pairToOpen.set(p);
-    this.tab.set('pairs');
+    this.go('pairs');
   }
 
   onDialogClosed(changed: boolean) {

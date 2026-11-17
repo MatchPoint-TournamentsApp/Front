@@ -6,6 +6,9 @@ import { ConflictMatch, PairConflict, Tournament } from '../../core/models';
 import { dayName, hhmm, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
 
+/** Partido sin hueco en el horario (puede no tener parejas todavía, p. ej. una final). */
+export interface NoSlotMatch { id: string; number: number; roundName?: string; categoryName: string; reason: string; }
+
 /**
  * Parejas con problemas de horario: partidos que ya juegan (seguro) o a los que pueden llegar (posible)
  * a una hora en la que no pueden. Contacto directo y acciones para resolverlo. Solo para el club.
@@ -31,8 +34,25 @@ import { ToastService } from '../../core/toast.service';
           </div>
         }
 
+        @if (!matchId() && noSlot().length) {
+          <section class="noslot">
+            <h4>{{ noSlot().length === 1 ? 'Partido que no cabe' : noSlot().length + ' partidos que no caben' }} en el horario</h4>
+            <ul class="matches">
+              @for (m of noSlot(); track m.id) {
+                <li class="sure"><span class="tag">Sin hueco</span>
+                  <span><b>{{ m.categoryName }}</b> · P{{ m.number }}@if (m.roundName) { · {{ m.roundName }} }</span>
+                  <span class="reason">{{ m.reason }}</span></li>
+              }
+            </ul>
+            <p class="small muted">No depende de ninguna pareja: faltan horas de juego. Amplía la franja o los días, añade pistas o baja la
+              duración del partido en Ajustes, guarda y pulsa «Reprogramar horarios».</p>
+          </section>
+        }
+
         @if (loading()) { <mp-loading text="Buscando conflictos…" [inline]="true" /> }
-        @else if (!shown().length) {
+        @else if (!shown().length && noSlot().length && !matchId()) {
+          <div class="notice ok-box">Ninguna pareja tiene problemas con sus restricciones.</div>
+        } @else if (!shown().length) {
           <div class="notice ok-box"><b>No hay parejas con problemas.</b> Todos los partidos respetan las restricciones de las parejas.</div>
         } @else {
           <div class="list">
@@ -87,6 +107,8 @@ import { ToastService } from '../../core/toast.service';
   `,
   styles: [`
     .wide-ish { width: min(760px, 100%); }
+    .noslot { border: 1px solid var(--rule); border-left: 3px solid var(--danger); border-radius: var(--r-md); padding: 12px 14px; background: #fff; margin-bottom: 12px; }
+    .noslot h4 { margin: 0; }
     .filter { justify-content: space-between; background: var(--glass); border-radius: var(--r-md); padding: 8px 12px; margin-bottom: 12px; }
     .ok-box { border-left-color: var(--ok); }
     .list { display: flex; flex-direction: column; gap: 12px; }
@@ -114,6 +136,8 @@ export class ConflictsDialogComponent implements OnInit {
   t = input.required<Tournament>();
   /** Si viene de un partido concreto, solo se muestran sus parejas (con opción de ver todas). */
   focusMatchId = input<string | null>(null);
+  /** Partidos sin hueco en el horario (no salen por pareja si aún no tienen parejas). */
+  noSlot = input<NoSlotMatch[]>([]);
   /** true si algo ha cambiado (hay que recargar el torneo). */
   closed = output<boolean>();
   editPair = output<{ categoryId: string; pairId: string }>();
