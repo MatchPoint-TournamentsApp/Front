@@ -13,6 +13,8 @@ import { UnavailabilityEditorComponent } from '../../shared/unavailability-edito
 
 interface Form {
   id?: string;
+  /** Categoría donde se apunta (solo al crear: se elige en el formulario). */
+  categoryId?: string;
   p1: { id?: string; fullName: string; phone?: string; email?: string };
   p2: { id?: string; fullName: string; phone?: string; email?: string };
   seed?: number | null; notes?: string; status: PairStatus;
@@ -87,9 +89,19 @@ interface Form {
     @if (form(); as f) {
       <div class="backdrop" (click)="form.set(null)">
         <form class="modal stack" style="width:min(720px,100%)" (click)="$event.stopPropagation()" #pform="ngForm" mpForm (ngSubmit)="save(f, pform)" novalidate>
-          <div class="modal-head"><h3>{{ f.id ? 'Editar pareja' : 'Nueva pareja' }} <span class="muted small">{{ cat()?.name }}</span></h3>
+          <div class="modal-head"><h3>{{ f.id ? 'Editar pareja' : 'Nueva pareja' }} @if (f.id) { <span class="muted small">{{ cat()?.name }}</span> }</h3>
             <button type="button" class="icon-btn" (click)="form.set(null)" aria-label="Cerrar">✕</button></div>
           <mp-form-errors [form]="pform" />
+          @if (!f.id) {
+            <label class="field"><span>Categoría</span>
+              <select name="cat" [(ngModel)]="f.categoryId" #catRef="ngModel" required>
+                <option [ngValue]="undefined" disabled>Elige la categoría</option>
+                @for (c of t().categories; track c.id) {
+                  <option [ngValue]="c.id">{{ c.name }} ({{ c.confirmedPairs }} {{ c.confirmedPairs === 1 ? 'pareja' : 'parejas' }}{{ c.maxPairs ? ' de ' + c.maxPairs : '' }})</option>
+                }
+              </select>
+              <mp-error [control]="catRef" /></label>
+          }
           <datalist id="mp-players">@for (pl of players(); track pl.id) { <option [value]="pl.fullName"></option> }</datalist>
           <div class="grid-2">
             @for (p of [f.p1, f.p2]; track $index; let i = $index) {
@@ -117,7 +129,7 @@ interface Form {
           </div>
           <small class="muted">Si un jugador ya está en otra categoría del torneo, escribe el mismo nombre: así evitamos que le coincidan partidos.</small>
           <div class="field"><span>¿Cuándo NO pueden jugar?</span>
-            <mp-unavailability-editor [days]="t().days" [duration]="cat()?.matchDurationMinutes ?? t().matchDurationMinutes" [(items)]="unav" />
+            <mp-unavailability-editor [days]="t().days" [duration]="formCat(f)?.matchDurationMinutes ?? t().matchDurationMinutes" [(items)]="unav" />
           </div>
           <div class="grid-3">
             <label class="field"><span>Cabeza de serie</span><input name="seed" type="number" min="1" [(ngModel)]="f.seed" placeholder="—"></label>
@@ -128,7 +140,7 @@ interface Form {
             </label>
           </div>
           <label class="field"><span>Notas</span><input name="notes" [(ngModel)]="f.notes"></label>
-          @if (cat()?.drawGenerated) { <div class="notice warn">{{ t().started ? 'El torneo ya ha comenzado: los cambios de disponibilidad se aplican al reprogramar los horarios.' : 'Esta categoría ya tiene cuadro: después de guardar, vuelve a generar los cuadros para aplicar los cambios.' }}</div> }
+          @if (formCat(f)?.drawGenerated) { <div class="notice warn">{{ t().started ? 'El torneo ya ha comenzado: los cambios de disponibilidad se aplican al reprogramar los horarios.' : 'Esta categoría ya tiene cuadro: después de guardar, vuelve a generar los cuadros para aplicar los cambios.' }}</div> }
           <div class="modal-foot"><button type="button" class="btn ghost" (click)="form.set(null)">Cancelar</button><button class="btn" type="submit" [disabled]="busy()">Guardar pareja</button></div>
         </form>
       </div>
@@ -200,6 +212,9 @@ export class PairsTabComponent implements OnChanges {
     } : { p1: { fullName: '' }, p2: { fullName: '' }, status: 'CONFIRMED' });
   }
 
+  /** Categoría del formulario: la elegida al crear o la de la pareja al editar. */
+  formCat(f: Form) { return f.id ? this.cat() : this.t().categories.find(c => c.id === f.categoryId); }
+
   /** Autocompleta teléfono/email si el jugador ya existe en el torneo. */
   fill(p: Form['p1']) {
     const found = this.players().find(x => x.fullName.toLowerCase() === p.fullName.trim().toLowerCase());
@@ -227,9 +242,11 @@ export class PairsTabComponent implements OnChanges {
     const body = { player1: f.p1, player2: f.p2, seed: f.seed || null, notes: f.notes, unavailabilities: this.unav(), status: f.status };
     this.busy.set(true);
     try {
-      if (f.id) await this.api.updatePair(f.id, body); else await this.api.addPair(this.cat()!.id, body);
-      this.toast.ok('Pareja guardada');
+      if (f.id) await this.api.updatePair(f.id, body); else await this.api.addPair(f.categoryId!, body);
+      const where = f.id ? null : this.t().categories.find(c => c.id === f.categoryId);
+      this.toast.ok(where ? `Pareja apuntada en ${where.name}` : 'Pareja guardada');
       this.form.set(null);
+      if (where) this.catId.set(where.id); // ver la pareja recién apuntada
       await this.load();
       this.changed.emit();
       this.api.players(this.t().id).then(p => this.players.set(p)).catch(() => {});
