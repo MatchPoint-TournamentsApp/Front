@@ -59,6 +59,8 @@ export interface Tournament {
   entryFee?: number; matchDurationMinutes: number; minRestMinutes: number; courtStaggerMinutes: number;
   splitThreshold: number; scoringFormat: string; primaryColor: string; publicVisible: boolean; courtIds: string[];
   days: Day[]; categories: Category[]; sponsors: Sponsor[];
+  /** Duración por franjas horarias (vacío = la general o la de cada categoría en todo el torneo). */
+  durationBands?: DurationBand[];
   /** Primer día y hora de juego (hora de España): desde entonces los cuadros quedan bloqueados. */
   startsAt?: string | null; started: boolean;
   /** Hay cambios desde la última generación de cuadros. */
@@ -66,6 +68,8 @@ export interface Tournament {
   /** MatchZone ha activado el torneo (tras el pago). canGenerate también es true para el superadministrador. */
   generationApproved: boolean; generationRequestedAt?: string | null; canGenerate: boolean;
 }
+/** Franja con otra duración: los partidos que EMPIEZAN en ella duran «minutes» (manda sobre la categoría). */
+export interface DurationBand { playDate: string; fromTime: string; toTime: string; minutes: number; }
 export interface TournamentRequest {
   name: string; description?: string; rules?: string; organizerNotes?: string; startDate: string; endDate: string;
   matchDurationMinutes?: number; minRestMinutes?: number; courtStaggerMinutes?: number; splitThreshold?: number;

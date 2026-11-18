@@ -47,6 +47,7 @@ export class ApiService {
   trash(clubId: string) { return this.get<M.TrashedTournament[]>(`/clubs/${clubId}/tournaments/trash`); }
   restoreTournament(id: string) { return this.post<void>(`/tournaments/${id}/restore`); }
   setDays(id: string, days: M.Day[]) { return this.put<M.Tournament>(`/tournaments/${id}/days`, days); }
+  setDurationBands(id: string, bands: M.DurationBand[]) { return this.put<M.Tournament>(`/tournaments/${id}/duration-bands`, bands); }
   setCourts(id: string, courtIds: string[]) { return this.put<M.Tournament>(`/tournaments/${id}/courts`, courtIds); }
   board(id: string) { return this.get<M.Board>(`/tournaments/${id}/board`); }
   players(id: string) { return this.get<M.Player[]>(`/tournaments/${id}/players`); }
