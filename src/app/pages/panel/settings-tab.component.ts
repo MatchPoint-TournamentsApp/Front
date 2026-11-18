@@ -75,7 +75,7 @@ const SECTION_LABEL: Record<Section, string> = {
       <label class="switch finals" (change)="touch('days')">
         <input type="checkbox" [(ngModel)]="finalsLastDay"> Semifinales y finales el último día, sí o sí
       </label>
-      <small class="muted">Todas las semifinales y finales (también de consolación y el 3.º/4.º puesto) se jugarán el último día. Ese día
+      <small class="muted finals-help">Todas las semifinales y finales (también de consolación y el 3.º/4.º puesto) se jugarán el último día. Ese día
         no admite restricciones de las parejas; el resto de partidos intentará no ocuparlo.</small>
       <div class="row" style="margin-top:12px"><button class="btn ghost sm" (click)="saveDays()">Guardar horario</button>@if (isDirty('days')) { <span class="chip warn">Sin guardar</span> }</div>
 
@@ -215,7 +215,8 @@ const SECTION_LABEL: Record<Section, string> = {
     .days { display: grid; gap: 8px; }
     .drow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 110px 32px; gap: 8px; align-items: center; }
     .allow { display: inline-flex; align-items: center; gap: 6px; }
-    .finals { margin-top: 14px; }
+    .finals { margin-top: 14px; display: flex; }
+    .finals-help { display: block; margin-top: 4px; }
     .drow.head span, .brow.head span { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
     .adv { margin-top: 16px; border-top: 1px solid var(--rule-2); padding-top: 12px; }
     .adv > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-weight: 600; list-style: none; }
