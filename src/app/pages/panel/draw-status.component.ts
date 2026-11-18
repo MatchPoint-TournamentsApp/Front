@@ -181,6 +181,8 @@ export class DrawStatusComponent {
 
   async regenerate() {
     const t = this.t();
+    // Si ya se sabe que no caben los partidos, se dice directamente (el servidor tampoco dejaría generar)
+    if (this.capacityProblem()) { this.toast.error(this.capacityProblem() + ' Revisa Ajustes → Días y horario de juego.'); return; }
     if (!(await this.unsavedOk(this.generatedCats().length ? 'Regenerar' : 'Generar'))) return;
     const pendingInscriptions = t.categories.filter(c => c.pendingPairs > 0).map(c => c.name);
     if (this.generatedCats().length && !(await this.confirm.ask({ title: '¿Volver a generar los cuadros?',
