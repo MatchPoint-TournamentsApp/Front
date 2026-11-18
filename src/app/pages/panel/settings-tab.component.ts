@@ -240,10 +240,13 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
   }
 
   async saveBands() {
-    const bad = this.bands.find(b => !b.fromTime || !b.toTime || b.toTime <= b.fromTime || !(b.minutes >= 30 && b.minutes <= 240));
-    if (bad) {
-      this.toast.error(`Revisa la franja del ${this.label(bad.playDate)}: la hora de fin debe ser posterior a la de inicio (usa 23:59 para medianoche) y la duración, de 30 a 240 min.`);
-      return;
+    for (const b of this.bands) {
+      const where = `la franja del ${this.label(b.playDate)}${b.fromTime ? ' desde las ' + b.fromTime : ''}`;
+      const problem = !b.fromTime || !b.toTime ? 'falta la hora de inicio o de fin'
+        : b.toTime <= b.fromTime ? 'la hora de fin debe ser posterior a la de inicio (usa 23:59 para medianoche)'
+        : !(b.minutes >= 30 && b.minutes <= 240) ? 'la duración debe estar entre 30 y 240 minutos'
+        : '';
+      if (problem) { this.toast.error(`Revisa ${where}: ${problem}.`); return; }
     }
     try {
       await this.api.setDurationBands(this.t().id, this.bands);
