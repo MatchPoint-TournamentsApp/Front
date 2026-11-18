@@ -46,7 +46,13 @@ export interface TournamentSummary {
   city?: string; primaryColor: string;
 }
 /** Día de juego. {@code courtCount}: pistas que el club dedica al torneo ese día (vacío = todas). */
-export interface Day { playDate: string; startTime: string; endTime: string; courtCount?: number | null; }
+export interface Day {
+  playDate: string; startTime: string; endTime: string; courtCount?: number | null;
+  /** false: ese día el club no admite restricciones horarias (por defecto, sí). */
+  restrictionsAllowed?: boolean;
+}
+/** Restricciones que se quitarían al guardar los días. */
+export interface RestrictionLoss { date: string; pairs: string[]; }
 export interface Category {
   id: string; name: string; gender: Gender; level?: string; format: CategoryFormat; groupCount: number;
   splitDraws?: boolean | null; maxPairs?: number | null; matchDurationMinutes?: number | null; color?: string;
@@ -63,6 +69,8 @@ export interface Tournament {
   durationBands?: DurationBand[];
   /** Pistas por tramos horarios (vacío = el número de pistas de cada día). */
   courtBands?: CourtBand[];
+  /** Semifinales y finales obligatoriamente el último día (que no admite restricciones). */
+  finalsLastDay?: boolean;
   /** Primer día y hora de juego (hora de España): desde entonces los cuadros quedan bloqueados. */
   startsAt?: string | null; started: boolean;
   /** Hay cambios desde la última generación de cuadros. */
@@ -79,6 +87,8 @@ export interface DayCapacity { date: string; courtHours: number; }
 export interface Capacity {
   courtHours: number; days: DayCapacity[]; matches: number; maxMatches: number; neededHours?: number | null;
   ok: boolean; tight: boolean; message: string;
+  /** Con semis y finales el último día: cuántas hay y cuántas caben ese día. */
+  lastDayMatches?: number | null; lastDayMax?: number | null;
 }
 export interface TournamentRequest {
   name: string; description?: string; rules?: string; organizerNotes?: string; startDate: string; endDate: string;

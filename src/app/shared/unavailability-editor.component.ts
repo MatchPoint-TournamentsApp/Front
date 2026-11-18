@@ -17,6 +17,13 @@ type DayMode = 'any' | 'all' | 'some';
     <div class="stack">
       @for (d of days(); track d.playDate) {
         <div class="day">
+          @if (d.restrictionsAllowed === false) {
+            <div class="d">
+              <span class="label">{{ label(d.playDate) }}</span>
+              <span class="small muted">El club no admite restricciones este día.
+                @if (slots(d.playDate).length) { <button type="button" class="btn ghost sm" (click)="setDayMode(d.playDate, 'any')">Quitar la restricción</button> }</span>
+            </div>
+          } @else {
           <div class="d">
             <span class="label">{{ label(d.playDate) }}</span>
             <select [ngModel]="dayMode(d.playDate)" (ngModelChange)="setDayMode(d.playDate, $event)" [attr.aria-label]="'Disponibilidad ' + label(d.playDate)">
@@ -46,6 +53,7 @@ type DayMode = 'any' | 'all' | 'some';
               }
               <div><button type="button" class="btn ghost sm" (click)="addSlot(d.playDate)">＋ otra franja</button></div>
             </div>
+          }
           }
         </div>
       } @empty {

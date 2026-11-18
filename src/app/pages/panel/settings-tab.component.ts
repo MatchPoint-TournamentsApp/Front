@@ -52,7 +52,7 @@ const SECTION_LABEL: Record<Section, string> = {
       <h3>Días y horario de juego</h3>
       <p class="small muted">Franja en la que se pueden programar partidos cada día y cuántas pistas dedicas al torneo ese día. Los cuadros se generan dentro de estas franjas sin pasar de esas pistas.</p>
       <div class="days" (input)="touch('days')" (change)="touch('days')">
-        <div class="drow head" aria-hidden="true"><span></span><span>Desde</span><span></span><span>Hasta</span><span>Pistas</span><span></span></div>
+        <div class="drow head" aria-hidden="true"><span></span><span>Desde</span><span></span><span>Hasta</span><span>Pistas</span><span>Restricciones</span><span></span></div>
         @for (d of days; track d.playDate; let i = $index) {
           <div class="drow">
             <b>{{ label(d.playDate) }}</b>
@@ -63,10 +63,20 @@ const SECTION_LABEL: Record<Section, string> = {
               <option [ngValue]="null">Todas ({{ courtsTotal() }})</option>
               @for (n of courtOptions(); track n) { <option [ngValue]="n">{{ n }} {{ n === 1 ? 'pista' : 'pistas' }}</option> }
             </select>
+            <label class="check allow" [title]="isLastAndFinals(i) ? 'Con semifinales y finales el último día, ese día no admite restricciones' : 'Las parejas pueden indicar a qué horas no pueden este día'">
+              <input type="checkbox" [checked]="d.restrictionsAllowed !== false && !isLastAndFinals(i)" [disabled]="isLastAndFinals(i)"
+                     (change)="d.restrictionsAllowed = $any($event.target).checked" [attr.aria-label]="'Admite restricciones el ' + label(d.playDate)">
+              <span class="small">Admite</span>
+            </label>
             <button class="icon-btn" (click)="removeDay(i); touch('days')" aria-label="Quitar día">✕</button>
           </div>
         }
       </div>
+      <label class="switch finals" (change)="touch('days')">
+        <input type="checkbox" [(ngModel)]="finalsLastDay"> Semifinales y finales el último día, sí o sí
+      </label>
+      <small class="muted">Todas las semifinales y finales (también de consolación y el 3.º/4.º puesto) se jugarán el último día. Ese día
+        no admite restricciones de las parejas; el resto de partidos intentará no ocuparlo.</small>
       <div class="row" style="margin-top:12px"><button class="btn ghost sm" (click)="saveDays()">Guardar horario</button>@if (isDirty('days')) { <span class="chip warn">Sin guardar</span> }</div>
 
       <details class="adv" [open]="bands.length > 0 || isDirty('bands')">
@@ -142,6 +152,9 @@ const SECTION_LABEL: Record<Section, string> = {
               <b>@if (!cap.ok) { Configuración no válida: no caben todos los partidos } @else if (cap.tight) { Caben, pero muy justo } @else { Caben todos los partidos }</b>
               <span class="small">{{ cap.matches }} partidos · caben como máximo {{ cap.maxMatches }}</span>
             </div>
+            @if (cap.lastDayMatches != null) {
+              <div class="small">Último día: {{ cap.lastDayMatches }} semifinales y finales · caben como máximo {{ cap.lastDayMax }}</div>
+            }
             <div class="small cap-hours">
               Horas de pista: @for (d of cap.days; track d.date) { {{ label(d.date) }} {{ hours(d.courtHours) }} h · } <b>total {{ hours(cap.courtHours) }} h</b>
               @if (cap.neededHours != null) { · horas de partido necesarias: <b>{{ hours(cap.neededHours) }} h</b> }
@@ -200,7 +213,9 @@ const SECTION_LABEL: Record<Section, string> = {
     .courts { display: flex; flex-direction: column; gap: 8px; }
     .off { opacity: .55; }
     .days { display: grid; gap: 8px; }
-    .drow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 32px; gap: 8px; align-items: center; }
+    .drow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 110px 32px; gap: 8px; align-items: center; }
+    .allow { display: inline-flex; align-items: center; gap: 6px; }
+    .finals { margin-top: 14px; }
     .drow.head span, .brow.head span { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
     .adv { margin-top: 16px; border-top: 1px solid var(--rule-2); padding-top: 12px; }
     .adv > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-weight: 600; list-style: none; }
@@ -241,6 +256,8 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
   bands: DurationBand[] = [];
   /** Tramos con otro número de pistas (borrador; se guardan con «Guardar tramos»). */
   courtBands: CourtBand[] = [];
+  /** Semifinales y finales el último día (borrador; se guarda con «Guardar horario»). */
+  finalsLastDay = false;
   /** ¿Caben todos los partidos con la configuración guardada? */
   capacity = signal<Capacity | null>(null);
   /** Desplegable «Opciones avanzadas» de los datos del torneo. */
@@ -270,8 +287,11 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
       scoringFormat: t.scoringFormat, primaryColor: t.primaryColor, registrationOpen: t.registrationOpen,
       publicVisible: t.publicVisible,
     };
-    if (!this.isDirty('days')) this.days = t.days.map(d => ({ ...d, startTime: hhmm(d.startTime), endTime: hhmm(d.endTime),
-      courtCount: d.courtCount && d.courtCount < t.courtIds.length ? d.courtCount : null }));
+    if (!this.isDirty('days')) {
+      this.days = t.days.map(d => ({ ...d, startTime: hhmm(d.startTime), endTime: hhmm(d.endTime),
+        courtCount: d.courtCount && d.courtCount < t.courtIds.length ? d.courtCount : null, restrictionsAllowed: d.restrictionsAllowed !== false }));
+      this.finalsLastDay = !!t.finalsLastDay;
+    }
     if (!this.isDirty('courts')) this.courtIds = new Set(t.courtIds);
     if (!this.isDirty('bands')) this.bands = (t.durationBands ?? []).map(b => ({ ...b, fromTime: hhmm(b.fromTime), toTime: hhmm(b.toTime) }));
     if (!this.isDirty('courtBands')) this.courtBands = (t.courtBands ?? []).map(b => ({ ...b, fromTime: hhmm(b.fromTime), toTime: hhmm(b.toTime) }));
@@ -381,9 +401,32 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
   courtsTotal() { return this.t().courtIds.length; }
   courtOptions() { return Array.from({ length: Math.max(0, this.courtsTotal() - 1) }, (_, i) => i + 1); }
 
+  /** El último día con «semis y finales el último día» no admite restricciones (no se puede marcar). */
+  isLastAndFinals(i: number) {
+    if (!this.finalsLastDay) return false;
+    const last = [...this.days].sort((a, b) => a.playDate.localeCompare(b.playDate)).at(-1);
+    return this.days[i] === last;
+  }
+
+  /** Antes de guardar: si se quitarían restricciones de parejas, el club lo confirma viendo a quién afecta. */
   async saveDays() {
-    try { await this.api.setDays(this.t().id, this.days); this.setDirty('days', false); this.toast.ok('Horario guardado'); this.changed.emit(); }
-    catch (e) { this.toast.error(e); }
+    try {
+      const losses = await this.api.previewDays(this.t().id, this.days, this.finalsLastDay);
+      if (losses.length) {
+        const n = losses.reduce((a, l) => a + l.pairs.length, 0);
+        const detail = losses.map(l => `${this.label(l.date)}: ${l.pairs.join(', ')}`).join('. ');
+        const ok = await this.confirm.ask({
+          title: `Se quitarán las restricciones de ${n} ${n === 1 ? 'pareja' : 'parejas'}`,
+          message: `Esos días ya no admitirán restricciones. ${detail}. Avísales si hace falta.`,
+          ok: 'Guardar y quitarlas', danger: true,
+        });
+        if (!ok) return;
+      }
+      await this.api.setDays(this.t().id, this.days, this.finalsLastDay);
+      this.setDirty('days', false);
+      this.toast.ok(losses.length ? 'Horario guardado y restricciones quitadas' : 'Horario guardado');
+      this.changed.emit();
+    } catch (e) { this.toast.error(e); }
   }
 
   async remove() {
