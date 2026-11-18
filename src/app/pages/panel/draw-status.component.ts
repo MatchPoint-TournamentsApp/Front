@@ -1,6 +1,6 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
-import { DrawSummary, Tournament } from '../../core/models';
+import { Capacity, DrawSummary, Tournament } from '../../core/models';
 import { dayName, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
@@ -27,6 +27,7 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
       <div class="text">
         <b>{{ title() }}</b>
         <span>{{ detail() }}</span>
+        @if (capacityProblem(); as msg) { <span class="cap-err">{{ msg }} Revisa Ajustes → Días y horario de juego.</span> }
       </div>
       <div class="actions">
         @switch (state()) {
@@ -68,6 +69,7 @@ type State = 'empty' | 'request' | 'requested' | 'pending' | 'outdated' | 'ready
     .text { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 2px; }
     .text b { font-weight: 600; }
     .text span { font-size: .88rem; color: var(--ink-2); }
+    .text .cap-err { color: var(--danger); font-weight: 500; }
     .actions { display: flex; gap: 10px; flex-wrap: wrap; }
     .summary { position: relative; margin: -6px 0 18px; padding-right: 44px; }
     .close { position: absolute; top: 8px; right: 8px; }
@@ -92,6 +94,21 @@ export class DrawStatusComponent {
 
   busy = signal<string | null>(null);
   summary = signal<DrawSummary | null>(null);
+  /** Capacidad del horario (si no caben los partidos, no se puede generar). */
+  capacity = signal<Capacity | null>(null);
+  /** Solo antes de generar o regenerar: con el torneo empezado se reprograma lo que quepa. */
+  capacityProblem = computed(() => {
+    const c = this.capacity(), st = this.state();
+    return c && !c.ok && ['pending', 'outdated', 'ready'].includes(st) ? c.message : '';
+  });
+
+  constructor() {
+    effect(() => {
+      const t = this.t();
+      if (t.started) { this.capacity.set(null); return; }
+      this.api.capacity(t.id).then(c => this.capacity.set(c)).catch(() => this.capacity.set(null));
+    });
+  }
 
   private playable = computed(() => this.t().categories.filter(c => c.confirmedPairs >= 2));
   private generatedCats = computed(() => this.t().categories.filter(c => c.drawGenerated));

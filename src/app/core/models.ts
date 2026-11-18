@@ -61,6 +61,8 @@ export interface Tournament {
   days: Day[]; categories: Category[]; sponsors: Sponsor[];
   /** Duración por franjas horarias (vacío = la general o la de cada categoría en todo el torneo). */
   durationBands?: DurationBand[];
+  /** Pistas por tramos horarios (vacío = el número de pistas de cada día). */
+  courtBands?: CourtBand[];
   /** Primer día y hora de juego (hora de España): desde entonces los cuadros quedan bloqueados. */
   startsAt?: string | null; started: boolean;
   /** Hay cambios desde la última generación de cuadros. */
@@ -70,6 +72,14 @@ export interface Tournament {
 }
 /** Franja con otra duración: los partidos que EMPIEZAN en ella duran «minutes» (manda sobre la categoría). */
 export interface DurationBand { playDate: string; fromTime: string; toTime: string; minutes: number; }
+/** Tramo con otro número de pistas: el horario generado no pone más partidos a la vez. No limita el panel de control. */
+export interface CourtBand { playDate: string; fromTime: string; toTime: string; courts: number; }
+/** ¿Caben todos los partidos en las horas de pista? */
+export interface DayCapacity { date: string; courtHours: number; }
+export interface Capacity {
+  courtHours: number; days: DayCapacity[]; matches: number; maxMatches: number; neededHours?: number | null;
+  ok: boolean; tight: boolean; message: string;
+}
 export interface TournamentRequest {
   name: string; description?: string; rules?: string; organizerNotes?: string; startDate: string; endDate: string;
   matchDurationMinutes?: number; minRestMinutes?: number; courtStaggerMinutes?: number; splitThreshold?: number;
