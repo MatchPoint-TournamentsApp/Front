@@ -2,7 +2,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { ApiService } from '../../core/api.service';
 import { AdminUser, Role } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
-import { dateTime } from './admin-format';
+import { activity, ago, dateTime } from './admin-format';
 
 const ROLE_LABEL: Record<Role, string> = { USER: 'Usuario', CLUB_ADMIN: 'Club', SUPERADMIN: 'Superadmin' };
 
@@ -16,7 +16,7 @@ const ROLE_LABEL: Record<Role, string> = { USER: 'Usuario', CLUB_ADMIN: 'Club', 
     </div>
     <div class="panel table-wrap">
       <table class="table">
-        <thead><tr><th>Cuenta</th><th>Tipo</th><th>Clubes</th><th>Torneos</th><th>Alta</th><th>Estado</th><th></th></tr></thead>
+        <thead><tr><th>Cuenta</th><th>Tipo</th><th>Clubes</th><th>Torneos</th><th>Alta</th><th>Última conexión</th><th>Estado</th><th></th></tr></thead>
         <tbody>
           @for (u of shown(); track u.id) {
             <tr>
@@ -25,6 +25,7 @@ const ROLE_LABEL: Record<Role, string> = { USER: 'Usuario', CLUB_ADMIN: 'Club', 
               <td class="num">{{ u.clubs }}</td>
               <td class="num">{{ u.tournaments }}</td>
               <td class="nowrap small">{{ when(u.createdAt) }}</td>
+              <td class="nowrap small" [title]="last(u) ? dateTime(last(u)) : ''">@if (last(u)) { {{ ago(last(u)) }}@if (!u.lastSeenAt) { <span class="tiny muted"> (aprox.)</span> } } @else { <span class="muted">Nunca</span> }</td>
               <td>
                 @if (u.blockedAt) {
                   <span class="chip danger">Bloqueada</span>
@@ -39,7 +40,7 @@ const ROLE_LABEL: Record<Role, string> = { USER: 'Usuario', CLUB_ADMIN: 'Club', 
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="muted">Ninguna cuenta coincide con la búsqueda.</td></tr>
+            <tr><td colspan="8" class="muted">Ninguna cuenta coincide con la búsqueda.</td></tr>
           }
         </tbody>
       </table>
@@ -66,6 +67,9 @@ export class AdminUsersComponent {
   });
 
   role(r: Role) { return ROLE_LABEL[r]; }
+  last(u: AdminUser) { return activity(u.lastSeenAt, u.lastSignInAt).at; }
+  ago(s: string | null) { return ago(s); }
+  dateTime(s: string | null) { return dateTime(s); }
   when(s?: string) { return dateTime(s).split(',')[0]; }
 
   async block(u: AdminUser) {

@@ -161,12 +161,18 @@ export interface DrawSummary { categories: number; matches: number; scheduled: n
 // ------------------------------------------------------------ administración (solo SUPERADMIN)
 export type PaymentMethod = 'BIZUM' | 'EFECTIVO' | 'TRANSFERENCIA' | 'OTRO';
 export interface PaymentRequest { amount: number; method: PaymentMethod; paidOn: string; note?: string; }
-export interface AdminOverview { users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; newMessages: number; pendingClubs: number; }
+export interface AdminOverview {
+  users: number; blockedUsers: number; clubs: number; tournaments: number; pendingRequests: number; newMessages: number; pendingClubs: number;
+  /** Clubes cuyo dueño se ha conectado en los últimos 7 días. */
+  activeClubs: number;
+}
 export interface AdminClub {
   id: string; name: string; city?: string; province?: string; phone?: string; email?: string; website?: string;
   legalName?: string; taxId?: string; taxIdKind?: string; fiscalAddress?: string; contactRole?: ClubRole | null;
   verificationStatus: VerificationStatus; rejectionReason?: string | null; verifiedAt?: string | null; createdAt: string;
   ownerName?: string; ownerEmail?: string; ownerPhone?: string; tournaments: number; sameTaxId: number;
+  /** Actividad: última conexión registrada por la app, último inicio de sesión (Supabase), torneos y último cambio. */
+  lastSeenAt?: string | null; lastSignInAt?: string | null; tournamentsLive: number; tournamentsUpcoming: number; lastChangeAt?: string | null;
 }
 /** Formulario de contacto: soporte va a support@, el resto a info@. */
 export type ContactReason = 'ORGANIZE' | 'SUPPORT' | 'OTHER' | 'SUGGESTION';
@@ -190,6 +196,7 @@ export interface AdminTournament {
 export interface AdminUser {
   id: string; fullName?: string; email?: string; phone?: string; role: Role; createdAt?: string;
   blockedAt?: string | null; blockedReason?: string | null; clubs: number; tournaments: number;
+  lastSeenAt?: string | null; lastSignInAt?: string | null;
 }
 export interface AdminPayment {
   id: string; tournamentId?: string | null; tournamentName: string; clubName: string; amount: number;

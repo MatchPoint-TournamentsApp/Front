@@ -32,6 +32,8 @@ type Tab = 'tournaments' | 'clubs' | 'messages' | 'accounting' | 'users' | 'log'
             <b class="num">{{ o.newMessages }}</b><span>{{ o.newMessages === 1 ? 'mensaje sin responder' : 'mensajes sin responder' }}</span></button>
           <button class="stat" [class.hot]="o.pendingClubs > 0" (click)="tab.set('clubs')">
             <b class="num">{{ o.pendingClubs }}</b><span>{{ o.pendingClubs === 1 ? 'club por verificar' : 'clubes por verificar' }}</span></button>
+          <button class="stat" (click)="tab.set('clubs')" title="Clubes cuyo responsable se ha conectado en los últimos 7 días">
+            <b class="num">{{ o.activeClubs }} <small class="muted">de {{ o.clubs }}</small></b><span>clubes activos esta semana</span></button>
           <div class="stat"><b class="num">{{ o.users }}</b><span>cuentas{{ o.blockedUsers ? ' · ' + o.blockedUsers + ' bloqueadas' : '' }}</span></div>
         </div>
       }
@@ -74,7 +76,7 @@ type Tab = 'tournaments' | 'clubs' | 'messages' | 'accounting' | 'users' | 'log'
   `,
   styles: [`
     h1 { margin-top: 12px; }
-    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 26px; }
     .stat { background: #fff; border: 1px solid var(--rule); border-radius: var(--r-lg); padding: 14px 18px; display: flex; flex-direction: column; gap: 2px; text-align: left; font: inherit; color: inherit; }
     button.stat { cursor: pointer; transition: border-color .2s; }
     button.stat:hover { border-color: var(--gold); }

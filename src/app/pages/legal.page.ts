@@ -79,6 +79,7 @@ export class FillComponent {
             <li><b>Jugadores:</b> nombre y apellidos, teléfono y email (si se facilitan), categoría, franjas en las que no pueden jugar, partidos y resultados.</li>
             <li><b>Formulario de contacto:</b> nombre, email, mensaje y, si los indicas, teléfono y club.</li>
             <li><b>Datos técnicos:</b> dirección IP y registros del servidor, solo para la seguridad del servicio y para evitar abusos.</li>
+            <li><b>Actividad de la cuenta de organizador:</b> fecha de tu última conexión y de los últimos cambios en tus torneos.</li>
           </ul>
 
           <h2>3. Para qué y con qué base legal</h2>
@@ -88,6 +89,7 @@ export class FillComponent {
             <li><b>Publicar los cuadros, horarios y resultados</b> del torneo, en los que aparece tu nombre: es parte esencial de la organización del torneo que aceptas al inscribirte. El teléfono y el email <b>nunca</b> se publican; solo los ve el club.</li>
             <li><b>Verificar que el club existe y que quien lo da de alta puede representarlo</b>, y emitir las facturas de los servicios: ejecución del contrato (art. 6.1.b), interés legítimo en evitar suplantaciones (art. 6.1.f) y cumplimiento de obligaciones fiscales (art. 6.1.c). Para verificarlo podemos consultar registros públicos y contactar con el club por sus canales oficiales.</li>
             <li><b>Responder a los mensajes del formulario de contacto</b>: tu consentimiento al enviarlo (art. 6.1.a). El responsable es el titular de {{ L.brand }}.</li>
+            <li><b>Registrar la fecha de tu última actividad</b> (cuentas de organizador), para la gestión del servicio (por ejemplo, dar soporte a los clubes que lo usan) y su seguridad: interés legítimo (art. 6.1.f).</li>
             <li><b>Seguridad y prevención del fraude o del spam</b> (por ejemplo, limitar inscripciones repetidas desde la misma conexión): interés legítimo (art. 6.1.f).</li>
           </ul>
           <p>No se toman decisiones automatizadas con efectos jurídicos sobre ti ni se elaboran perfiles. El generador de horarios solo usa tus franjas de disponibilidad para colocar los partidos.</p>

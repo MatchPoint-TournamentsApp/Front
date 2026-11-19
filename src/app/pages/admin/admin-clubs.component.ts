@@ -5,7 +5,7 @@ import { ConfirmService } from '../../core/confirm.service';
 import { AdminClub, ClubRole, VerificationStatus } from '../../core/models';
 import { CLUB_ROLE } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
-import { dateTime } from './admin-format';
+import { Activity, activity, ago, dateTime } from './admin-format';
 
 const STATUS: Record<VerificationStatus, string> = { PENDING: 'Pendiente', VERIFIED: 'Verificado', REJECTED: 'Rechazado' };
 
@@ -21,6 +21,7 @@ const STATUS: Record<VerificationStatus, string> = { PENDING: 'Pendiente', VERIF
       <div class="seg">
         <button [class.on]="filter() === 'PENDING'" (click)="filter.set('PENDING')">Pendientes ({{ count('PENDING') }})</button>
         <button [class.on]="filter() === 'all'" (click)="filter.set('all')">Todos ({{ clubs().length }})</button>
+        <button [class.on]="filter() === 'inactive'" (click)="filter.set('inactive')">Sin actividad ({{ inactiveCount() }})</button>
       </div>
       <details class="how small">
         <summary>¿Cómo verificar un club?</summary>
@@ -36,8 +37,18 @@ const STATUS: Record<VerificationStatus, string> = { PENDING: 'Pendiente', VERIF
       <article class="panel club" [class]="c.verificationStatus.toLowerCase()">
         <header>
           <div><b>{{ c.name }}</b> <span class="muted small">{{ c.city }}@if (c.province) { ({{ c.province }}) }</span></div>
-          <span class="chip" [class.ok]="c.verificationStatus === 'VERIFIED'" [class.warn]="c.verificationStatus !== 'VERIFIED'">{{ status(c.verificationStatus) }}</span>
+          <span class="row tight">
+            @if (act(c); as a) { <span class="chip act" [class]="'act ' + a.level" [title]="a.at ? 'Última conexión: ' + when(a.at) + (a.approx ? ' (inicio de sesión)' : '') : ''">{{ a.label }}</span> }
+            <span class="chip" [class.ok]="c.verificationStatus === 'VERIFIED'" [class.warn]="c.verificationStatus !== 'VERIFIED'">{{ status(c.verificationStatus) }}</span>
+          </span>
         </header>
+        @if (act(c); as a) {
+          <div class="activity small">
+            <span><small>Última conexión</small> <b>{{ a.at ? ago(a.at) : 'Nunca' }}</b>@if (a.approx) { <span class="tiny muted" title="Solo tenemos el último inicio de sesión: la sesión dura semanas"> (aprox.)</span> }</span>
+            <span><small>Último cambio</small> <b>{{ c.lastChangeAt ? ago(c.lastChangeAt) : '—' }}</b></span>
+            <span><small>Torneos</small> <b>{{ c.tournaments }}</b>@if (c.tournamentsLive) { · <span class="live">{{ c.tournamentsLive }} en juego</span> }@if (c.tournamentsUpcoming) { · {{ c.tournamentsUpcoming }} {{ c.tournamentsUpcoming === 1 ? 'próximo' : 'próximos' }} }</span>
+          </div>
+        }
         <div class="grid">
           <div>
             <small>Entidad</small>
@@ -99,6 +110,13 @@ const STATUS: Record<VerificationStatus, string> = { PENDING: 'Pendiente', VERIF
     .club { margin-bottom: 12px; border-left: 3px solid var(--gold); display: grid; gap: 10px; }
     .club.verified { border-left-color: var(--ok); }
     .club.rejected { border-left-color: var(--danger); }
+    .tight { gap: 6px; }
+    .chip.act.active { background: var(--ok-bg, #e8f4ec); color: var(--ok); }
+    .chip.act.low { background: #fdf3dc; color: #8a6100; }
+    .chip.act.inactive { background: var(--danger-bg); color: var(--danger); }
+    .chip.act.never { background: var(--rule-2); color: var(--ink-3); }
+    .activity { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 8px 12px; border-radius: var(--r-md); background: var(--glass); }
+    .activity small { color: var(--ink-3); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; margin-right: 4px; }
     .club header { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
     .grid > div { display: grid; gap: 3px; align-content: start; font-size: .92rem; min-width: 0; word-break: break-word; }
@@ -115,12 +133,21 @@ export class AdminClubsComponent {
   private confirm = inject(ConfirmService);
   clubs = input.required<AdminClub[]>();
   changed = output<void>();
-  filter = signal<'PENDING' | 'all'>('PENDING');
+  filter = signal<'PENDING' | 'all' | 'inactive'>('PENDING');
   busy = signal<string | null>(null);
   rejecting = signal<string | null>(null);
   reason = '';
 
-  shown = computed(() => this.filter() === 'all' ? this.clubs() : this.clubs().filter(c => c.verificationStatus === 'PENDING'));
+  /** Pendientes primero (como llegan); en «Todos» y «Sin actividad», los más recientes en conectarse primero. */
+  shown = computed(() => {
+    const f = this.filter();
+    if (f === 'PENDING') return this.clubs().filter(c => c.verificationStatus === 'PENDING');
+    const list = f === 'inactive' ? this.clubs().filter(c => ['inactive', 'never'].includes(this.act(c).level)) : [...this.clubs()];
+    return list.sort((a, b) => (this.act(b).at ?? '').localeCompare(this.act(a).at ?? ''));
+  });
+  inactiveCount = computed(() => this.clubs().filter(c => ['inactive', 'never'].includes(this.act(c).level)).length);
+  act(c: AdminClub): Activity { return activity(c.lastSeenAt, c.lastSignInAt); }
+  ago(s: string) { return ago(s); }
   count(s: VerificationStatus) { return this.clubs().filter(c => c.verificationStatus === s).length; }
   status(s: VerificationStatus) { return STATUS[s]; }
   role(r?: ClubRole | null) { return r ? CLUB_ROLE[r] : 'Cargo sin indicar'; }
