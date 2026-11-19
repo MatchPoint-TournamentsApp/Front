@@ -234,7 +234,7 @@ const SECTION_LABEL: Record<Section, string> = {
     .courts { display: flex; flex-direction: column; gap: 8px; }
     .off { opacity: .55; }
     .days { display: grid; gap: 8px; }
-    .drow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 110px 32px; gap: 8px; align-items: center; }
+    .drow { display: grid; grid-template-columns: minmax(100px, 160px) minmax(88px, 120px) 16px minmax(88px, 120px) minmax(96px, 130px) 88px 32px; gap: 8px; align-items: center; }
     .allow { display: inline-flex; align-items: center; gap: 6px; }
     .finals { margin-top: 14px; display: flex; }
     .finals-help { display: block; margin-top: 4px; }
@@ -246,7 +246,7 @@ const SECTION_LABEL: Record<Section, string> = {
     .adv[open] > summary::before { transform: rotate(90deg); }
     .adv[open] > summary { margin-bottom: 10px; }
     .bands { display: grid; gap: 8px; }
-    .brow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 32px; gap: 8px; align-items: center; }
+    .brow { display: grid; grid-template-columns: minmax(100px, 160px) minmax(88px, 120px) 16px minmax(88px, 120px) minmax(96px, 130px) 32px; gap: 8px; align-items: center; }
     .mins { display: inline-flex; align-items: center; gap: 6px; }
     .mins input { width: 80px; }
     .fees table { border-collapse: collapse; }
