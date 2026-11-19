@@ -46,7 +46,7 @@ import { UnavailabilityEditorComponent } from '../shared/unavailability-editor.c
         </div>
         <label class="field"><span>Comentarios para el organizador</span><textarea name="notes" [(ngModel)]="notes" rows="2"></textarea></label>
         @if (board().tournament.entryFee) {
-          <p class="small muted">Inscripción: {{ board().tournament.entryFee }} € por pareja. Se abona en el club.</p>
+          <p class="small muted">Inscripción: {{ board().tournament.entryFee }} € por jugador@if (board().tournament.entryFeeSecond != null && board().tournament.entryFeeSecond !== board().tournament.entryFee) { ({{ board().tournament.entryFeeSecond }} € a partir de la 2.ª categoría)}@if (board().tournament.entryFeeStudent != null) {; precio especial para alumnos del club}. Se abona en el club.</p>
         }
         <!-- Campo trampa: invisible para personas; si llega relleno, la inscripción es de un bot -->
         <div class="hp" aria-hidden="true"><label>Web <input name="website" [(ngModel)]="website" tabindex="-1" autocomplete="off"></label></div>

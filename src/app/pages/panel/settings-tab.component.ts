@@ -186,7 +186,22 @@ const SECTION_LABEL: Record<Section, string> = {
             <option value="THREE_SETS">3 sets</option>
           </select>
           <small>Cada partido puede cambiarlo (p. ej. la final a 3 sets) en su ventana, pestaña Resultado.</small></label>
-        <label class="field"><span>Inscripción (€)</span><input name="fe" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" #feRef="ngModel"><mp-error [control]="feRef" /></label>
+      </div>
+      <div class="field fees">
+        <span>Precio de inscripción por jugador (€)</span>
+        <table>
+          <thead><tr><th></th><th>1.ª inscripción</th><th>2.ª y siguientes</th></tr></thead>
+          <tbody>
+            <tr><th>General</th>
+              <td><input name="fe" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" placeholder="Sin precio" aria-label="General, 1.ª inscripción"></td>
+              <td><input name="fe2" type="number" min="0" step="0.5" [(ngModel)]="f.entryFeeSecond" [placeholder]="f.entryFee != null ? 'Igual: ' + f.entryFee : '—'" aria-label="General, 2.ª inscripción"></td></tr>
+            <tr><th>Alumno del club</th>
+              <td><input name="fs" type="number" min="0" step="0.5" [(ngModel)]="f.entryFeeStudent" [placeholder]="f.entryFee != null ? 'Igual: ' + f.entryFee : '—'" aria-label="Alumno, 1.ª inscripción"></td>
+              <td><input name="fs2" type="number" min="0" step="0.5" [(ngModel)]="f.entryFeeStudentSecond" [placeholder]="studentSecondHint()" aria-label="Alumno, 2.ª inscripción"></td></tr>
+          </tbody>
+        </table>
+        <small>La 2.ª inscripción es cuando un jugador se apunta en otra categoría del torneo (la 3.ª paga igual). Vacío = el precio
+          de la izquierda (o, en alumno, el general). Marca quién es alumno en la ficha de cada pareja.</small>
       </div>
       <label class="field"><span>Normas del torneo (públicas)</span><textarea name="r" [(ngModel)]="f.rules" rows="6"></textarea></label>
       <label class="field"><span>Notas del organizador (privadas)</span><textarea name="o" [(ngModel)]="f.organizerNotes" rows="3"
@@ -234,6 +249,11 @@ const SECTION_LABEL: Record<Section, string> = {
     .brow { display: grid; grid-template-columns: 160px 120px 16px 120px 130px 32px; gap: 8px; align-items: center; }
     .mins { display: inline-flex; align-items: center; gap: 6px; }
     .mins input { width: 80px; }
+    .fees table { border-collapse: collapse; }
+    .fees th, .fees td { padding: 4px 8px 4px 0; text-align: left; font-weight: 500; }
+    .fees thead th { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+    .fees tbody th { padding-right: 14px; white-space: nowrap; }
+    .fees input { width: 120px; }
     .capacity { margin-top: 16px; padding: 12px 14px; border-radius: var(--r-md); border: 1px solid var(--rule); border-left: 3px solid var(--ok); background: #fff; display: grid; gap: 4px; }
     .capacity.tight { border-left-color: var(--gold); }
     .capacity.bad { border-left-color: var(--danger); background: var(--danger-bg); }
@@ -292,6 +312,7 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
       endDate: t.endDate, matchDurationMinutes: t.matchDurationMinutes, minRestMinutes: t.minRestMinutes,
       matchFormat: t.matchFormat ?? 'SUPER_TIEBREAK',
       courtStaggerMinutes: t.courtStaggerMinutes, splitThreshold: t.splitThreshold, entryFee: t.entryFee ?? null,
+      entryFeeSecond: t.entryFeeSecond ?? null, entryFeeStudent: t.entryFeeStudent ?? null, entryFeeStudentSecond: t.entryFeeStudentSecond ?? null,
       scoringFormat: t.scoringFormat, primaryColor: t.primaryColor, registrationOpen: t.registrationOpen,
       publicVisible: t.publicVisible,
     };
@@ -342,6 +363,12 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
       this.toast.ok(this.courtBands.length ? 'Tramos guardados' : 'Tramos quitados: cada día usa su número de pistas');
       this.changed.emit();
     } catch (e) { this.toast.error(e); }
+  }
+
+  /** Qué vale la 2.ª de alumno si se deja vacía (como su 1.ª o, sin precio de alumno, como la 2.ª general). */
+  studentSecondHint() {
+    const v = this.f.entryFeeStudent ?? this.f.entryFeeSecond ?? this.f.entryFee;
+    return v != null ? 'Igual: ' + v : '—';
   }
 
   /** Franjas guardadas en el torneo. */

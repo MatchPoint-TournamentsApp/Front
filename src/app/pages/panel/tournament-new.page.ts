@@ -35,7 +35,7 @@ import { FORM_KIT } from '../../shared/forms';
               @for (m of [0, 15, 30, 45, 60, 90, 120]; track m) { <option [ngValue]="m">{{ m }} min</option> }
             </select>
           </label>
-          <label class="field"><span>Inscripción (€ por pareja)</span><input name="fee" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" #feeRef="ngModel"><mp-error [control]="feeRef" /></label>
+          <label class="field"><span>Inscripción (€ por jugador)</span><input name="fee" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" #feeRef="ngModel"><mp-error [control]="feeRef" /></label>
         </div>
         <label class="field" style="max-width:200px"><span>Color del torneo</span><input name="color" type="color" [(ngModel)]="f.primaryColor"></label>
         <div class="row end"><button class="btn lg" type="submit" [disabled]="busy()">Crear torneo</button></div>

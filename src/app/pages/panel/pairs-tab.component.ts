@@ -15,8 +15,8 @@ interface Form {
   id?: string;
   /** Categoría donde se apunta (solo al crear: se elige en el formulario). */
   categoryId?: string;
-  p1: { id?: string; fullName: string; phone?: string; email?: string };
-  p2: { id?: string; fullName: string; phone?: string; email?: string };
+  p1: { id?: string; fullName: string; phone?: string; email?: string; student?: boolean };
+  p2: { id?: string; fullName: string; phone?: string; email?: string; student?: boolean };
   seed?: number | null; notes?: string; status: PairStatus;
 }
 
@@ -121,6 +121,7 @@ interface Form {
                 }
                 <div class="field"><span>Teléfono</span><mp-phone-input [name]="'t' + i" [(ngModel)]="p.phone" #tRef="ngModel" [label]="'Teléfono del jugador ' + (i + 1)" /><mp-error [control]="tRef" /></div>
                 <label class="field"><span>Email</span><input [name]="'e' + i" type="email" [(ngModel)]="p.email" #eRef="ngModel" mpEmail><mp-error [control]="eRef" /></label>
+                <label class="check"><input type="checkbox" [name]="'al' + i" [(ngModel)]="p.student"> Alumno del club <span class="tiny muted">(paga la tarifa de alumno)</span></label>
                 @if (f.id && p.id) {
                   <button type="button" class="link-danger" (click)="erase(p)">Borrar datos personales del jugador</button>
                 }
@@ -215,10 +216,10 @@ export class PairsTabComponent implements OnChanges {
   /** Categoría del formulario: la elegida al crear o la de la pareja al editar. */
   formCat(f: Form) { return f.id ? this.cat() : this.t().categories.find(c => c.id === f.categoryId); }
 
-  /** Autocompleta teléfono/email si el jugador ya existe en el torneo. */
+  /** Autocompleta teléfono/email (y si es alumno) si el jugador ya existe en el torneo. */
   fill(p: Form['p1']) {
     const found = this.players().find(x => x.fullName.toLowerCase() === p.fullName.trim().toLowerCase());
-    if (found) { p.phone ||= found.phone; p.email ||= found.email; }
+    if (found) { p.phone ||= found.phone; p.email ||= found.email; p.student ??= found.student; }
   }
 
   /** Nombres que el organizador ya ha dicho que son otra persona ("nombre escrito|id del parecido"). */

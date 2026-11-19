@@ -75,6 +75,8 @@ export interface Tournament {
   finalsLastDay?: boolean;
   /** Formato general de los partidos (cada partido puede cambiarlo). */
   matchFormat?: MatchFormat;
+  /** Precios por jugador (entryFee = general 1.ª): 2.ª inscripción y de alumno; vacíos = ver Ajustes. */
+  entryFeeSecond?: number | null; entryFeeStudent?: number | null; entryFeeStudentSecond?: number | null;
   /** Primer día y hora de juego (hora de España): desde entonces los cuadros quedan bloqueados. */
   startsAt?: string | null; started: boolean;
   /** Hay cambios desde la última generación de cuadros. */
@@ -99,9 +101,10 @@ export interface TournamentRequest {
   matchDurationMinutes?: number; minRestMinutes?: number; courtStaggerMinutes?: number; splitThreshold?: number;
   entryFee?: number | null; scoringFormat?: string; primaryColor?: string; registrationOpen?: boolean;
   onlinePaymentEnabled?: boolean; publicVisible?: boolean; courtIds?: string[]; matchFormat?: MatchFormat;
+  entryFeeSecond?: number | null; entryFeeStudent?: number | null; entryFeeStudentSecond?: number | null;
 }
 export interface TrashedTournament { id: string; name: string; startDate: string; endDate: string; deletedAt: string; purgeAt: string; }
-export interface Player { id: string; fullName: string; phone?: string; email?: string; }
+export interface Player { id: string; fullName: string; phone?: string; email?: string; student?: boolean; }
 export interface PlayerInput { fullName: string; phone?: string; email?: string; }
 export interface Unavailability { playDate: string; fromTime?: string | null; toTime?: string | null; note?: string; }
 export interface PairView {
@@ -131,7 +134,22 @@ export interface ConflictPlayer { fullName: string; phone?: string; email?: stri
 export interface ConflictMatch { matchId: string; number: number; roundName?: string; playDate: string; startTime: string; sure: boolean; reason: string; }
 export interface PairConflict { pairId: string; categoryId: string; categoryName: string; player1: ConflictPlayer; player2: ConflictPlayer; matches: ConflictMatch[]; }
 /** Pago de inscripción de un jugador de una pareja (slot 1 o 2). */
-export interface PlayerPayment { pairId: string; slot: 1 | 2; playerId?: string; fullName: string; phone?: string; pairStatus: PairStatus; paidAt?: string | null; }
+export interface PlayerPayment {
+  pairId: string; slot: 1 | 2; playerId?: string; fullName: string; phone?: string; pairStatus: PairStatus; paidAt?: string | null;
+  /** Nº de inscripción del jugador en el torneo (1 = la primera), su precio (null sin precios) y si es alumno. */
+  order?: number; price?: number | null; student?: boolean;
+}
+/** Una inscripción de un jugador con su orden y precio. */
+export interface InscriptionCharge {
+  pairId: string; slot: 1 | 2; categoryId: string; categoryName: string; order: number; price?: number | null;
+  paidAt?: string | null; pairStatus: PairStatus;
+}
+/** Lo que debe un jugador (importes null si el torneo no tiene precio). */
+export interface PlayerAccount {
+  playerId: string; fullName: string; phone?: string; student: boolean; inscriptions: InscriptionCharge[];
+  total?: number | null; paid?: number | null; pending?: number | null;
+}
+export interface PlayerAccounts { priced: boolean; total?: number | null; paid?: number | null; pending?: number | null; players: PlayerAccount[]; }
 export interface CategoryPayments { categoryId: string; categoryName: string; players: PlayerPayment[]; }
 export interface BoardPair { id: string; player1: string; player2: string; seed?: number; groupLabel?: string; }
 export interface Standing { pairId: string; played: number; won: number; lost: number; setsFor: number; setsAgainst: number; gamesFor: number; gamesAgainst: number; }
