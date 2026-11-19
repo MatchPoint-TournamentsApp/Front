@@ -97,7 +97,7 @@ export class FillComponent {
           <ul>
             <li>Base de datos y autenticación: Supabase (servidores en la Unión Europea, Frankfurt).</li>
             <li>Servidor de la aplicación: Render (servidores en la Unión Europea, Frankfurt).</li>
-            <li>Alojamiento de la web y red de distribución: Cloudflare (y Vercel, mientras se completa el cambio de alojamiento).</li>
+            <li>Alojamiento de la web y red de distribución: Cloudflare.</li>
             <li>Envío de correos (confirmación de cuenta, recuperación de contraseña y mensajes de contacto): Brevo (Sendinblue SAS, Francia).</li>
           </ul>
           <p>Algunos de estos proveedores tienen sede en Estados Unidos y pueden tratar datos fuera del Espacio Económico Europeo. En ese caso, las transferencias se amparan en el Marco de Privacidad de Datos UE-EE. UU. o en las cláusulas contractuales tipo de la Comisión Europea.</p>
