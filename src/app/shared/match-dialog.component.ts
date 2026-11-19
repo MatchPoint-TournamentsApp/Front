@@ -111,10 +111,7 @@ import { dayName, hhmm, MATCH_FORMAT_LABEL, shortDate } from '../core/format';
             <p class="tiny muted" style="margin:10px 0 0">Datos de contacto privados: solo los ve el club. Se editan en la pestaña «Parejas».</p>
           }
         } @else if (tab() === 'result') {
-          @if (!p1() || !p2()) {
-            <div class="notice">Todavía no se conocen las dos parejas de este partido.</div>
-          } @else {
-            <div class="format-row">
+          <div class="format-row">
               <label class="field"><span>Formato de este partido</span>
                 <select [ngModel]="format() ?? ''" (ngModelChange)="setFormat($event)" [disabled]="busy()" aria-label="Formato de este partido">
                   <option value="">Como el torneo ({{ formatLabel(tournamentFormat()) }})</option>
@@ -122,6 +119,9 @@ import { dayName, hhmm, MATCH_FORMAT_LABEL, shortDate } from '../core/format';
                   <option value="THREE_SETS">3 sets</option>
                 </select></label>
             </div>
+          @if (!p1() || !p2()) {
+            <div class="notice">Todavía no se conocen las dos parejas de este partido.</div>
+          } @else {
             <div style="margin-bottom:14px"><label class="switch"><input type="checkbox" [(ngModel)]="walkover"> Victoria por W.O. (no presentado)</label></div>
             @if (walkover) {
               <div class="stack">
