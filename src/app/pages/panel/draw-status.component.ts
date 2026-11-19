@@ -83,6 +83,8 @@ export class DrawStatusComponent {
   t = input.required<Tournament>();
   /** Partidos con comentario (se pierden al volver a generar). */
   notes = input(0);
+  /** Partidos con formato propio (también se pierde al volver a generar). */
+  formats = input(0);
   /** Apartados de Ajustes con cambios sin guardar: generar con ellos usaría los datos anteriores. */
   unsaved = input<string[]>([]);
   /** Tras generar o reprogramar: recargar el torneo. */
@@ -187,7 +189,8 @@ export class DrawStatusComponent {
     const pendingInscriptions = t.categories.filter(c => c.pendingPairs > 0).map(c => c.name);
     if (this.generatedCats().length && !(await this.confirm.ask({ title: '¿Volver a generar los cuadros?',
       message: 'Se volverán a colocar todas las parejas y a calcular todos los horarios desde cero.'
-        + (this.notes() ? ` Se perderán los comentarios de ${this.notes()} ${this.notes() === 1 ? 'partido' : 'partidos'}.` : ''),
+        + (this.notes() ? ` Se perderán los comentarios de ${this.notes()} ${this.notes() === 1 ? 'partido' : 'partidos'}.` : '')
+        + (this.formats() ? ` ${this.formats() === 1 ? 'El partido con formato propio vuelve' : `Los ${this.formats()} partidos con formato propio vuelven`} al formato del torneo.` : ''),
       ok: 'Volver a generar' }))) return;
     if (pendingInscriptions.length && !(await this.confirm.ask({ title: 'Hay inscripciones sin confirmar',
       message: `En ${pendingInscriptions.join(', ')}. Las parejas pendientes no entrarán en los cuadros.`, ok: 'Generar igualmente' }))) return;

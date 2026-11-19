@@ -180,6 +180,12 @@ const SECTION_LABEL: Record<Section, string> = {
       <div class="grid-3">
         <label class="field"><span>Duración del partido (min)</span><input name="du" type="number" min="30" max="240" step="5" [(ngModel)]="f.matchDurationMinutes" #duRef="ngModel" required><mp-error [control]="duRef" />
           @if (savedBands()) { <small>Algunas franjas horarias tienen otra duración (Días y horario de juego).</small> }</label>
+        <label class="field"><span>Formato de los partidos</span>
+          <select name="mf" [(ngModel)]="f.matchFormat">
+            <option value="SUPER_TIEBREAK">2 sets + super tie-break</option>
+            <option value="THREE_SETS">3 sets</option>
+          </select>
+          <small>Cada partido puede cambiarlo (p. ej. la final a 3 sets) en su ventana, pestaña Resultado.</small></label>
         <label class="field"><span>Inscripción (€)</span><input name="fe" type="number" min="0" step="0.5" [(ngModel)]="f.entryFee" #feRef="ngModel"><mp-error [control]="feRef" /></label>
       </div>
       <label class="field"><span>Normas del torneo (públicas)</span><textarea name="r" [(ngModel)]="f.rules" rows="6"></textarea></label>
@@ -284,6 +290,7 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
     if (!this.isDirty('general')) this.f = {
       name: t.name, description: t.description, rules: t.rules, organizerNotes: t.organizerNotes, startDate: t.startDate,
       endDate: t.endDate, matchDurationMinutes: t.matchDurationMinutes, minRestMinutes: t.minRestMinutes,
+      matchFormat: t.matchFormat ?? 'SUPER_TIEBREAK',
       courtStaggerMinutes: t.courtStaggerMinutes, splitThreshold: t.splitThreshold, entryFee: t.entryFee ?? null,
       scoringFormat: t.scoringFormat, primaryColor: t.primaryColor, registrationOpen: t.registrationOpen,
       publicVisible: t.publicVisible,

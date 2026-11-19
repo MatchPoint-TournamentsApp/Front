@@ -102,6 +102,7 @@ export class ApiService {
   }
   /** Empieza el partido en una pista ("en juego"). */
   /** Comentario público del partido (vacío lo quita). */
+  setMatchFormat(matchId: string, format: M.MatchFormat | null) { return this.put<M.MatchView>(`/matches/${matchId}/format`, { format }); }
   setMatchNote(matchId: string, note: string) { return this.put<M.MatchView>(`/matches/${matchId}/note`, { note }); }
   startMatch(matchId: string, courtId: string) { return this.put<M.MatchView>(`/matches/${matchId}/court`, { courtId }); }
   /** Quita el partido de la pista. */

@@ -49,7 +49,7 @@ const REFRESH_MS = 30_000;
           </div>
         </div>
 
-        <mp-draw-status [t]="tt" [notes]="noteCount()" [unsaved]="unsaved()" (showConflicts)="conflictsFor.set({ matchId: null })" (changed)="reload()" (generated)="tab.set('draws')" />
+        <mp-draw-status [t]="tt" [notes]="noteCount()" [formats]="formatCount()" [unsaved]="unsaved()" (showConflicts)="conflictsFor.set({ matchId: null })" (changed)="reload()" (generated)="tab.set('draws')" />
         @if (club() && club()!.verificationStatus !== 'VERIFIED') {
           <div class="notice warn next">
             @if (club()!.verificationStatus === 'REJECTED') { <b>No hemos podido verificar tu club.</b> Corrige los datos de la entidad en «Datos del club». }
@@ -152,6 +152,8 @@ export class TournamentPage implements OnInit, OnDestroy {
   dates = computed(() => this.t() ? range(this.t()!.startDate, this.t()!.endDate) : '');
   totalPairs = computed(() => this.t()?.categories.reduce((a, c) => a + c.confirmedPairs, 0) ?? 0);
   /** Partidos con comentario del club. */
+  /** Partidos con formato propio (se pierde al volver a generar). */
+  formatCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.matchFormat).length, 0) ?? 0);
   noteCount = computed(() => this.board()?.categories.reduce((a, c) => a + c.matches.filter(m => m.note).length, 0) ?? 0);
   /** Hay cuadros generados con partidos (se muestra la pestaña Pistas). */
   hasMatches = computed(() => this.board()?.categories.some(c => c.matches.length) ?? false);

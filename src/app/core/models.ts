@@ -4,6 +4,8 @@ export type Role = 'USER' | 'CLUB_ADMIN' | 'SUPERADMIN';
 export type TournamentStatus = 'DRAFT' | 'REGISTRATION' | 'DRAW_READY' | 'IN_PROGRESS' | 'FINISHED';
 export type Gender = 'MASCULINA' | 'FEMENINA' | 'MIXTA' | 'OPEN';
 export type CategoryFormat = 'KNOCKOUT' | 'KNOCKOUT_CONSOLATION' | 'LEAGUE';
+/** Formato de los partidos: solo cambia cómo se muestra el 3.er set («Super TB» o «Set 3»). */
+export type MatchFormat = 'SUPER_TIEBREAK' | 'THREE_SETS';
 export type PairStatus = 'PENDING' | 'CONFIRMED' | 'WITHDRAWN';
 export type SponsorTier = 'PRINCIPAL' | 'COLABORADOR';
 export type Stage = 'MAIN' | 'CONSOLATION' | 'GROUP' | 'FINAL' | 'CONSOLATION_FINAL' | 'THIRD_PLACE';
@@ -71,6 +73,8 @@ export interface Tournament {
   courtBands?: CourtBand[];
   /** Semifinales y finales obligatoriamente el último día (que no admite restricciones). */
   finalsLastDay?: boolean;
+  /** Formato general de los partidos (cada partido puede cambiarlo). */
+  matchFormat?: MatchFormat;
   /** Primer día y hora de juego (hora de España): desde entonces los cuadros quedan bloqueados. */
   startsAt?: string | null; started: boolean;
   /** Hay cambios desde la última generación de cuadros. */
@@ -94,7 +98,7 @@ export interface TournamentRequest {
   name: string; description?: string; rules?: string; organizerNotes?: string; startDate: string; endDate: string;
   matchDurationMinutes?: number; minRestMinutes?: number; courtStaggerMinutes?: number; splitThreshold?: number;
   entryFee?: number | null; scoringFormat?: string; primaryColor?: string; registrationOpen?: boolean;
-  onlinePaymentEnabled?: boolean; publicVisible?: boolean; courtIds?: string[];
+  onlinePaymentEnabled?: boolean; publicVisible?: boolean; courtIds?: string[]; matchFormat?: MatchFormat;
 }
 export interface TrashedTournament { id: string; name: string; startDate: string; endDate: string; deletedAt: string; purgeAt: string; }
 export interface Player { id: string; fullName: string; phone?: string; email?: string; }
@@ -119,6 +123,8 @@ export interface MatchView {
   live: boolean; startedAt?: string;
   /** Comentario público del club (p. ej. la sede donde se juega). */
   note?: string;
+  /** Formato propio del partido (vacío = el del torneo). */
+  matchFormat?: MatchFormat | null;
 }
 /** Pareja con problemas de horario (solo el club: incluye contacto). */
 export interface ConflictPlayer { fullName: string; phone?: string; email?: string; }

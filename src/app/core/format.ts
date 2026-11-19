@@ -43,3 +43,9 @@ export const CLUB_ROLE: Record<import('./models').ClubRole, string> = {
   PRESIDENT: 'Presidente/a', SECRETARY: 'Secretario/a', TREASURER: 'Tesorero/a', BOARD_MEMBER: 'Miembro de la junta directiva',
   OWNER: 'Propietario/a o administrador/a de la empresa', MANAGER: 'Gerente o director/a', STAFF: 'Empleado/a autorizado/a',
 };
+
+/** Nombre del formato de los partidos. */
+export const MATCH_FORMAT_LABEL: Record<'SUPER_TIEBREAK' | 'THREE_SETS', string> = {
+  SUPER_TIEBREAK: '2 sets + super tie-break',
+  THREE_SETS: '3 sets',
+};

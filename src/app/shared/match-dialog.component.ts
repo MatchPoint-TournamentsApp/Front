@@ -5,8 +5,8 @@ import { ApiService } from '../core/api.service';
 import { ToastService } from '../core/toast.service';
 import { UnpaidCheckService } from '../core/unpaid-check.service';
 import { ConfirmService } from '../core/confirm.service';
-import { Board, BoardPair, MatchView, PairView, Player, Unavailability } from '../core/models';
-import { dayName, hhmm, shortDate } from '../core/format';
+import { Board, BoardPair, MatchFormat, MatchView, PairView, Player, Unavailability } from '../core/models';
+import { dayName, hhmm, MATCH_FORMAT_LABEL, shortDate } from '../core/format';
 
 /**
  * Ventana del organizador para un partido: pista (se elige al empezar a jugarlo),
@@ -16,14 +16,14 @@ import { dayName, hhmm, shortDate } from '../core/format';
   selector: 'mp-match-dialog',
   imports: [LoadingComponent, FormsModule],
   template: `
-    <div class="backdrop" (click)="closed.emit(false)">
+    <div class="backdrop" (click)="closed.emit(formatChanged)">
       <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         <div class="modal-head">
           <div>
             <h3>P{{ m().number }} <span class="muted small">{{ m().roundName }}</span></h3>
             <div class="small muted">{{ categoryName() }}@if (m().playDate) { · {{ dayLabel(m().playDate!) }} {{ hhmm(m().startTime) }} }@if (m().note) { · <span class="mnote"><span>{{ m().note }}</span></span> }</div>
           </div>
-          <button class="icon-btn" (click)="closed.emit(false)" aria-label="Cerrar">✕</button>
+          <button class="icon-btn" (click)="closed.emit(formatChanged)" aria-label="Cerrar">✕</button>
         </div>
 
         @if (m().warning) {
@@ -114,6 +114,14 @@ import { dayName, hhmm, shortDate } from '../core/format';
           @if (!p1() || !p2()) {
             <div class="notice">Todavía no se conocen las dos parejas de este partido.</div>
           } @else {
+            <div class="format-row">
+              <label class="field"><span>Formato de este partido</span>
+                <select [ngModel]="format() ?? ''" (ngModelChange)="setFormat($event)" [disabled]="busy()" aria-label="Formato de este partido">
+                  <option value="">Como el torneo ({{ formatLabel(tournamentFormat()) }})</option>
+                  <option value="SUPER_TIEBREAK">2 sets + super tie-break</option>
+                  <option value="THREE_SETS">3 sets</option>
+                </select></label>
+            </div>
             <div style="margin-bottom:14px"><label class="switch"><input type="checkbox" [(ngModel)]="walkover"> Victoria por W.O. (no presentado)</label></div>
             @if (walkover) {
               <div class="stack">
@@ -122,7 +130,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
               </div>
             } @else {
               <table class="score">
-                <thead><tr><th></th><th>Set 1</th><th>Set 2</th><th>Super TB</th></tr></thead>
+                <thead><tr><th></th><th>Set 1</th><th>Set 2</th><th>{{ threeSets() ? 'Set 3' : 'Super TB' }}</th></tr></thead>
                 <tbody>
                   <tr>
                     <td class="pn">{{ label(p1()) }}</td>
@@ -134,14 +142,14 @@ import { dayName, hhmm, shortDate } from '../core/format';
                   </tr>
                 </tbody>
               </table>
-              <p class="tiny muted" style="margin-top:8px">Deja el super tie-break vacío si el partido acabó en dos sets.</p>
+              <p class="tiny muted" style="margin-top:8px">{{ threeSets() ? 'Deja el set 3 vacío si el partido acabó en dos sets.' : 'Deja el super tie-break vacío si el partido acabó en dos sets.' }}</p>
             }
             <div class="modal-foot">
               @if (m().status === 'PLAYED' || m().status === 'WALKOVER') {
                 <button class="btn danger" (click)="clear()" [disabled]="busy()">Borrar resultado</button>
               }
               <span class="spacer"></span>
-              <button class="btn ghost" (click)="closed.emit(false)">Cancelar</button>
+              <button class="btn ghost" (click)="closed.emit(formatChanged)">Cancelar</button>
               <button class="btn" (click)="saveResult()" [disabled]="busy()">Guardar resultado</button>
             </div>
           }
@@ -170,7 +178,7 @@ import { dayName, hhmm, shortDate } from '../core/format';
           } @else {
             @if (m().warning) { <div class="notice warn" style="margin-top:14px">{{ m().warning }}</div> }
             <div class="modal-foot">
-              <button class="btn ghost" (click)="closed.emit(false)">Cancelar</button>
+              <button class="btn ghost" (click)="closed.emit(formatChanged)">Cancelar</button>
               <button class="btn" (click)="saveSchedule()" [disabled]="busy()">Guardar horario</button>
             </div>
           }
@@ -179,6 +187,8 @@ import { dayName, hhmm, shortDate } from '../core/format';
     </div>
   `,
   styles: [`
+    .format-row { margin-bottom: 12px; }
+    .format-row .field { max-width: 320px; }
     .score { width: 100%; border-collapse: collapse; }
     .score th { font-size: .8rem; color: var(--ink-2); font-weight: 600; padding: 4px; }
     .score td { padding: 4px; }
@@ -230,6 +240,12 @@ export class MatchDialogComponent implements OnInit {
   court: string | null = null;
   locked = true;
   note = '';
+  /** Formato propio del partido (null = el del torneo). Se guarda al elegirlo, sin cerrar la ventana. */
+  format = signal<MatchFormat | null>(null);
+  formatChanged = false;
+  tournamentFormat = computed<MatchFormat>(() => this.board().tournament.matchFormat ?? 'SUPER_TIEBREAK');
+  threeSets = computed(() => (this.format() ?? this.tournamentFormat()) === 'THREE_SETS');
+  formatLabel(f: MatchFormat) { return MATCH_FORMAT_LABEL[f]; }
 
   private cat = computed(() => this.board().categories.find(c => c.matches.some(x => x.id === this.m().id)));
   categoryName = computed(() => this.cat()?.category.name ?? '');
@@ -258,6 +274,7 @@ export class MatchDialogComponent implements OnInit {
     this.court = m.courtId ?? this.courts().find(c => !c.busy)?.id ?? null;
     this.locked = m.locked || !m.playDate;
     this.note = m.note ?? '';
+    this.format.set(m.matchFormat ?? null);
     if (!this.p1() || !this.p2()) this.tab.set('schedule');
   }
 
@@ -297,6 +314,20 @@ export class MatchDialogComponent implements OnInit {
 
   /** Comentarios ya usados en el torneo (sugerencias al escribir). */
   usedNotes = computed(() => [...new Set(this.board().categories.flatMap(c => c.matches).map(x => x.note).filter((n): n is string => !!n))].sort());
+
+  /** Cambia el formato del partido sin cerrar la ventana (para meter después el resultado). */
+  async setFormat(v: string) {
+    const f = (v || null) as MatchFormat | null;
+    const prev = this.format();
+    this.format.set(f);
+    this.busy.set(true);
+    try {
+      await this.api.setMatchFormat(this.m().id, f);
+      this.formatChanged = true;
+      this.toast.ok(f ? `P${this.m().number}: ${this.formatLabel(f)}` : `P${this.m().number}: como el torneo`);
+    } catch (e) { this.format.set(prev); this.toast.error(e); }
+    finally { this.busy.set(false); }
+  }
 
   async saveNote() {
     const note = this.note.trim();
