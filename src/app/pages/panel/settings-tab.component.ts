@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { Capacity, Club, CourtBand, Day, DurationBand, Tournament, TournamentRequest } from '../../core/models';
 import { dayName, hhmm, shortDate } from '../../core/format';
+import { crossesMidnight, dayHoursProblem, dayMinute, dayRange } from '../../core/playtime';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 
@@ -50,7 +51,8 @@ const SECTION_LABEL: Record<Section, string> = {
 
     <section class="panel">
       <h3>Días y horario de juego</h3>
-      <p class="small muted">Franja en la que se pueden programar partidos cada día y cuántas pistas dedicas al torneo ese día. Los cuadros se generan dentro de estas franjas sin pasar de esas pistas.</p>
+      <p class="small muted">Franja en la que se pueden programar partidos cada día y cuántas pistas dedicas al torneo ese día. Los cuadros se generan dentro de estas franjas sin pasar de esas pistas.
+        Para jugar de madrugada, pon la hora de cierre del día siguiente (por ejemplo, el viernes de 16:00 a 01:00): esos partidos cuentan como del viernes.</p>
       <div class="days" (input)="touch('days')" (change)="touch('days')">
         <div class="drow head" aria-hidden="true"><span></span><span>Desde</span><span></span><span>Hasta</span><span>Pistas</span><span>Restricciones</span><span></span></div>
         @for (d of days; track d.playDate; let i = $index) {
@@ -70,6 +72,7 @@ const SECTION_LABEL: Record<Section, string> = {
             </label>
             <button class="icon-btn" (click)="removeDay(i); touch('days')" aria-label="Quitar día">✕</button>
           </div>
+          @if (lateHint(d); as h) { <div class="late-hint small" [class.bad]="h.bad">{{ h.text }}</div> }
         }
       </div>
       <label class="switch finals" (change)="touch('days')">
@@ -245,6 +248,8 @@ const SECTION_LABEL: Record<Section, string> = {
     .adv > summary::before { content: '▸'; color: var(--gold-ink); transition: transform .15s; display: inline-block; }
     .adv[open] > summary::before { transform: rotate(90deg); }
     .adv[open] > summary { margin-bottom: 10px; }
+    .late-hint { margin: -2px 0 4px; padding: 6px 10px; border-radius: var(--r-md); background: var(--glass); color: var(--ink-2); }
+    .late-hint.bad { background: var(--danger-bg); color: var(--danger); }
     .bands { display: grid; gap: 8px; }
     .brow { display: grid; grid-template-columns: minmax(100px, 160px) minmax(88px, 120px) 16px minmax(88px, 120px) minmax(96px, 130px) 32px; gap: 8px; align-items: center; }
     .mins { display: inline-flex; align-items: center; gap: 6px; }
@@ -332,10 +337,22 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
   allCourtOptions() { return Array.from({ length: this.courtsTotal() }, (_, i) => i + 1); }
   hours(h: number) { return Number.isInteger(h) ? String(h) : h.toFixed(1).replace('.', ','); }
 
+  /** Aviso bajo un día: termina de madrugada (bien) o el cierre de madrugada no vale (mal). */
+  lateHint(d: { playDate: string; startTime: string; endTime: string }): { text: string; bad: boolean } | null {
+    const problem = d.startTime && d.endTime ? dayHoursProblem(d) : '';
+    if (problem) return { text: `El ${this.label(d.playDate)} ${problem}.`, bad: true };
+    if (!crossesMidnight(d.startTime, d.endTime)) return null;
+    return { text: `Termina de madrugada: los partidos hasta las ${hhmm(d.endTime)} cuentan como del ${this.label(d.playDate)}.`, bad: false };
+  }
+
+  /** Fin de una franja o tramo y cierre del día, en minutos del día de juego (la madrugada va después de las 23:59). */
+  private bandEnd(day: Day, to: string) { return dayRange(day, day.startTime, to)[1]; }
+  private dayEnd(day: Day) { return dayRange(day, day.startTime, day.endTime)[1]; }
+
   addCourtBand() {
     const days = this.t().days;
-    const day = days.find(d => !this.courtBands.some(b => b.playDate === d.playDate && b.toTime >= hhmm(d.endTime))) ?? days[0];
-    const last = this.courtBands.filter(b => b.playDate === day.playDate).sort((a, b) => a.toTime.localeCompare(b.toTime)).at(-1);
+    const day = days.find(d => !this.courtBands.some(b => b.playDate === d.playDate && this.bandEnd(d, b.toTime) >= this.dayEnd(d))) ?? days[0];
+    const last = this.courtBands.filter(b => b.playDate === day.playDate).sort((a, b) => this.bandEnd(day, a.toTime) - this.bandEnd(day, b.toTime)).at(-1);
     this.courtBands = [...this.courtBands, { playDate: day.playDate, fromTime: last?.toTime ?? hhmm(day.startTime),
       toTime: hhmm(day.endTime), courts: Math.max(1, Math.min(day.courtCount ?? this.courtsTotal(), this.courtsTotal())) }];
     this.touch('courtBands');
@@ -350,9 +367,10 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
     for (const b of this.courtBands) {
       const day = this.t().days.find(d => d.playDate === b.playDate);
       const where = `el tramo del ${this.label(b.playDate)}${b.fromTime ? ' desde las ' + b.fromTime : ''}`;
+      const r = b.fromTime && b.toTime ? dayRange(day, b.fromTime, b.toTime) : [0, 0];
       const problem = !b.fromTime || !b.toTime ? 'falta la hora de inicio o de fin'
-        : b.toTime <= b.fromTime ? 'la hora de fin debe ser posterior a la de inicio (usa 23:59 para medianoche)'
-        : day && (b.fromTime < hhmm(day.startTime) || b.toTime > hhmm(day.endTime)) ? `debe estar dentro del horario de ese día (${hhmm(day.startTime)} a ${hhmm(day.endTime)})`
+        : b.toTime === b.fromTime || r[1] <= r[0] ? 'la hora de fin debe ser posterior a la de inicio (usa 23:59 para medianoche)'
+        : day && (r[0] < dayMinute(day, day.startTime) || r[1] > this.dayEnd(day)) ? `debe estar dentro del horario de ese día (${hhmm(day.startTime)} a ${hhmm(day.endTime)})`
         : !(b.courts >= 1 && b.courts <= this.courtsTotal()) ? `el número de pistas debe estar entre 1 y ${this.courtsTotal()}`
         : '';
       if (problem) { this.toast.error(`Revisa ${where}: ${problem}.`); return; }
@@ -382,8 +400,8 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
   /** Nueva franja: el primer día sin franjas que lleguen al cierre, desde donde acabe la última hasta el cierre. */
   addBand() {
     const days = this.t().days;
-    const day = days.find(d => !this.bands.some(b => b.playDate === d.playDate && b.toTime >= hhmm(d.endTime))) ?? days[0];
-    const last = this.bands.filter(b => b.playDate === day.playDate).sort((a, b) => a.toTime.localeCompare(b.toTime)).at(-1);
+    const day = days.find(d => !this.bands.some(b => b.playDate === d.playDate && this.bandEnd(d, b.toTime) >= this.dayEnd(d))) ?? days[0];
+    const last = this.bands.filter(b => b.playDate === day.playDate).sort((a, b) => this.bandEnd(day, a.toTime) - this.bandEnd(day, b.toTime)).at(-1);
     const from = last?.toTime ?? hhmm(day.startTime);
     this.bands = [...this.bands, { playDate: day.playDate, fromTime: from, toTime: hhmm(day.endTime),
       minutes: this.f.matchDurationMinutes ?? this.t().matchDurationMinutes }];
@@ -398,8 +416,10 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
   async saveBands() {
     for (const b of this.bands) {
       const where = `la franja del ${this.label(b.playDate)}${b.fromTime ? ' desde las ' + b.fromTime : ''}`;
+      const day = this.t().days.find(d => d.playDate === b.playDate);
+      const r = b.fromTime && b.toTime ? dayRange(day, b.fromTime, b.toTime) : [0, 0];
       const problem = !b.fromTime || !b.toTime ? 'falta la hora de inicio o de fin'
-        : b.toTime <= b.fromTime ? 'la hora de fin debe ser posterior a la de inicio (usa 23:59 para medianoche)'
+        : b.toTime === b.fromTime || r[1] <= r[0] ? 'la hora de fin debe ser posterior a la de inicio (usa 23:59 para medianoche)'
         : !(b.minutes >= 30 && b.minutes <= 240) ? 'la duración debe estar entre 30 y 240 minutos'
         : '';
       if (problem) { this.toast.error(`Revisa ${where}: ${problem}.`); return; }
@@ -445,6 +465,10 @@ export class SettingsTabComponent implements OnChanges, OnDestroy {
 
   /** Antes de guardar: si se quitarían restricciones de parejas, el club lo confirma viendo a quién afecta. */
   async saveDays() {
+    for (const d of this.days) {
+      const problem = dayHoursProblem(d);
+      if (problem) { this.toast.error(`Revisa el ${this.label(d.playDate)}: ${problem}.`); return; }
+    }
     try {
       const losses = await this.api.previewDays(this.t().id, this.days, this.finalsLastDay);
       if (losses.length) {

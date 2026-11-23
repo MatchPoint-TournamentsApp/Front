@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, input, output, signal } from '@angular/core';
 import { Board, BoardPair, MatchView } from '../core/models';
 import { categoryColor, dayName, hhmm, shortDate } from '../core/format';
+import { dayMinute, isLate } from '../core/playtime';
 
 interface Item { m: MatchView; cat: string; color: string; p1: string; p2: string; }
 
@@ -32,7 +33,7 @@ interface Item { m: MatchView; cat: string; color: string; p1: string; p2: strin
         @for (t of times(); track t) {
           @let row = at(t);
           <div class="hour">
-            <div class="time num">{{ t }}<span class="count" [class.over]="row.length > courts()">{{ row.length }}/{{ courts() }}</span></div>
+            <div class="time num">{{ t }}@if (late(t)) { <span class="late">madrugada</span> }<span class="count" [class.over]="row.length > courts()">{{ row.length }}/{{ courts() }}</span></div>
             <div class="list">
               @for (it of row; track it.m.id) { <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: it }" /> }
             </div>
@@ -71,6 +72,7 @@ interface Item { m: MatchView; cat: string; color: string; p1: string; p2: strin
     .hour:last-child { border-bottom: 0; }
     .time { padding: 10px 10px 10px 8px; font: 500 15px var(--display); color: var(--ink-2); text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
     .count { font: 500 10.5px var(--body); color: var(--ink-3); letter-spacing: .04em; }
+    .late { font: 600 9.5px var(--body); color: var(--gold-ink); text-transform: uppercase; letter-spacing: .06em; }
     .count.over { color: var(--danger); font-weight: 700; }
     .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 6px; padding: 6px; }
     .item { display: flex; flex-direction: column; gap: 1px; width: 100%; text-align: left; background: var(--glass); border: 0; border-left: 3px solid; border-radius: 6px; padding: 6px 8px; font: inherit; cursor: pointer; color: var(--ink); transition: background .15s; }
@@ -120,7 +122,14 @@ export class ScheduleComponent {
     const n = this.board().tournament.days.find(d => d.playDate === this.day())?.courtCount;
     return n && n < all ? n : all;
   });
-  times = computed(() => [...new Set(this.items().filter(i => i.m.playDate === this.day()).map(i => hhmm(i.m.startTime)))].sort());
+  /** Horas del día elegido en orden de juego: la madrugada de un día que cruza medianoche va al final. */
+  times = computed(() => {
+    const day = this.board().tournament.days.find(d => d.playDate === this.day());
+    return [...new Set(this.items().filter(i => i.m.playDate === this.day()).map(i => hhmm(i.m.startTime)))]
+      .sort((a, b) => dayMinute(day, a) - dayMinute(day, b));
+  });
+  /** Esa hora del día elegido es de madrugada (el día cruza medianoche). */
+  late(t: string) { return isLate(this.board().tournament.days.find(d => d.playDate === this.day()), t); }
   unscheduled = computed(() => this.items().filter(i => !i.m.playDate));
 
   at(t: string) {

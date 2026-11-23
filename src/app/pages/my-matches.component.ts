@@ -2,6 +2,7 @@ import { Component, computed, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Board, MatchView } from '../core/models';
 import { categoryColor, dayName, hhmm, shortDate } from '../core/format';
+import { isLate, playKey } from '../core/playtime';
 
 interface Row { m: MatchView; cat: string; color: string; me: string; rival: string; }
 
@@ -59,11 +60,17 @@ export class MyMatchesComponent {
           rival: other.pairId ? names.get(other.pairId) ?? '' : other.placeholder ?? 'Por decidir' });
       }
     }
-    return out.sort((a, b) => `${a.m.playDate ?? 'z'}${a.m.startTime ?? ''}`.localeCompare(`${b.m.playDate ?? 'z'}${b.m.startTime ?? ''}`));
+    // por día de juego y hora: la madrugada de un día que cruza medianoche va al final de su día
+    const days = this.board().tournament.days;
+    return out.sort((a, b) => playKey(days, a.m.playDate, a.m.startTime).localeCompare(playKey(days, b.m.playDate, b.m.startTime)));
   });
 
   day(m: MatchView) { return `${dayName(m.playDate!)} ${shortDate(m.playDate!)}`; }
-  time(m: MatchView) { return hhmm(m.startTime); }
+  /** Hora; si es de madrugada (el día cruza medianoche), lo indica: «00:30 (madrugada)». */
+  time(m: MatchView) {
+    const late = isLate(this.board().tournament.days.find(d => d.playDate === m.playDate), m.startTime);
+    return hhmm(m.startTime) + (late ? ' (madrugada)' : '');
+  }
   score(m: MatchView) { return (m.score ?? []).map(s => `${s[0]}-${s[1]}`).join(' '); }
 }
 

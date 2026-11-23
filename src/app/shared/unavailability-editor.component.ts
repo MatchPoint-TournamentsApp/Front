@@ -1,7 +1,8 @@
 import { Component, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Day, Unavailability } from '../core/models';
-import { dayName, shortDate } from '../core/format';
+import { dayName, hhmm, shortDate } from '../core/format';
+import { crossesMidnight } from '../core/playtime';
 
 type DayMode = 'any' | 'all' | 'some';
 
@@ -32,6 +33,10 @@ type DayMode = 'any' | 'all' | 'some';
               <option value="some">No puede en algunas horas</option>
             </select>
           </div>
+          @if (late(d) && dayMode(d.playDate) !== 'any') {
+            <p class="small muted late">Este día se juega de {{ hm(d.startTime) }} a {{ hm(d.endTime) }} de la madrugada:
+              «todo el día» y «desde las…» incluyen la madrugada; para solo esas horas, «entre 00:00 y {{ hm(d.endTime) }}».</p>
+          }
           @if (dayMode(d.playDate) === 'some') {
             <div class="slots">
               @for (u of slots(d.playDate); track $index) {
@@ -71,9 +76,10 @@ type DayMode = 'any' | 'all' | 'some';
     .label { font-weight: 600; }
     .slots { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 0 148px; }
     .r { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .late { margin: 6px 0 0 148px; }
     @media (max-width: 640px) {
       .d { grid-template-columns: 1fr; }
-      .slots { margin-left: 0; }
+      .slots, .late { margin-left: 0; }
     }
   `],
 })
@@ -84,6 +90,9 @@ export class UnavailabilityEditorComponent {
   items = model<Unavailability[]>([]);
 
   label(d: string) { return `${dayName(d)} ${shortDate(d)}`; }
+  /** El día termina de madrugada (p. ej. 16:00–01:00). */
+  late(d: Day) { return crossesMidnight(d.startTime, d.endTime); }
+  hm(t: string) { return hhmm(t); }
 
   slots(d: string) { return this.items().filter(u => u.playDate === d); }
 

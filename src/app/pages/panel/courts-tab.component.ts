@@ -2,6 +2,7 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { ApiService } from '../../core/api.service';
 import { Board, BoardPair, MatchView, SlotView } from '../../core/models';
 import { categoryColor, dayName, hhmm, pairLabel, shortDate } from '../../core/format';
+import { isLate, playKey } from '../../core/playtime';
 import { UnpaidCheckService } from '../../core/unpaid-check.service';
 import { ToastService } from '../../core/toast.service';
 
@@ -58,6 +59,7 @@ interface Slot { key: string; date: string; time: string; rows: Row[]; }
           <div class="when">
             <span class="time num">{{ s.time }}</span>
             @if (s.date !== today()) { <span class="tiny muted">{{ dayLabel(s.date) }}</span> }
+            @if (late(s.date, s.time)) { <span class="tiny muted">madrugada</span> }
           </div>
           <div class="rows">
             @for (r of s.rows; track r.m.id) {
@@ -190,8 +192,10 @@ export class CourtsTabComponent {
   /** Partidos pendientes con día y hora que aún no están en pista, agrupados por hora. */
   slots = computed<Slot[]>(() => {
     const groups = new Map<string, Slot>();
+    // por día de juego y hora: la madrugada de un día que cruza medianoche va al final de su día
+    const days = this.board().tournament.days;
     const pending = this.rows().filter(r => !r.m.live && r.m.playDate && r.m.startTime)
-      .sort((a, b) => (a.m.playDate! + a.m.startTime!).localeCompare(b.m.playDate! + b.m.startTime!) || a.m.number - b.m.number);
+      .sort((a, b) => playKey(days, a.m.playDate, a.m.startTime).localeCompare(playKey(days, b.m.playDate, b.m.startTime)) || a.m.number - b.m.number);
     for (const r of pending) {
       const key = r.m.playDate + ' ' + hhmm(r.m.startTime);
       let g = groups.get(key);
@@ -205,6 +209,7 @@ export class CourtsTabComponent {
 
   hhmm = hhmm;
   dayLabel(d: string) { return `${dayName(d)} ${shortDate(d)}`; }
+  late(date: string, time: string) { return isLate(this.board().tournament.days.find(d => d.playDate === date), time); }
   since(m: MatchView) {
     return m.startedAt ? new Date(m.startedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '';
   }

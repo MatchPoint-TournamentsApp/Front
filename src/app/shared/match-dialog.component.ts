@@ -7,6 +7,7 @@ import { UnpaidCheckService } from '../core/unpaid-check.service';
 import { ConfirmService } from '../core/confirm.service';
 import { Board, BoardPair, MatchFormat, MatchView, PairView, Player, Unavailability } from '../core/models';
 import { dayName, hhmm, MATCH_FORMAT_LABEL, shortDate } from '../core/format';
+import { crossesMidnight, isLate } from '../core/playtime';
 
 /**
  * Ventana del organizador para un partido: pista (se elige al empezar a jugarlo),
@@ -21,7 +22,7 @@ import { dayName, hhmm, MATCH_FORMAT_LABEL, shortDate } from '../core/format';
         <div class="modal-head">
           <div>
             <h3>P{{ m().number }} <span class="muted small">{{ m().roundName }}</span></h3>
-            <div class="small muted">{{ categoryName() }}@if (m().playDate) { · {{ dayLabel(m().playDate!) }} {{ hhmm(m().startTime) }} }@if (m().note) { · <span class="mnote"><span>{{ m().note }}</span></span> }</div>
+            <div class="small muted">{{ categoryName() }}@if (m().playDate) { · {{ dayLabel(m().playDate!) }} {{ hhmm(m().startTime) }}@if (lateMatch()) { (madrugada)} }@if (m().note) { · <span class="mnote"><span>{{ m().note }}</span></span> }</div>
           </div>
           <button class="icon-btn" (click)="closed.emit(formatChanged)" aria-label="Cerrar">✕</button>
         </div>
@@ -163,6 +164,10 @@ import { dayName, hhmm, MATCH_FORMAT_LABEL, shortDate } from '../core/format';
             </label>
             <label class="field"><span>Hora</span><input type="time" step="300" [(ngModel)]="time" (ngModelChange)="warnings.set(null)"></label>
           </div>
+          @if (lateDay(); as ld) {
+            <p class="tiny muted" style="margin:8px 0 0">Ese día se juega de {{ hhmm(ld.startTime) }} a {{ hhmm(ld.endTime) }} de la madrugada:
+              para un partido de madrugada elige este mismo día y la hora (por ejemplo, 00:30).</p>
+          }
           <p class="tiny muted" style="margin:8px 0 0">La pista se elige cuando el partido empieza.</p>
           <div style="margin-top:14px"><label class="switch"><input type="checkbox" [(ngModel)]="locked"> Fijar este horario (no lo cambia "Reprogramar")</label></div>
           @if (warnings(); as w) {
@@ -311,6 +316,13 @@ export class MatchDialogComponent implements OnInit {
 
   label(p?: BoardPair) { return p ? `${p.player1} - ${p.player2}` : ''; }
   dayLabel(d: string) { return `${dayName(d)} ${shortDate(d)}`; }
+  /** El partido es de la madrugada de su día (el día cruza medianoche). */
+  lateMatch() { return isLate(this.board().tournament.days.find(d => d.playDate === this.m().playDate), this.m().startTime); }
+  /** Día elegido en «Día y hora» si termina de madrugada. */
+  lateDay() {
+    const d = this.board().tournament.days.find(x => x.playDate === this.date);
+    return d && crossesMidnight(d.startTime, d.endTime) ? d : null;
+  }
 
   /** Comentarios ya usados en el torneo (sugerencias al escribir). */
   usedNotes = computed(() => [...new Set(this.board().categories.flatMap(c => c.matches).map(x => x.note).filter((n): n is string => !!n))].sort());
