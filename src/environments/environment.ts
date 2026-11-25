@@ -9,4 +9,6 @@ export const environment = {
   supabaseUrl: 'https://TU-PROYECTO.supabase.co',
   supabaseAnonKey: 'TU_CLAVE_ANON_PUBLICA',
   storageBucket: 'matchpoint-public',
+  // Solo si Supabase se usa a través de un intermediario: el nombre de sesión de siempre (sb-<proyecto>-auth-token)
+  supabaseStorageKey: '',
 };

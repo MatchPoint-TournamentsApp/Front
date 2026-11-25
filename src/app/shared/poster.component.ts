@@ -6,6 +6,7 @@ import { CategoryBoardComponent } from './category-board.component';
 import { HonorBoardComponent } from './honor-board.component';
 import { LogoComponent } from './logo.component';
 import { exportToPdf, exportToPng } from './pdf';
+import { AssetPipe } from '../core/asset-url';
 
 /**
  * Cartel imprimible de una categoría o del cuadro de honor (sin categoría), como los que se cuelgan
@@ -14,7 +15,7 @@ import { exportToPdf, exportToPng } from './pdf';
  */
 @Component({
   selector: 'mp-poster',
-  imports: [CategoryBoardComponent, HonorBoardComponent, LogoComponent],
+  imports: [AssetPipe, CategoryBoardComponent, HonorBoardComponent, LogoComponent],
   template: `
     <div class="backdrop" (click)="closed.emit()">
       <div class="modal wide" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="poster-title">
@@ -37,7 +38,7 @@ import { exportToPdf, exportToPng } from './pdf';
           <div class="poster" #poster [class.fixed]="fixed()" [style.--accent]="color()">
             <header>
               <div class="club">
-                @if (board().club.logoUrl) { <img [src]="board().club.logoUrl" crossorigin="anonymous" alt=""> }
+                @if (board().club.logoUrl) { <img [src]="board().club.logoUrl | asset" crossorigin="anonymous" alt=""> }
                 @else { <mp-logo [size]="64" [wordmark]="false" /> }
               </div>
               <div class="title">
@@ -48,7 +49,7 @@ import { exportToPdf, exportToPng } from './pdf';
               @if (principal().length) {
                 <div class="main-sponsors">
                   @for (s of principal(); track s.id) {
-                    @if (s.logoUrl) { <img [src]="s.logoUrl" crossorigin="anonymous" [alt]="s.name"> }
+                    @if (s.logoUrl) { <img [src]="s.logoUrl | asset" crossorigin="anonymous" [alt]="s.name"> }
                     @else { <span class="sname">{{ s.name }}</span> }
                   }
                 </div>
@@ -64,7 +65,7 @@ import { exportToPdf, exportToPng } from './pdf';
                 <span class="label">Colaboradores</span>
                 <div class="logos">
                   @for (s of collaborators(); track s.id) {
-                    @if (s.logoUrl) { <img [src]="s.logoUrl" crossorigin="anonymous" [alt]="s.name"> }
+                    @if (s.logoUrl) { <img [src]="s.logoUrl | asset" crossorigin="anonymous" [alt]="s.name"> }
                     @else { <span class="sname">{{ s.name }}</span> }
                   }
                 </div>

@@ -1,5 +1,7 @@
 // Genera src/environments/environment.production.ts (no se versiona) antes del build de producción.
 // En Cloudflare Pages los valores llegan por variables de entorno: API_URL, SUPABASE_URL, SUPABASE_ANON_KEY.
+// Opcional: SUPABASE_STORAGE_KEY (nombre de la sesión guardada; con un intermediario de Supabase, el de siempre,
+// p. ej. sb-<proyecto>-auth-token, para que nadie tenga que volver a entrar).
 // En local, sin variables, se respeta el archivo si ya existe o se crea con los valores de environment.ts.
 import { copyFileSync, existsSync, writeFileSync } from 'node:fs';
 
@@ -14,6 +16,7 @@ export const environment = {
   supabaseUrl: ${JSON.stringify(SUPABASE_URL.replace(/\/+$/, ''))},
   supabaseAnonKey: ${JSON.stringify(SUPABASE_ANON_KEY)},
   storageBucket: ${JSON.stringify(process.env.STORAGE_BUCKET || 'matchpoint-public')},
+  supabaseStorageKey: ${JSON.stringify(process.env.SUPABASE_STORAGE_KEY || '')},
 };
 `);
   console.log('environment.production.ts generado desde variables de entorno');

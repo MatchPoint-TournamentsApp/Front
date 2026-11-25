@@ -2,14 +2,15 @@ import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TournamentSummary } from '../core/models';
 import { range, STATUS_LABEL } from '../core/format';
+import { AssetPipe } from '../core/asset-url';
 
 @Component({
   selector: 'mp-tournament-card',
-  imports: [RouterLink],
+  imports: [AssetPipe, RouterLink],
   template: `
     <a class="tc" [routerLink]="link()" [style.--c]="t().primaryColor">
       <div class="head">
-        <div class="logo">@if (t().clubLogoUrl) { <img [src]="t().clubLogoUrl" alt=""> } @else { <span>{{ t().clubName.charAt(0) }}</span> }</div>
+        <div class="logo">@if (t().clubLogoUrl) { <img [src]="t().clubLogoUrl | asset" alt=""> } @else { <span>{{ t().clubName.charAt(0) }}</span> }</div>
         <div class="who">
           <h3>{{ t().name }}</h3>
           <div class="small muted">{{ t().clubName }}@if (t().city) { · {{ t().city }}}</div>

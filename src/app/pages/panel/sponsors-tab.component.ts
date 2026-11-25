@@ -7,12 +7,13 @@ import { ConfirmService } from '../../core/confirm.service';
 import { normalizeUrl } from '../../core/validation';
 import { FORM_KIT } from '../../shared/forms';
 import { ImageUploadComponent } from '../../shared/image-upload.component';
+import { AssetPipe } from '../../core/asset-url';
 
 interface Form { id?: string; name: string; website?: string; tier: SponsorTier; }
 
 @Component({
   selector: 'mp-sponsors-tab',
-  imports: [FormsModule, ImageUploadComponent, FORM_KIT],
+  imports: [AssetPipe, FormsModule, ImageUploadComponent, FORM_KIT],
   template: `
     <div class="row between" style="margin-bottom:14px">
       <p class="muted" style="margin:0">Aparecen en la página pública y al pie de los carteles PDF. Los principales se muestran más grandes.</p>
@@ -24,7 +25,7 @@ interface Form { id?: string; name: string; website?: string; tier: SponsorTier;
       <div class="sp">
         @for (s of t().sponsors; track s.id) {
           <div class="panel card">
-            <div class="logo">@if (s.logoUrl) { <img [src]="s.logoUrl" [alt]="s.name"> } @else { <b>{{ s.name }}</b> }</div>
+            <div class="logo">@if (s.logoUrl) { <img [src]="s.logoUrl | asset" [alt]="s.name"> } @else { <b>{{ s.name }}</b> }</div>
             <div class="row between">
               <div><b>{{ s.name }}</b><br><span class="chip" [class.ball]="s.tier === 'PRINCIPAL'">{{ s.tier === 'PRINCIPAL' ? 'Principal' : 'Colaborador' }}</span></div>
               <div class="row" style="gap:6px"><button class="btn ghost sm" (click)="edit(s)">Editar</button><button class="btn danger sm" (click)="remove(s)">Quitar</button></div>

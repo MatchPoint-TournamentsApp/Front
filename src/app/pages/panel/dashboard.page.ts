@@ -4,10 +4,11 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { Profile } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { AssetPipe } from '../../core/asset-url';
 
 @Component({
   selector: 'mp-dashboard',
-  imports: [LoadingComponent, RouterLink],
+  imports: [AssetPipe, LoadingComponent, RouterLink],
   template: `
     <div class="page">
       @if (me(); as p) {
@@ -25,7 +26,7 @@ import { ToastService } from '../../core/toast.service';
           <div class="clubs">
             @for (c of p.clubs; track c.id) {
               <a class="club" [routerLink]="['/panel/club', c.id]">
-                <div class="logo">@if (c.logoUrl) { <img [src]="c.logoUrl" alt=""> } @else { <span>{{ c.name.charAt(0) }}</span> }</div>
+                <div class="logo">@if (c.logoUrl) { <img [src]="c.logoUrl | asset" alt=""> } @else { <span>{{ c.name.charAt(0) }}</span> }</div>
                 <div class="who"><h3>{{ c.name }}</h3><span class="muted small">{{ c.city || 'Ver torneos' }}</span>
                   @if (c.verificationStatus === 'PENDING') { <span class="chip warn">Pendiente de verificación</span> }
                   @if (c.verificationStatus === 'REJECTED') { <span class="chip warn">Verificación rechazada</span> }</div>

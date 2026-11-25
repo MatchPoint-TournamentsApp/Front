@@ -23,7 +23,9 @@ export class SupabaseService {
       this.configured ? environment.supabaseAnonKey : 'sin-configurar',
       // El bloqueo por defecto (navigator.locks) falla a veces con Angular: getSession() devuelve
       // vacío y las peticiones salen sin token (401 en la API, "anon" en Storage).
-      { auth: { lock: processLock } },
+      // storageKey: si Supabase se usa a través de un intermediario (otra dirección), se guarda la sesión con el
+      // mismo nombre que con la dirección directa para que nadie tenga que volver a entrar.
+      { auth: { lock: processLock, ...(storageKey() ? { storageKey: storageKey() } : {}) } },
     );
     this.client.auth.getSession().then(({ data }) => {
       this.session.set(data.session);
@@ -110,6 +112,11 @@ export function passwordRules(msg: string): string {
   if (msg.includes('0123456789')) need.push('números');
   if (/[!@#$%^&*]/.test(msg)) need.push('algún símbolo (!@#$…)');
   return need.length ? `La contraseña tiene que llevar ${need.join(', ').replace(/, ([^,]*)$/, ' y $1')}` : 'La contraseña no cumple los requisitos de seguridad';
+}
+
+/** Nombre con el que se guarda la sesión (vacío = el que Supabase deduce de su dirección). */
+function storageKey(): string {
+  return (environment as { supabaseStorageKey?: string }).supabaseStorageKey ?? '';
 }
 
 /** "#error=access_denied&error_code=otp_expired&error_description=..." en la URL de vuelta del email. */

@@ -6,15 +6,16 @@ import { Club, TournamentSummary, TrashedTournament } from '../../core/models';
 import { range, shortDate } from '../../core/format';
 import { ToastService } from '../../core/toast.service';
 import { TournamentCardComponent } from '../tournament-card.component';
+import { AssetPipe } from '../../core/asset-url';
 
 @Component({
   selector: 'mp-club',
-  imports: [LoadingComponent, RouterLink, TournamentCardComponent],
+  imports: [AssetPipe, LoadingComponent, RouterLink, TournamentCardComponent],
   template: `
     <div class="page">
       @if (club(); as c) {
         <div class="head">
-          <div class="logo">@if (c.logoUrl) { <img [src]="c.logoUrl" alt=""> } @else { <span>{{ c.name.charAt(0) }}</span> }</div>
+          <div class="logo">@if (c.logoUrl) { <img [src]="c.logoUrl | asset" alt=""> } @else { <span>{{ c.name.charAt(0) }}</span> }</div>
           <div class="info">
             <h1>{{ c.name }}</h1>
             <div class="muted">{{ c.address }}@if (c.city) { , {{ c.city }} } <span class="chip grey">{{ c.courts.length }} pistas</span></div>

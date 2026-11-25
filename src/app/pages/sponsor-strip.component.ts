@@ -1,8 +1,10 @@
 import { Component, input } from '@angular/core';
 import { Sponsor } from '../core/models';
+import { AssetPipe } from '../core/asset-url';
 
 @Component({
   selector: 'mp-sponsor-strip',
+  imports: [AssetPipe],
   template: `
     @if (sponsors().length) {
       <section class="strip">
@@ -10,7 +12,7 @@ import { Sponsor } from '../core/models';
         <div class="logos">
           @for (s of sponsors(); track s.id) {
             <a [href]="s.website || null" target="_blank" rel="noopener" [class.main]="s.tier === 'PRINCIPAL'" [title]="s.name">
-              @if (s.logoUrl) { <img [src]="s.logoUrl" [alt]="s.name"> } @else { <span>{{ s.name }}</span> }
+              @if (s.logoUrl) { <img [src]="s.logoUrl | asset" [alt]="s.name"> } @else { <span>{{ s.name }}</span> }
             </a>
           }
         </div>

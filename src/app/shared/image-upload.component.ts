@@ -1,14 +1,16 @@
 import { Component, inject, input, model, signal } from '@angular/core';
 import { SupabaseService } from '../core/supabase.service';
 import { ToastService } from '../core/toast.service';
+import { AssetPipe } from '../core/asset-url';
 
 /** Subida de logo (club o patrocinador) a Supabase Storage. */
 @Component({
   selector: 'mp-image-upload',
+  imports: [AssetPipe],
   template: `
     <div class="up">
       <div class="preview" [class.has]="!!url()">
-        @if (url()) { <img [src]="url()" alt="Logo"> } @else { <span>Sin logo</span> }
+        @if (url()) { <img [src]="url() | asset" alt="Logo"> } @else { <span>Sin logo</span> }
       </div>
       <div class="stack" style="gap:6px">
         <label class="btn ghost sm">

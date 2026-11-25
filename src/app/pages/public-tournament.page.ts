@@ -11,18 +11,19 @@ import { podium } from '../shared/honor';
 import { RegistrationFormComponent } from './registration-form.component';
 import { SponsorStripComponent } from './sponsor-strip.component';
 import { MyMatchesComponent } from './my-matches.component';
+import { AssetPipe } from '../core/asset-url';
 
 /** Página pública del torneo (invitados): cuadros, horario, normas e inscripción. */
 @Component({
   selector: 'mp-public-tournament',
-  imports: [LoadingComponent, CategoryBoardComponent, HonorBoardComponent, ScheduleComponent, PosterComponent, RegistrationFormComponent, SponsorStripComponent, MyMatchesComponent],
+  imports: [AssetPipe, LoadingComponent, CategoryBoardComponent, HonorBoardComponent, ScheduleComponent, PosterComponent, RegistrationFormComponent, SponsorStripComponent, MyMatchesComponent],
   template: `
     @if (error()) {
       <div class="page"><div class="panel empty"><h3>Torneo no disponible</h3><p>{{ error() }}</p></div></div>
     } @else if (board(); as b) {
       <header class="band on-dark">
         <div class="inner">
-          <div class="logo">@if (b.club.logoUrl) { <img [src]="b.club.logoUrl" alt=""> } @else { <span>{{ b.club.name.charAt(0) }}</span> }</div>
+          <div class="logo">@if (b.club.logoUrl) { <img [src]="b.club.logoUrl | asset" alt=""> } @else { <span>{{ b.club.name.charAt(0) }}</span> }</div>
           <div class="title">
             <span class="eyebrow">{{ b.club.name }}</span>
             <h1>{{ b.tournament.name }}</h1>
